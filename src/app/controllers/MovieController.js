@@ -12,118 +12,114 @@ class MovieController {
 
   index(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        switch (req.params.slug) {
-          case 'phimle':
-            DataMovies.PhimLe.findOne({
-              page: req.query.page === undefined ? 1 : req.query.page,
+      switch (req.params.slug) {
+        case 'phimle':
+          DataMovies.PhimLe.findOne({
+            page: req.query.page === undefined ? 1 : req.query.page,
+          })
+            .then((dataMovies) => {
+              res.json(mongooseToObject(dataMovies));
             })
-              .then((dataMovies) => {
-                res.json(mongooseToObject(dataMovies));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'nowplaying':
-            DataMovies.Nowplaying.findOne({
-              page: req.query.page === undefined ? 1 : req.query.page,
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'nowplaying':
+          DataMovies.Nowplaying.findOne({
+            page: req.query.page === undefined ? 1 : req.query.page,
+          })
+            .then((dataMovies) => {
+              res.json(mongooseToObject(dataMovies));
             })
-              .then((dataMovies) => {
-                res.json(mongooseToObject(dataMovies));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'upcoming':
-            DataMovies.Upcoming.findOne({
-              page: req.query.page === undefined ? 1 : req.query.page,
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'upcoming':
+          DataMovies.Upcoming.findOne({
+            page: req.query.page === undefined ? 1 : req.query.page,
+          })
+            .then((dataMovies) => {
+              res.json(mongooseToObject(dataMovies));
             })
-              .then((dataMovies) => {
-                res.json(mongooseToObject(dataMovies));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'popular':
-            DataMovies.Popular.findOne({
-              page: req.query.page === undefined ? 1 : req.query.page,
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'popular':
+          DataMovies.Popular.findOne({
+            page: req.query.page === undefined ? 1 : req.query.page,
+          })
+            .then((dataMovies) => {
+              res.json(mongooseToObject(dataMovies));
             })
-              .then((dataMovies) => {
-                res.json(mongooseToObject(dataMovies));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'toprated':
-            DataMovies.Toprated.findOne({
-              page: req.query.page === undefined ? 1 : req.query.page,
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'toprated':
+          DataMovies.Toprated.findOne({
+            page: req.query.page === undefined ? 1 : req.query.page,
+          })
+            .then((dataMovies) => {
+              res.json(mongooseToObject(dataMovies));
             })
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        default:
+          if (!req.query.append_to_response) {
+            MovieDetail.findOne({ id: req.params.slug })
+              .select(['-credits', '-similar', '-recommendations'])
               .then((dataMovies) => {
-                res.json(mongooseToObject(dataMovies));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          default:
-            if (!req.query.append_to_response) {
-              MovieDetail.findOne({ id: req.params.slug })
-                .select(['-credits', '-similar', '-recommendations'])
-                .then((dataMovies) => {
-                  // dataMovies == null
-                  //   ? res.status(404).json(errorMsg.errDefault)
-                  //   :
+                // dataMovies == null
+                //   ? res.status(404).json(errorMsg.errDefault)
+                //   :
 
-                  res.json(mongooseToObject(dataMovies));
-                })
-                .catch((error) => {
-                  res.status(400).json(errorMsg.errDefault);
-                  next(error);
-                });
-            } else {
-              MovieDetail.findOne({ id: req.params.slug })
-                .select(['-credits', '-similar', '-recommendations'])
-                .then((dataMovies) => {
-                  // dataMovies == null
-                  //   ? res.status(404).json(errorMsg.errDefault)
-                  //   :
-                  MovieDetail.findOne({ id: req.params.slug })
-                    .select(req.query.append_to_response.split(','))
-                    .then((dataParams) => {
-                      // dataMovies == null
-                      //   ? res.status(404).json(errorMsg.errDefault)
-                      //   :
+                res.json(mongooseToObject(dataMovies));
+              })
+              .catch((error) => {
+                res.status(400).json(errorMsg.errDefault);
+                next(error);
+              });
+          } else {
+            MovieDetail.findOne({ id: req.params.slug })
+              .select(['-credits', '-similar', '-recommendations'])
+              .then((dataMovies) => {
+                // dataMovies == null
+                //   ? res.status(404).json(errorMsg.errDefault)
+                //   :
+                MovieDetail.findOne({ id: req.params.slug })
+                  .select(req.query.append_to_response.split(','))
+                  .then((dataParams) => {
+                    // dataMovies == null
+                    //   ? res.status(404).json(errorMsg.errDefault)
+                    //   :
 
-                      res.json({
-                        ...mongooseToObject(dataMovies),
-                        ...mongooseToObject(dataParams),
-                      });
-                    })
-                    .catch((error) => {
-                      res.status(400).json(errorMsg.errDefault);
-                      next(error);
+                    res.json({
+                      ...mongooseToObject(dataMovies),
+                      ...mongooseToObject(dataParams),
                     });
+                  })
+                  .catch((error) => {
+                    res.status(400).json(errorMsg.errDefault);
+                    next(error);
+                  });
 
-                  // res.json(mongooseToObject(dataMovies));
-                })
-                .catch((error) => {
-                  res.status(400).json(errorMsg.errDefault);
-                  next(error);
-                });
-            }
-            break;
-        }
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
+                // res.json(mongooseToObject(dataMovies));
+              })
+              .catch((error) => {
+                res.status(400).json(errorMsg.errDefault);
+                next(error);
+              });
+          }
+          break;
       }
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);

@@ -14,64 +14,60 @@ class WatchListController {
 
   index(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        switch (req.params.slug) {
-          case 'all':
-            WatchList.findOne(
-              // {},
-              {
-                id: req.params.accountid,
-                // results: {
-                //   $slice: [
-                //     (req.query.page ? +req.query.page - 1 : 0) * 19,
-                //     req.query.page ? +req.query.page * 19 : 19,
-                //   ],
-                // },
-              }
-            )
-              // .skip((req.query.page - 1) * 20)
-              // .limit(20)
-              .then((listResponse) => {
-                res.json(mongooseToObject(listResponse));
-              })
-              .catch((error) => {
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'movie':
-            WatchList.aggregate([
-              { $match: { id: req.params.accountid } },
-              {
-                $project: {
-                  results: {
-                    $filter: {
-                      input: '$results',
-                      as: 'item',
-                      cond: { $eq: ['$$item.media_type', 'movie'] },
-                    },
+      switch (req.params.slug) {
+        case 'all':
+          WatchList.findOne(
+            // {},
+            {
+              id: req.params.accountid,
+              // results: {
+              //   $slice: [
+              //     (req.query.page ? +req.query.page - 1 : 0) * 19,
+              //     req.query.page ? +req.query.page * 19 : 19,
+              //   ],
+              // },
+            }
+          )
+            // .skip((req.query.page - 1) * 20)
+            // .limit(20)
+            .then((listResponse) => {
+              res.json(mongooseToObject(listResponse));
+            })
+            .catch((error) => {
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'movie':
+          WatchList.aggregate([
+            { $match: { id: req.params.accountid } },
+            {
+              $project: {
+                results: {
+                  $filter: {
+                    input: '$results',
+                    as: 'item',
+                    cond: { $eq: ['$$item.media_type', 'movie'] },
                   },
                 },
               },
-            ])
-              .then((listResponse) => {
-                // res.json(multipleMongooseToObject(listResponse));
-                res.json(listResponse);
-              })
-              .catch((error) => {
-                console.log(error);
-                res.status(400).json(errorMsg.errDefault);
-                next(error);
-              });
-            break;
-          case 'tv':
-            break;
-          default:
-            res.status(400).json(errorMsg.errDefault);
-            break;
-        }
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
+            },
+          ])
+            .then((listResponse) => {
+              // res.json(multipleMongooseToObject(listResponse));
+              res.json(listResponse);
+            })
+            .catch((error) => {
+              console.log(error);
+              res.status(400).json(errorMsg.errDefault);
+              next(error);
+            });
+          break;
+        case 'tv':
+          break;
+        default:
+          res.status(400).json(errorMsg.errDefault);
+          break;
       }
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);

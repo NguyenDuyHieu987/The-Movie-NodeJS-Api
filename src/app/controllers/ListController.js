@@ -14,18 +14,14 @@ class ListController {
 
   index(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        List.findOne({ id: req.params.slug })
-          .then((listResponse) => {
-            res.json(mongooseToObject(listResponse));
-          })
-          .catch((error) => {
-            res.status(400).json(errorMsg.errDefault);
-            next(error);
-          });
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
-      }
+      List.findOne({ id: req.params.slug })
+        .then((listResponse) => {
+          res.json(mongooseToObject(listResponse));
+        })
+        .catch((error) => {
+          res.status(400).json(errorMsg.errDefault);
+          next(error);
+        });
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);
     } finally {
