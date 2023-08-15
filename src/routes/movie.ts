@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 const movieController = require('../app/controllers/MovieController');
@@ -7,4 +7,4 @@ const movieController = require('../app/controllers/MovieController');
 router.get('/:slug', movieController.index);
 router.post('/:movieid/:slug1', movieController.update);
 
-module.exports = router;
+export default router;

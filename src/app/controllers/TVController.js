@@ -2,7 +2,6 @@ const DataMovies = require('../models/DataMovies');
 const Season = require('../models/Season');
 const TVdetail = require('../models/TV');
 const config = require('../../../package.json');
-const API_KEY = config.projectConfig.apiKey;
 const errorMsg = require('../../until/errorMsg');
 
 const { multipleMongooseToObject } = require('../../until/mongoose');
@@ -136,42 +135,28 @@ class TVController {
 
   async season(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        // TVdetail.findOne({
-        //   id: req.params.movieid,
-        // })
-        //   .then((dataMovies) => {
-        //     res.json(mongooseToObject(dataMovies));
-        //   })
-        //   .catch((error) => {
-        //     res.status(400).json(errorMsg.errDefault);
-        //     next(error);
-        //   });
-        var doc = await TVdetail.findOne(
-          { id: req.params.movieid },
-          {
-            seasons: {
-              $elemMatch: { season_number: +req.params.seasonnumber },
-            },
-          }
-        ).catch((error) => {
+      var doc = await TVdetail.findOne(
+        { id: req.params.movieid },
+        {
+          seasons: {
+            $elemMatch: { season_number: +req.params.seasonnumber },
+          },
+        }
+      ).catch((error) => {
+        res.status(400).json(errorMsg.errDefault);
+        next(error);
+      });
+
+      Season.findOne({
+        id: doc.seasons[0].id,
+      })
+        .then((seasonRes) => {
+          res.json(mongooseToObject(seasonRes));
+        })
+        .catch((error) => {
           res.status(400).json(errorMsg.errDefault);
           next(error);
         });
-
-        Season.findOne({
-          id: doc.seasons[0].id,
-        })
-          .then((seasonRes) => {
-            res.json(mongooseToObject(seasonRes));
-          })
-          .catch((error) => {
-            res.status(400).json(errorMsg.errDefault);
-            next(error);
-          });
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
-      }
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);
     } finally {
@@ -180,30 +165,26 @@ class TVController {
 
   async update(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        switch (req.params.slug1) {
-          case 'rating':
-            let doc = await TVdetail.findOne({
-              id: req.params.movieid,
-            }).catch((error) => {
-              res.status(400).json(errorMsg.errDefault);
-              next(error);
-            });
-
-            var newRating =
-              (doc.vote_count * doc.vote_average + req.body.value) /
-              (doc.vote_count + 1);
-            doc.vote_average = newRating;
-            doc.vote_count += 1;
-            await doc.save();
-
-            break;
-          default:
+      switch (req.params.slug1) {
+        case 'rating':
+          let doc = await TVdetail.findOne({
+            id: req.params.movieid,
+          }).catch((error) => {
             res.status(400).json(errorMsg.errDefault);
-            break;
-        }
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
+            next(error);
+          });
+
+          var newRating =
+            (doc.vote_count * doc.vote_average + req.body.value) /
+            (doc.vote_count + 1);
+          doc.vote_average = newRating;
+          doc.vote_count += 1;
+          await doc.save();
+
+          break;
+        default:
+          res.status(400).json(errorMsg.errDefault);
+          break;
       }
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);

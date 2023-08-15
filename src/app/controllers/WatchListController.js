@@ -2,7 +2,6 @@ const WatchList = require('../models/WatchList');
 const MovieDetail = require('../models/Movie');
 const TVDetail = require('../models/TV');
 const config = require('../../../package.json');
-const API_KEY = config.projectConfig.apiKey;
 const errorMsg = require('../../until/errorMsg');
 
 const { multipleMongooseToObject } = require('../../until/mongoose');
@@ -77,78 +76,74 @@ class WatchListController {
 
   handleWatchList(req, res, next) {
     try {
-      if (req.query.api == API_KEY) {
-        console.log(req.body.media_type);
-        if (req.body.media_type === 'movie') {
-          MovieDetail.findOne({
-            id: req.body.media_id,
-          })
-            .then((dataMovies) => {
-              if (req.body.watchlist === true) {
-                const itemList = new ItemList({
-                  ...mongooseToObject(dataMovies),
-                  media_type: 'movie',
-                });
-                WatchList.findOneAndUpdate(
-                  { id: req.params.slug },
-                  { $addToSet: { results: itemList } },
-                  { new: true },
-                  (err, doc) => {
-                    if (err) {
-                      console.log(err);
-                      console.log('Something wrong when updating data!');
-                    }
+      console.log(req.body.media_type);
+      if (req.body.media_type === 'movie') {
+        MovieDetail.findOne({
+          id: req.body.media_id,
+        })
+          .then((dataMovies) => {
+            if (req.body.watchlist === true) {
+              const itemList = new ItemList({
+                ...mongooseToObject(dataMovies),
+                media_type: 'movie',
+              });
+              WatchList.findOneAndUpdate(
+                { id: req.params.slug },
+                { $addToSet: { results: itemList } },
+                { new: true },
+                (err, doc) => {
+                  if (err) {
+                    console.log(err);
+                    console.log('Something wrong when updating data!');
                   }
-                );
-              }
-            })
-            .catch((error) => {
-              res.status(400).json(errorMsg.errDefault);
-              next(error);
-            });
-        } else if (req.body.media_type === 'tv') {
-          TVDetail.findOne({
-            id: req.body.media_id,
-          })
-            .then((dataTV) => {
-              if (req.body.watchlist === true) {
-                const itemList = new ItemList({
-                  ...mongooseToObject(dataTV),
-                  media_type: 'tv',
-                });
-
-                WatchList.findOneAndUpdate(
-                  { id: req.params.slug },
-                  { $addToSet: { results: itemList } },
-                  { new: true },
-                  (err, doc) => {
-                    if (err) {
-                      console.log('Something wrong when updating data!');
-                    }
-                  }
-                );
-              }
-            })
-            .catch((error) => {
-              res.status(400).json(errorMsg.errDefault);
-              next(error);
-            });
-        } else if (req.body.media_type === undefined) {
-          if (req.body.watchlist === false) {
-            WatchList.findOneAndUpdate(
-              { id: req.params.slug },
-              { $pull: { results: { id: req.body.media_id } } },
-              { new: true },
-              (err, doc) => {
-                if (err) {
-                  console.log('Something wrong when updating data!');
                 }
+              );
+            }
+          })
+          .catch((error) => {
+            res.status(400).json(errorMsg.errDefault);
+            next(error);
+          });
+      } else if (req.body.media_type === 'tv') {
+        TVDetail.findOne({
+          id: req.body.media_id,
+        })
+          .then((dataTV) => {
+            if (req.body.watchlist === true) {
+              const itemList = new ItemList({
+                ...mongooseToObject(dataTV),
+                media_type: 'tv',
+              });
+
+              WatchList.findOneAndUpdate(
+                { id: req.params.slug },
+                { $addToSet: { results: itemList } },
+                { new: true },
+                (err, doc) => {
+                  if (err) {
+                    console.log('Something wrong when updating data!');
+                  }
+                }
+              );
+            }
+          })
+          .catch((error) => {
+            res.status(400).json(errorMsg.errDefault);
+            next(error);
+          });
+      } else if (req.body.media_type === undefined) {
+        if (req.body.watchlist === false) {
+          WatchList.findOneAndUpdate(
+            { id: req.params.slug },
+            { $pull: { results: { id: req.body.media_id } } },
+            { new: true },
+            (err, doc) => {
+              if (err) {
+                console.log('Something wrong when updating data!');
               }
-            );
-          }
+            }
+          );
         }
-      } else {
-        res.status(400).json(errorMsg.errApiKey);
       }
     } catch (error) {
       res.status(400).json(errorMsg.errDefault);

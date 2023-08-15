@@ -1,12 +1,12 @@
-const path = require('path');
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 3001;
+import path from 'path';
+import express from 'express';
+import cors from 'cors';
+import route from './routes';
+import db from './config/db';
 require('dotenv').config();
 
-const route = require('./routes');
-const db = require('./config/db');
+const app = express();
+const PORT = 5000;
 
 // Copnnect to DB
 db.connect();
@@ -19,15 +19,12 @@ app.use(
 );
 app.use(express.json());
 
-// HTP logger
-// app.use(morgan('common'));
-
 // npm install cors
 app.use(cors());
 
 // Routs init
 route(app);
 
-app.listen(process.env.PORT || port, () => {
-  console.log(`App listening on port: ${port}`);
+app.listen(process.env.PORT || PORT, () => {
+  console.log(`App listening on port: ${PORT}`);
 });

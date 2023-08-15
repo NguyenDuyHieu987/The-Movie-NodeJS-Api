@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 const yearController = require('../app/controllers/YearController');
@@ -6,4 +6,4 @@ const yearController = require('../app/controllers/YearController');
 // router.get('/:slug', tvController.detail);
 router.get('/:slug', yearController.index);
 
-module.exports = router;
+export default router;

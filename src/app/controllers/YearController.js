@@ -1,6 +1,5 @@
 const Year = require('../models/Year');
 const config = require('../../../package.json');
-const API_KEY = config.projectConfig.apiKey;
 const errorMsg = require('../../until/errorMsg');
 
 const { multipleMongooseToObject } = require('../../until/mongoose');

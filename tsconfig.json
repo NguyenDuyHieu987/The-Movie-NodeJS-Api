@@ -1,12 +1,16 @@
 {
     "compilerOptions": {
+      "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,
       "target": "ESNext",
-      "module": "ESNext",
+      "module": "NodeNext",
       "moduleResolution": "NodeNext",
+      "sourceMap": true,
       "skipLibCheck": true,
       "strict": true,
       "allowJs": true,
+      "rootDir": "./",
+      "outDir": "./dist",
       "baseUrl": "src",
       "noEmit": true,
       "resolveJsonModule": true,
@@ -16,16 +20,16 @@
       ],
       "paths": {
         "~": [
-          "src"
+          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src"
         ],
         "~/*": [
-          "src/*"
+          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src/*"
         ],
         "@": [
-          "src"
+          "./src"
         ],
         "@/*": [
-          "src/*"
+          "./src/*"
         ],
       }
     },
@@ -34,4 +38,10 @@
       "src/*",
       "src/**/*"
     ],
+    "exclude": [
+      "node_modules"
+    ],
+    "ts-node": {
+      "esm": true,  
+    }, 
 }
