@@ -10,8 +10,8 @@
       "strict": true,
       "allowJs": true,
       "rootDir": "./",
-      "outDir": "./dist",
-      "baseUrl": "src",
+      "outDir": "dist",
+      "baseUrl": "./src",
       "noEmit": true,
       "resolveJsonModule": true,
       "allowSyntheticDefaultImports": true,
@@ -26,10 +26,10 @@
           "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src/*"
         ],
         "@": [
-          "./src"
+          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src"
         ],
         "@/*": [
-          "./src/*"
+          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src/*"
         ],
       }
     },

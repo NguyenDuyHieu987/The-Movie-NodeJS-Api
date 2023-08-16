@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import route from './routes';
 import db from './config/db';
+
 require('dotenv').config();
 
 const app = express();
@@ -11,7 +12,7 @@ const PORT = 5000;
 // Copnnect to DB
 db.connect();
 
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   express.urlencoded({
     extended: true,

@@ -1,3 +1,4 @@
+import type { Express } from 'express';
 import movieRouter from './movie';
 import trendingRouter from './trending';
 import tvRouter from './tv';
@@ -10,7 +11,7 @@ import listRouter from './list';
 import watchlistRouter from './watchlist';
 import athRouter from './auth';
 
-export default function route(app: any) {
+export default function route(app: Express) {
   app.use('/movie', movieRouter);
   app.use('/tv', tvRouter);
   app.use('/search', searchRouter);
