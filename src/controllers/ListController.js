@@ -1,12 +1,12 @@
-const List = require('../models/List');
-const MovieDetail = require('../models/Movie');
-const TVDetail = require('../models/TV');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-const { ItemList } = require('../models/ItemList');
+import List from '../models/List';
+import MovieDetail from '../models/Movie';
+import TVDetail from '../models/TV';
+import config from '../../package.json';
+import errorMsg from '../utils/errorMsg';
+import { ItemList } from '../models/ItemList';
 
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
 
 class ListController {
   // GET /
@@ -132,4 +132,4 @@ class ListController {
   }
 }
 
-module.exports = new ListController();
+export default new ListController();

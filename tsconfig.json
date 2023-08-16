@@ -11,7 +11,7 @@
       "allowJs": true,
       "rootDir": "./",
       "outDir": "dist",
-      "baseUrl": "./src",
+      "baseUrl": "src",
       "noEmit": true,
       "resolveJsonModule": true,
       "allowSyntheticDefaultImports": true,

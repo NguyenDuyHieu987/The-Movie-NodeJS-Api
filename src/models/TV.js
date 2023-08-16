@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const TV = new Schema({
@@ -42,4 +42,4 @@ const TV = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('TV', TV);
+export default mongoose.model('TV', TV);

@@ -1,7 +1,6 @@
 import express from 'express';
+import listController from '../controllers/ListController';
 const router = express.Router();
-
-const listController = require('../app/controllers/ListController');
 
 // router.get('/:slug', tvController.detail);
 router.get('/:slug', listController.index);

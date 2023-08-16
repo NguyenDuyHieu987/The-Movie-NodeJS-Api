@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const Season = new Schema({
@@ -13,4 +13,4 @@ const Season = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Season', Season);
+export default mongoose.model('Season', Season);

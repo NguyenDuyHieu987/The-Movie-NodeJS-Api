@@ -1,9 +1,7 @@
-const DataMovies = require('../models/DataMovies');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
+import DataMovies from '../models/DataMovies';
+import errorMsg from '../utils/errorMsg';
 
 class TrendingController {
   index(req, res, next) {
@@ -32,4 +30,4 @@ class TrendingController {
   }
 }
 
-module.exports = new TrendingController();
+export default new TrendingController();

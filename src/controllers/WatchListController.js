@@ -1,12 +1,10 @@
-const WatchList = require('../models/WatchList');
-const MovieDetail = require('../models/Movie');
-const TVDetail = require('../models/TV');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
-const { ItemList } = require('../models/ItemList');
+import WatchList from '../models/WatchList';
+import MovieDetail from '../models/Movie';
+import TVDetail from '../models/TV';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
+import { ItemList } from '../models/ItemList';
 
 class WatchListController {
   // GET /
@@ -152,4 +150,4 @@ class WatchListController {
   }
 }
 
-module.exports = new WatchListController();
+export default new WatchListController();

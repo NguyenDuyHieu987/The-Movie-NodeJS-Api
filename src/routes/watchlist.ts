@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
+import watchlistController from '../controllers/WatchListController';
 
-const watchlistController = require('../app/controllers/WatchListController');
+const router = express.Router();
 
 // router.get('/:slug', tvController.detail);
 router.get('/:accountid/:slug', watchlistController.index);

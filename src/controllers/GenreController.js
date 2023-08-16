@@ -1,9 +1,7 @@
-const Genre = require('../models/Genre');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import Genre from '../models/Genre';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
 
 class GenreController {
   // GET /
@@ -31,4 +29,4 @@ class GenreController {
   }
 }
 
-module.exports = new GenreController();
+export default new GenreController();

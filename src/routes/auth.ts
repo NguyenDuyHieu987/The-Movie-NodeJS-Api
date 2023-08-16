@@ -1,8 +1,7 @@
 import express from 'express';
+import authController from '../controllers/AuthController';
 
 const router = express.Router();
-
-const authController = require('../app/controllers/AuthController');
 
 router.post('/signin', authController.signin);
 router.post('/signup', authController.signup);

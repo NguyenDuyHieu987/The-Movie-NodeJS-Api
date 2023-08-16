@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const DataMovies = new Schema({
@@ -11,7 +11,7 @@ const DataMovies = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = {
+export default {
   Trending: mongoose.model('Trending', DataMovies),
   Nowplaying: mongoose.model('Nowplaying', DataMovies),
   Upcoming: mongoose.model('Upcoming', DataMovies),
@@ -21,6 +21,4 @@ module.exports = {
   TVOnTheAir: mongoose.model('TVOnTheAir', DataMovies),
   TVPopular: mongoose.model('TVPopular', DataMovies),
   TVTopRated: mongoose.model('TVTopRated', DataMovies),
-  PhimBo: mongoose.model('PhimBo', DataMovies),
-  PhimLe: mongoose.model('PhimLe', DataMovies),
 };

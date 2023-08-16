@@ -1,7 +1,6 @@
 import express from 'express';
+import tvController from '../controllers/TVController';
 const router = express.Router();
-
-const tvController = require('../app/controllers/TVController');
 
 // router.get('/:slug', tvController.detail);
 router.get('/:slug', tvController.index);

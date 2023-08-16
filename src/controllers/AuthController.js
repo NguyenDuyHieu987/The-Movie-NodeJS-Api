@@ -1,11 +1,9 @@
-const List = require('../models/List');
-const WatchList = require('../models/WatchList');
-const Account = require('../models/Account');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import List from '../models/List';
+import WatchList from '../models/WatchList';
+import Account from '../models/Account';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
 
 class ListController {
   // GET /
@@ -228,4 +226,4 @@ class ListController {
   }
 }
 
-module.exports = new ListController();
+export default new ListController();

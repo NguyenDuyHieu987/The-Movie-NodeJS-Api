@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
+import movieController from '../controllers/MovieController';
 
-const movieController = require('../app/controllers/MovieController');
+const router = express.Router();
 
 // router.get('/search', siteController.search);
 router.get('/:slug', movieController.index);

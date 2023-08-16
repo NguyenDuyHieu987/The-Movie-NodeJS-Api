@@ -1,14 +1,7 @@
-const DataMovies = require('../models/DataMovies');
-const MovieDetail = require('../models/Movie');
-const TVdetail = require('../models/TV');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-const mongoose = require('mongoose');
-const db = require('../../config/db');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
-const { getAll, getMovie, getTV } = require('../../until/discoverHandle');
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
+import { getAll, getMovie, getTV } from '../utils/discoverHandle';
 
 class DiscoverController {
   // GET /
@@ -1184,4 +1177,4 @@ class DiscoverController {
   }
 }
 
-module.exports = new DiscoverController();
+export default new DiscoverController();

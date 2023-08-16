@@ -1,9 +1,7 @@
-const Country = require('../models/Country');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import Country from '../models/Country';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
 
 class CountryController {
   // GET /
@@ -38,4 +36,4 @@ class CountryController {
   }
 }
 
-module.exports = new CountryController();
+export default new CountryController();

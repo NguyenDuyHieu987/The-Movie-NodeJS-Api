@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   errApiKey: {
     success: false,
     status_code: 400,

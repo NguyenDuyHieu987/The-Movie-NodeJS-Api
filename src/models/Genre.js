@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const Genre = new Schema({
@@ -8,4 +8,4 @@ const Genre = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Genre', Genre);
+export default mongoose.model('Genre', Genre);

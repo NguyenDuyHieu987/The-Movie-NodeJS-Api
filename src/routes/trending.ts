@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
+import trendingController from '../controllers/TrendingController';
 
-const trendingController = require('../app/controllers/TrendingController');
+const router = express.Router();
 
 // router.get('/search', siteController.search);
 router.get('/:slug', trendingController.index);

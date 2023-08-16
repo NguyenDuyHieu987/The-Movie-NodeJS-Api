@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
+import yearController from '../controllers/YearController';
 
-const yearController = require('../app/controllers/YearController');
+const router = express.Router();
 
 // router.get('/:slug', tvController.detail);
 router.get('/:slug', yearController.index);

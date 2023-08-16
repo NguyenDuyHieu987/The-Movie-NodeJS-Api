@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const Year = new Schema({
@@ -7,4 +7,4 @@ const Year = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Year', Year);
+export default mongoose.model('Year', Year);

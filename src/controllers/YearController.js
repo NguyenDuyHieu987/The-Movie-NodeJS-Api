@@ -1,9 +1,7 @@
-const Year = require('../models/Year');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
+import Year from '../models/Year';
+import errorMsg from '../utils/errorMsg';
 
 class YearController {
   // GET /
@@ -31,4 +29,4 @@ class YearController {
   }
 }
 
-module.exports = new YearController();
+export default new YearController();

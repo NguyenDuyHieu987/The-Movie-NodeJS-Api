@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { typeOfItem } = require('./ItemList');
+import mongoose from 'mongoose';
+import { typeOfItem } from './ItemList';
 const Schema = mongoose.Schema;
 
 const List = new Schema({
@@ -7,7 +7,7 @@ const List = new Schema({
   description: { type: String },
   favorite_count: { type: Number },
   id: { type: String },
-  items: [typeOfItem],
+  // items: [typeOfItem],
   item_count: { type: Number },
   iso_639_1: { type: String },
   name: { type: String },
@@ -16,4 +16,4 @@ const List = new Schema({
   // updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('List', List);
+export default mongoose.model('List', List);

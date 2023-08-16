@@ -1,19 +1,17 @@
-const DataMovies = require('../models/DataMovies');
-const Season = require('../models/Season');
-const TVdetail = require('../models/TV');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
+import DataMovies from '../models/DataMovies';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
+import MovieDetail from '../models/Movie';
 
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
-const { response } = require('express');
+class MovieController {
+  // GET /
 
-class TVController {
   index(req, res, next) {
     try {
       switch (req.params.slug) {
-        case 'phimbo':
-          DataMovies.PhimBo.findOne({
+        case 'phimle':
+          DataMovies.PhimLe.findOne({
             page: req.query.page === undefined ? 1 : req.query.page,
           })
             .then((dataMovies) => {
@@ -24,8 +22,8 @@ class TVController {
               next(error);
             });
           break;
-        case 'airingtoday':
-          DataMovies.TVAiringToday.findOne({
+        case 'nowplaying':
+          DataMovies.Nowplaying.findOne({
             page: req.query.page === undefined ? 1 : req.query.page,
           })
             .then((dataMovies) => {
@@ -36,8 +34,8 @@ class TVController {
               next(error);
             });
           break;
-        case 'ontheair':
-          DataMovies.TVOnTheAir.findOne({
+        case 'upcoming':
+          DataMovies.Upcoming.findOne({
             page: req.query.page === undefined ? 1 : req.query.page,
           })
             .then((dataMovies) => {
@@ -49,7 +47,7 @@ class TVController {
             });
           break;
         case 'popular':
-          DataMovies.TVPopular.findOne({
+          DataMovies.Popular.findOne({
             page: req.query.page === undefined ? 1 : req.query.page,
           })
             .then((dataMovies) => {
@@ -61,7 +59,7 @@ class TVController {
             });
           break;
         case 'toprated':
-          DataMovies.TVTopRated.findOne({
+          DataMovies.Toprated.findOne({
             page: req.query.page === undefined ? 1 : req.query.page,
           })
             .then((dataMovies) => {
@@ -73,21 +71,14 @@ class TVController {
             });
           break;
         default:
-          // const arr = req.query.append_to_response.split(',');
-          // console.log(arr[0].trim());
-
-          // const arr = req.query.append_to_response
-          //   .split(',')
-          //   .join(',-')
-          //   .split(',');
-          // arr[0] = '-' + arr[0];
           if (!req.query.append_to_response) {
-            TVdetail.findOne({ id: req.params.slug })
+            MovieDetail.findOne({ id: req.params.slug })
               .select(['-credits', '-similar', '-recommendations'])
               .then((dataMovies) => {
                 // dataMovies == null
-                //   ? res.status(400).json(errorMsg.errDefault)
+                //   ? res.status(404).json(errorMsg.errDefault)
                 //   :
+
                 res.json(mongooseToObject(dataMovies));
               })
               .catch((error) => {
@@ -95,13 +86,13 @@ class TVController {
                 next(error);
               });
           } else {
-            TVdetail.findOne({ id: req.params.slug })
+            MovieDetail.findOne({ id: req.params.slug })
               .select(['-credits', '-similar', '-recommendations'])
               .then((dataMovies) => {
                 // dataMovies == null
                 //   ? res.status(404).json(errorMsg.errDefault)
                 //   :
-                TVdetail.findOne({ id: req.params.slug })
+                MovieDetail.findOne({ id: req.params.slug })
                   .select(req.query.append_to_response.split(','))
                   .then((dataParams) => {
                     // dataMovies == null
@@ -133,41 +124,11 @@ class TVController {
     }
   }
 
-  async season(req, res, next) {
-    try {
-      var doc = await TVdetail.findOne(
-        { id: req.params.movieid },
-        {
-          seasons: {
-            $elemMatch: { season_number: +req.params.seasonnumber },
-          },
-        }
-      ).catch((error) => {
-        res.status(400).json(errorMsg.errDefault);
-        next(error);
-      });
-
-      Season.findOne({
-        id: doc.seasons[0].id,
-      })
-        .then((seasonRes) => {
-          res.json(mongooseToObject(seasonRes));
-        })
-        .catch((error) => {
-          res.status(400).json(errorMsg.errDefault);
-          next(error);
-        });
-    } catch (error) {
-      res.status(400).json(errorMsg.errDefault);
-    } finally {
-    }
-  }
-
   async update(req, res, next) {
     try {
       switch (req.params.slug1) {
         case 'rating':
-          let doc = await TVdetail.findOne({
+          let doc = await MovieDetail.findOne({
             id: req.params.movieid,
           }).catch((error) => {
             res.status(400).json(errorMsg.errDefault);
@@ -193,4 +154,4 @@ class TVController {
   }
 }
 
-module.exports = new TVController();
+export default new MovieController();

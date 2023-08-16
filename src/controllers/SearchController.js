@@ -1,11 +1,8 @@
-const DataMovies = require('../models/DataMovies');
-const MovieDetail = require('../models/Movie');
-const TVdetail = require('../models/TV');
-const config = require('../../../package.json');
-const errorMsg = require('../../until/errorMsg');
-
-const { multipleMongooseToObject } = require('../../until/mongoose');
-const { mongooseToObject } = require('../../until/mongoose');
+import MovieDetail from '../models/Movie';
+import TVdetail from '../models/TV';
+import errorMsg from '../utils/errorMsg';
+import { mongooseToObject } from '../utils/mongoose';
+import { multipleMongooseToObject } from '../utils/mongoose';
 
 class SearchController {
   index(req, res, next) {
@@ -98,4 +95,4 @@ class SearchController {
   }
 }
 
-module.exports = new SearchController();
+export default new SearchController();
