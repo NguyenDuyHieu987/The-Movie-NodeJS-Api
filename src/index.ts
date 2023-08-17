@@ -1,4 +1,6 @@
 import 'module-alias/register';
+import { replaceTscAliasPaths } from 'tsc-alias';
+replaceTscAliasPaths();
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
