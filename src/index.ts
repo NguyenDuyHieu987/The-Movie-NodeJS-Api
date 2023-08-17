@@ -1,6 +1,8 @@
 import 'module-alias/register';
-import { replaceTscAliasPaths } from 'tsc-alias';
-replaceTscAliasPaths();
+import { addAliases } from 'module-alias';
+addAliases({
+  '@': `${__dirname}/src`,
+});
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
@@ -12,9 +14,9 @@ import db from './config/db';
 
 dotenv.config();
 
-const app = express();
-
 db.connect();
+
+const app = express();
 
 app.use(cors());
 app.use(compression());
