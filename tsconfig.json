@@ -12,7 +12,7 @@
       "allowJs": true,
       "rootDir": "./",
       "outDir": "build",
-      "baseUrl": "./",
+      "baseUrl": "src",
       "noImplicitAny": true,
       "resolveJsonModule": true,
       "allowSyntheticDefaultImports": true,
@@ -21,10 +21,10 @@
       ],
       "paths": {
         "@/*": [
-          "src/*"
+          "./*"
         ],
         "@types/*": [
-          "src/types/*"
+          "types/*"
         ],
       }
     },
@@ -42,9 +42,4 @@
       "esm": true,  
       "require": ["tsconfig-paths/register"]
     }, 
-    "plugins": [
-      {
-          "transform": "@zerollup/ts-transform-paths",
-      }
-    ]
 }
