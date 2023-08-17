@@ -1,7 +1,6 @@
 import List from '../models/List';
 import MovieDetail from '../models/movie';
 import TVDetail from '../models/tv';
-import config from '../../package.json';
 import errorMsg from '../utils/errorMsg';
 import { ItemList } from '../models/ItemList';
 
