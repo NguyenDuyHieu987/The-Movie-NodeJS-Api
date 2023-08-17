@@ -1,17 +1,16 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
 
-const Movie = new Schema({
+const Movie = new mongoose.Schema({
   adult: { type: Boolean },
   backdrop_path: { type: String },
   belongs_to_collection: { type: Object },
   budget: { type: Number },
   genres: { type: Array },
   homepage: { type: String },
-  id: { type: Number },
+  id: { type: String },
   imdb_id: { type: String },
+  name: { type: String },
   original_language: { type: String },
-  original_title: { type: String },
   original_name: { type: String },
   overview: { type: String },
   popularity: { type: Number },
@@ -24,15 +23,15 @@ const Movie = new Schema({
   spoken_languages: { type: Array },
   status: { type: String },
   tagline: { type: String },
-  title: { type: String },
-  name: { type: String },
+  media_type: { type: String },
   video: { type: Boolean },
   vote_average: { type: Number },
   vote_count: { type: Number },
-  videos: { type: Object },
-  credits: { type: Object },
-  // createdAt: { type: Date, default: Date.now },
-  // updatedAt: { type: Date, default: Date.now },
+  dominant_backdrop_color: { type: Array },
+  dominant_poster_color: { type: Array },
+  views: { type: Number },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('movie', Movie);
+export default mongoose.model('movies', Movie);

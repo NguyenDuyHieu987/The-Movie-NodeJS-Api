@@ -12,10 +12,10 @@ class db {
       // console.log('Connected to MongoDB');
     } catch (err: any) {
       if (err instanceof Error) {
-        console.log('Connect to database failed', err.message);
+        console.error('Connect to database failed', err.message);
         return;
       }
-      console.log('Connect to database failed', err);
+      console.error('Connect to database failed', err);
     }
   }
 }

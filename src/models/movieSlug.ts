@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-const Trending = new mongoose.Schema({
+const MovieSlug = new mongoose.Schema({
   adult: { type: Boolean },
   backdrop_path: { type: String },
-  first_air_date: { type: String },
-  last_air_date: { type: String },
   release_date: { type: String },
   id: { type: String },
   name: { type: String },
@@ -16,4 +14,9 @@ const Trending = new mongoose.Schema({
   runtime: { type: Number },
 });
 
-export default mongoose.model('trendings', Trending);
+export default {
+  NowPlaying: mongoose.model('nowplayings', MovieSlug),
+  UpComing: mongoose.model('upcomings', MovieSlug),
+  Popular: mongoose.model('populars', MovieSlug),
+  TopRated: mongoose.model('toprateds', MovieSlug),
+};

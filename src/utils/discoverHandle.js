@@ -1,8 +1,8 @@
 import errorMsg from '../utils/errorMsg';
 import { mongooseToObject } from '../utils/mongoose';
 import { multipleMongooseToObject } from '../utils/mongoose';
-import MovieDetail from '../models/Movie';
-import TVdetail from '../models/TV';
+import MovieDetail from '../models/movie';
+import TVdetail from '../models/tv';
 
 export function getAll(
   paramsMongooseMovie,

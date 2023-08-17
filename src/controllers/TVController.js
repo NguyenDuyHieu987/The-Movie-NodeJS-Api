@@ -1,9 +1,8 @@
-import DataMovies from '../models/DataMovies';
-import Season from '../models/Season';
-import TVdetail from '../models/TV';
-import errorMsg from '../utils/errorMsg';
-import { mongooseToObject } from '../utils/mongoose';
-import { multipleMongooseToObject } from '../utils/mongoose';
+import DataMovies from '@/models/tv';
+import Season from '@/models/Season';
+import TVdetail from '@/models/tv';
+import errorMsg from '@/utils/errorMsg';
+import { mongooseToObject } from '@/utils/mongoose';
 
 class TVController {
   index(req, res, next) {

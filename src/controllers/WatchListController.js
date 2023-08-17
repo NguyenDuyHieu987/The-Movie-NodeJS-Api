@@ -1,6 +1,6 @@
 import WatchList from '../models/WatchList';
-import MovieDetail from '../models/Movie';
-import TVDetail from '../models/TV';
+import MovieDetail from '../models/movie';
+import TVDetail from '../models/tv';
 import errorMsg from '../utils/errorMsg';
 import { mongooseToObject } from '../utils/mongoose';
 import { multipleMongooseToObject } from '../utils/mongoose';

@@ -1,10 +1,10 @@
 import express from 'express';
-import movieController from '../controllers/MovieController';
+import Movie from '@/controllers/movieSlugController';
+import MovieSlug from '@/controllers/movieSlugController';
 
 const router = express.Router();
 
-// router.get('/search', siteController.search);
-router.get('/:slug', movieController.index);
-router.post('/:movieid/:slug1', movieController.update);
+router.get('/:slug', MovieSlug.get);
+router.get('/detail/:id', Movie.get);
 
 export default router;

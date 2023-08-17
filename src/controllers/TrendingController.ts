@@ -10,7 +10,7 @@ class TrendingController {
 
       switch (req.params.slug) {
         case 'all':
-          const data = await Trending.find()
+          const trending = await Trending.find()
             .skip(page * limit)
             .limit(limit);
 
@@ -18,14 +18,18 @@ class TrendingController {
 
           res.json({
             page: page + 1,
-            results: data,
+            results: trending,
             total: total,
             page_size: limit,
           });
 
           break;
         default:
-          createHttpError.NotFound(`Not found with slug: ${req.params.slug}!`);
+          next(
+            createHttpError.NotFound(
+              `Not found with slug: ${req.params.slug} !`
+            )
+          );
           break;
       }
     } catch (error) {
