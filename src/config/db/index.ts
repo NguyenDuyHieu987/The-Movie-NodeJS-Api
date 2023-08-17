@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Error } from 'mongoose';
 
 class db {
   async connect() {
@@ -11,7 +11,11 @@ class db {
 
       // console.log('Connected to MongoDB');
     } catch (err: any) {
-      console.log('Connect to database failed', err.message);
+      if (err instanceof Error) {
+        console.log('Connect to database failed', err.message);
+        return;
+      }
+      console.log('Connect to database failed', err);
     }
   }
 }

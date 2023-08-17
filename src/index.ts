@@ -15,14 +15,18 @@ db.connect();
 
 app.use(cors());
 app.use(compression());
-app.use(express.json());
+// app.use(express.json());
+// app.use(
+//   express.urlencoded({
+//     extended: true,
+//   })
+// );
 app.use(bodyParser.json());
 app.use(
-  express.urlencoded({
+  bodyParser.urlencoded({
     extended: true,
   })
 );
-
 const server = http.createServer(app);
 
 route(app);
