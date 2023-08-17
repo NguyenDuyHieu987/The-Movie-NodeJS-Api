@@ -39,5 +39,7 @@
       "esm": true,  
       "require": ["tsconfig-paths/register"]
     }, 
-
+    "tsc-alias": {
+      "resolveFullPaths": true,
+    }
 }
