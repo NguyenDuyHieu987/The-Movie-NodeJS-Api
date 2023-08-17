@@ -9,7 +9,7 @@
   "scripts": {
     "start": "nodemon src/index.ts",
     "start:prod": "npm run build && node build/src/index.js",
-    "build": "rimraf ./build && tsc && tsc-alias",
+    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "test": "jest"
   },
   "dependencies": {
