@@ -1,32 +1,35 @@
 import type { NextFunction, Request, Response } from 'express';
-import { mongooseToObject } from '@/utils/mongoose';
-import { multipleMongooseToObject } from '@/utils/mongoose';
-import DataMovies from '@/models/DataMovies';
-import errorMsg from '@/utils/errorMsg';
+import Trending from '@/models/trending';
+import createHttpError from 'http-errors';
 
 class TrendingController {
-  index(req: Request, res: Response, next: NextFunction) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
+      const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 20;
+
       switch (req.params.slug) {
         case 'all':
-          DataMovies.Trending.findOne({
-            page: req.query.page === undefined ? 1 : req.query.page,
-          })
-            .then((dataMovies) => {
-              res.json(mongooseToObject(dataMovies));
-            })
-            .catch((error) => {
-              res.status(400).json(errorMsg.errDefault);
-              next(error);
-            });
+          const data = await Trending.find()
+            .skip(page * limit)
+            .limit(limit);
+
+          const total = await Trending.countDocuments({});
+
+          res.json({
+            page: page + 1,
+            results: data,
+            total: total,
+            page_size: limit,
+          });
+
           break;
         default:
-          res.status(400).json(errorMsg.errDefault);
+          createHttpError.NotFound(`Not found with slug: ${req.params.slug}!`);
           break;
       }
     } catch (error) {
-      res.status(400).json(errorMsg.errDefault);
-    } finally {
+      next(error);
     }
   }
 }
