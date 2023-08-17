@@ -19,29 +19,26 @@
         "node",
       ],
       "paths": {
-        "~": [
-          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src"
-        ],
-        "~/*": [
-          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src/*"
-        ],
-        "@": [
-          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src"
-        ],
         "@/*": [
-          "D:/Ngon Ngu Kich Ban/The-Movie-NodeJS-Api/src/*"
+          "./*"
+        ],
+        "@types/*": [
+          "types/*"
         ],
       }
     },
     "include": [
       "src",
       "src/*",
-      "src/**/*"
+      "src/**/*",
+      "src/**/*.d.ts",
+      "src/**/*.ts"
     ],
     "exclude": [
       "node_modules"
     ],
     "ts-node": {
       "esm": true,  
+      "require": ["tsconfig-paths/register"]
     }, 
 }

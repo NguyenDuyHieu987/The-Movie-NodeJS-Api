@@ -1,10 +1,11 @@
-import { mongooseToObject } from '../utils/mongoose';
-import { multipleMongooseToObject } from '../utils/mongoose';
-import DataMovies from '../models/DataMovies';
-import errorMsg from '../utils/errorMsg';
+import type { NextFunction, Request, Response } from 'express';
+import { mongooseToObject } from '@/utils/mongoose';
+import { multipleMongooseToObject } from '@/utils/mongoose';
+import DataMovies from '@/models/DataMovies';
+import errorMsg from '@/utils/errorMsg';
 
 class TrendingController {
-  index(req, res, next) {
+  index(req: Request, res: Response, next: NextFunction) {
     try {
       switch (req.params.slug) {
         case 'all':
