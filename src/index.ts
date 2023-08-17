@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import { addAliases } from 'module-alias';
 addAliases({
-  '@': `${__dirname}/src`,
+  '@': `${__dirname}`,
 });
 import express from 'express';
 import http from 'http';
