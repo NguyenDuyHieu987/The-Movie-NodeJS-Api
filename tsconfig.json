@@ -41,9 +41,5 @@
     }, 
     "tsc-alias": {
       "resolveFullPaths": true,
-      "fileExtensions": {
-        "inputGlob": "js,jsx,mjs",
-        "outputCheck": ["js", "json", "jsx", "mjs"]
-      }
     }
 }
