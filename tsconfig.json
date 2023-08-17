@@ -40,7 +40,6 @@
       "require": ["tsconfig-paths/register"]
     }, 
     "tsc-alias": {
-      "verbose": false,
       "resolveFullPaths": true,
       "fileExtensions": {
         "inputGlob": "js,jsx,mjs",
