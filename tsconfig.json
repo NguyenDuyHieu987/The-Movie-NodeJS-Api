@@ -3,7 +3,7 @@
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,
       "target": "ESNext",
-      "module": "NodeNext",
+      "module": "CommonJS",
       "moduleResolution": "NodeNext",
       "sourceMap": true,
       "skipLibCheck": true,
@@ -13,6 +13,7 @@
       "outDir": "dist",
       "baseUrl": "src",
       "noEmit": true,
+      "noImplicitAny": true,
       "resolveJsonModule": true,
       "allowSyntheticDefaultImports": true,
       "types": [
