@@ -5,7 +5,7 @@ class MovieController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await Movie.findOne({
-        id: req.query.id,
+        id: req.params.id,
       });
       res.json(data);
     } catch (error) {
