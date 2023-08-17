@@ -42,4 +42,9 @@
       "esm": true,  
       "require": ["tsconfig-paths/register"]
     }, 
+    "plugins": [
+      {
+          "transform": "@zerollup/ts-transform-paths",
+      }
+    ]
 }
