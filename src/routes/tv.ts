@@ -1,10 +1,10 @@
 import express from 'express';
-import tvController from '../controllers/TVController';
+import TV from '@/controllers/TVController';
+import TvSlug from '@/controllers/tvSlugController';
+
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', tvController.index);
-router.get('/:movieid/season/:seasonnumber', tvController.season);
-router.post('/:movieid/:slug1', tvController.update);
+router.get('/detail/:id', TV.get);
+router.get('/:slug', TvSlug.get);
 
 export default router;

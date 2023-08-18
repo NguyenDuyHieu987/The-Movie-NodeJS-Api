@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import MovieSlug from '@/models/movieSlug';
-import Movie from '@/models/movie';
+import TvSlug from '@/models/tvSlug';
+import TV from '@/models/tv';
 
 class MovieSlugController {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -10,11 +10,11 @@ class MovieSlugController {
 
       switch (req.params.slug) {
         case 'all':
-          const data = await Movie.find()
+          const data = await TV.find()
             .skip(page * 20)
             .limit(20);
 
-          const total = await Movie.countDocuments({});
+          const total = await TV.countDocuments({});
 
           res.json({
             page: page + 1,
@@ -23,40 +23,40 @@ class MovieSlugController {
             page_size: 20,
           });
           break;
-        case 'nowplaying':
-          const nowplaying = await MovieSlug.NowPlaying.find()
+        case 'airingtoday':
+          const airingtoday = await TvSlug.AiringToday.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalNowPlaying = await MovieSlug.NowPlaying.countDocuments({});
+          const totalAiringToday = await TvSlug.AiringToday.countDocuments({});
 
           res.json({
             page: page + 1,
-            results: nowplaying,
-            total: totalNowPlaying,
+            results: airingtoday,
+            total: totalAiringToday,
             page_size: 20,
           });
           break;
-        case 'upcoming':
-          const upcoming = await MovieSlug.UpComing.find()
+        case 'ontheair':
+          const ontheair = await TvSlug.OnTheAir.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalUpComing = await MovieSlug.UpComing.countDocuments({});
+          const totalOnTheAir = await TvSlug.OnTheAir.countDocuments({});
 
           res.json({
             page: page + 1,
-            results: upcoming,
-            total: totalUpComing,
+            results: ontheair,
+            total: totalOnTheAir,
             page_size: 20,
           });
           break;
         case 'popular':
-          const popular = await MovieSlug.Popular.find()
+          const popular = await TvSlug.Popular.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalPopular = await MovieSlug.Popular.countDocuments({});
+          const totalPopular = await TvSlug.Popular.countDocuments({});
 
           res.json({
             page: page + 1,
@@ -66,11 +66,11 @@ class MovieSlugController {
           });
           break;
         case 'toprated':
-          const toprated = await MovieSlug.TopRated.find()
+          const toprated = await TvSlug.TopRated.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalTopRated = await MovieSlug.TopRated.countDocuments({});
+          const totalTopRated = await TvSlug.TopRated.countDocuments({});
 
           res.json({
             page: page + 1,

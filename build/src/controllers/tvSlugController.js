@@ -4,18 +4,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_errors_1 = __importDefault(require("http-errors"));
-const movieSlug_1 = __importDefault(require("@/models/movieSlug"));
-const movie_1 = __importDefault(require("@/models/movie"));
+const tvSlug_1 = __importDefault(require("@/models/tvSlug"));
+const tv_1 = __importDefault(require("@/models/tv"));
 class MovieSlugController {
     async get(req, res, next) {
         try {
             const page = +req.query?.page - 1 || 0;
             switch (req.params.slug) {
                 case 'all':
-                    const data = await movie_1.default.find()
+                    const data = await tv_1.default.find()
                         .skip(page * 20)
                         .limit(20);
-                    const total = await movie_1.default.countDocuments({});
+                    const total = await tv_1.default.countDocuments({});
                     res.json({
                         page: page + 1,
                         results: data,
@@ -23,35 +23,35 @@ class MovieSlugController {
                         page_size: 20,
                     });
                     break;
-                case 'nowplaying':
-                    const nowplaying = await movieSlug_1.default.NowPlaying.find()
+                case 'airingtoday':
+                    const airingtoday = await tvSlug_1.default.AiringToday.find()
                         .skip(page * 20)
                         .limit(20);
-                    const totalNowPlaying = await movieSlug_1.default.NowPlaying.countDocuments({});
+                    const totalAiringToday = await tvSlug_1.default.AiringToday.countDocuments({});
                     res.json({
                         page: page + 1,
-                        results: nowplaying,
-                        total: totalNowPlaying,
+                        results: airingtoday,
+                        total: totalAiringToday,
                         page_size: 20,
                     });
                     break;
-                case 'upcoming':
-                    const upcoming = await movieSlug_1.default.UpComing.find()
+                case 'ontheair':
+                    const ontheair = await tvSlug_1.default.OnTheAir.find()
                         .skip(page * 20)
                         .limit(20);
-                    const totalUpComing = await movieSlug_1.default.UpComing.countDocuments({});
+                    const totalOnTheAir = await tvSlug_1.default.OnTheAir.countDocuments({});
                     res.json({
                         page: page + 1,
-                        results: upcoming,
-                        total: totalUpComing,
+                        results: ontheair,
+                        total: totalOnTheAir,
                         page_size: 20,
                     });
                     break;
                 case 'popular':
-                    const popular = await movieSlug_1.default.Popular.find()
+                    const popular = await tvSlug_1.default.Popular.find()
                         .skip(page * 20)
                         .limit(20);
-                    const totalPopular = await movieSlug_1.default.Popular.countDocuments({});
+                    const totalPopular = await tvSlug_1.default.Popular.countDocuments({});
                     res.json({
                         page: page + 1,
                         results: popular,
@@ -60,10 +60,10 @@ class MovieSlugController {
                     });
                     break;
                 case 'toprated':
-                    const toprated = await movieSlug_1.default.TopRated.find()
+                    const toprated = await tvSlug_1.default.TopRated.find()
                         .skip(page * 20)
                         .limit(20);
-                    const totalTopRated = await movieSlug_1.default.TopRated.countDocuments({});
+                    const totalTopRated = await tvSlug_1.default.TopRated.countDocuments({});
                     res.json({
                         page: page + 1,
                         results: toprated,
@@ -82,4 +82,4 @@ class MovieSlugController {
     }
 }
 exports.default = new MovieSlugController();
-//# sourceMappingURL=movieSlugController.js.map
+//# sourceMappingURL=tvSlugController.js.map
