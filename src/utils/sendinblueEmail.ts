@@ -2,7 +2,7 @@ import * as SibApiV3Sdk from '@sendinblue/client';
 import fs from 'fs';
 import path from 'path';
 const EmailSender = fs
-  .readFileSync(path.join(__dirname, '../emailTemplates/EmailSender.html'), {
+  .readFileSync('../emailTemplates/EmailSender.html', {
     encoding: 'utf-8',
   })
   .toString();
