@@ -2,12 +2,16 @@ import * as SibApiV3Sdk from '@sendinblue/client';
 import fs from 'fs';
 import path from 'path';
 const EmailSender = fs
-  .readFileSync('@/emailTemplates/EmailSender.html', {
-    encoding: 'utf-8',
-  })
+  .readFileSync(
+    path.join(
+      __dirname.replace('utils', ''),
+      '/emailTemplates/EmailSender.html'
+    ),
+    {
+      encoding: 'utf-8',
+    }
+  )
   .toString();
-
-console.log(__dirname);
 
 class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
