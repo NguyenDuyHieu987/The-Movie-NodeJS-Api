@@ -13,7 +13,6 @@ import multer from 'multer';
 import route from './routes';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
-import path from 'path';
 
 const redisCache = new RedisCache();
 
@@ -25,7 +24,6 @@ MongoDB.connect();
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, './')));
 app.use(cors());
 app.use(compression());
 // app.use(express.json());
