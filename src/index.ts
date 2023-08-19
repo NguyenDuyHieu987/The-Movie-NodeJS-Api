@@ -11,11 +11,11 @@ import dotenv from 'dotenv';
 import compression from 'compression';
 import multer from 'multer';
 import route from './routes';
-import db from './config/db';
+import MongoDB from './config/db';
 
 dotenv.config();
 
-db.connect();
+MongoDB.connect();
 
 const app = express();
 

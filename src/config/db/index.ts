@@ -1,6 +1,8 @@
 import mongoose, { Error } from 'mongoose';
 
-class db {
+class MongoDB {
+  constructor() {}
+
   async connect() {
     try {
       mongoose.set('strictQuery', false);
@@ -20,4 +22,4 @@ class db {
   }
 }
 
-export default new db();
+export default new MongoDB();

@@ -4,8 +4,10 @@ import fetch from 'node-fetch';
 import List from '@/models/list';
 import WatchList from '@/models/WatchList';
 import Account from '@/models/account';
+import type { user } from '@/types';
 import SendinblueEmail from '@/utils/sendinblueEmail';
 import GenerateOTP from '@/utils/generateOTP';
+import jwtRedis from '@/utils/jwtRedis';
 
 class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -66,9 +68,10 @@ class AuthController {
 
   async loginFacebook(req: Request, res: Response, next: NextFunction) {
     try {
-      const accessToken: string = req.headers.authorization
-        ?.toString()
-        .replace('Bearer ', '') as string;
+      const accessToken: string = req.headers.authorization!.replace(
+        'Bearer ',
+        ''
+      ) as string;
 
       const facebookUser: any = await fetch(
         `https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`
@@ -190,9 +193,10 @@ class AuthController {
 
   async loginGoogle(req: Request, res: Response, next: NextFunction) {
     try {
-      const accessToken: string = req.headers.authorization
-        ?.toString()
-        .replace('Bearer ', '') as string;
+      const accessToken: string = req.headers.authorization!.replace(
+        'Bearer ',
+        ''
+      ) as string;
 
       const googleUser: any = await fetch(
         `https://www.googleapis.com/oauth2/v3/userinfo`,
@@ -298,29 +302,45 @@ class AuthController {
     }
   }
 
-  getUserByToken(req: Request, res: Response, next: NextFunction) {
+  async getUserByToken(req: Request, res: Response, next: NextFunction) {
     try {
-      Account.findOne({
-        user_token: req.body.user_token,
-      })
-        .then((dataAccount: any) => {
-          res.json({
-            isLogin: true,
-            result: {
-              id: dataAccount.id,
-              user_name: dataAccount.user_name,
-              full_name: dataAccount.created_by,
-              avatar: dataAccount.avatar,
-              email: dataAccount.email,
-              user_token: dataAccount.user_token,
-            },
-          });
-        })
-        .catch((error) => {
-          res.json({ isLogin: false, result: 'Invalid token' });
-          next(error);
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(
+        user_token,
+        process.env.JWT_SIGNATURE_SECRET!
+      ) as user;
+
+      const isAlive = await jwtRedis.verify(user_token);
+
+      if (isAlive) {
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        return res.header('Authorization', user_token).json({
+          isLogin: true,
+          result: {
+            id: user.id,
+            username: user.username,
+            full_name: user.full_name,
+            avatar: user.avatar,
+            email: user.email,
+            auth_type: user.auth_type,
+            role: user.role,
+            created_at: user.created_at,
+          },
         });
+      } else {
+        res.json({ isLogin: false, result: 'Token is no longer active' });
+      }
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
       next(error);
     }
   }
