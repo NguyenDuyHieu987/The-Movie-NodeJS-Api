@@ -8,6 +8,6 @@ const uuid_1 = require("uuid");
 const Image = new mongoose_1.default.Schema({
     id: { type: String, default: (0, uuid_1.v4)() },
     items: { type: Object },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('images', Image);
 //# sourceMappingURL=image.js.map

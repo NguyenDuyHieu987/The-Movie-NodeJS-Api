@@ -9,6 +9,6 @@ const Genre = new mongoose_1.default.Schema({
     name: { type: String },
     name_vietsub: { type: String },
     short_name: { type: String },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('genres', Genre);
 //# sourceMappingURL=genre.js.map

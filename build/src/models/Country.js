@@ -9,6 +9,6 @@ const Country = new mongoose_1.default.Schema({
     english_name: { type: String },
     name: { type: String },
     short_name: { type: String },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('countries', Country);
 //# sourceMappingURL=country.js.map

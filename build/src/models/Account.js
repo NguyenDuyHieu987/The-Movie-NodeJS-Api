@@ -14,6 +14,6 @@ const Account = new mongoose_1.default.Schema({
     role: { type: String, enum: ['normal', 'admin'], default: 'normal' },
     auth_type: { type: String, enum: ['email', 'google', 'facebook'] },
     created_at: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('accounts', Account);
 //# sourceMappingURL=account.js.map

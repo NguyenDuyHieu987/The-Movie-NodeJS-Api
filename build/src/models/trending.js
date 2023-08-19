@@ -18,6 +18,6 @@ const Trending = new mongoose_1.default.Schema({
     media_type: { type: String },
     genres: { type: Array },
     runtime: { type: Number },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('trendings', Trending);
 //# sourceMappingURL=trending.js.map
