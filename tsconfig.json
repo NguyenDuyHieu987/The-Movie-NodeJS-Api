@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "target": "ESNext",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "lib": ["es6"],                     
+      "sourceMap": true,
+      "skipLibCheck": true,
+      "strict": true,
+      "allowJs": true,
+      "rootDir": "./",
+      "outDir": "build",
+      "baseUrl": "./",
+      "noImplicitAny": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "types": [
+        "node",
+      ],
+      "paths": {
+        "@/*": [
+          "src/*"
+        ]
+      }
+    },
+    "include": [
+      "src",
+      "src/*",
+      "src/**/*",
+      "src/**/*.d.ts",
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ],
+    "ts-node": {
+      "esm": true,  
+      "require": ["tsconfig-paths/register"]
+    }, 
+}
