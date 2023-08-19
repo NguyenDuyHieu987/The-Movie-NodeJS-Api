@@ -7,6 +7,8 @@ const EmailSender = fs
   })
   .toString();
 
+console.log(__dirname);
+
 class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
     new SibApiV3Sdk.TransactionalEmailsApi();
