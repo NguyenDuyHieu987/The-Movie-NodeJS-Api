@@ -1,8 +1,7 @@
 import express from 'express';
-import countryController from '../controllers/CountryController';
+import Country from '@/controllers/countryController';
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', countryController.index);
+router.get('/:slug', Country.get);
 
 export default router;

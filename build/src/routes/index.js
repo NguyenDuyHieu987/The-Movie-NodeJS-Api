@@ -12,6 +12,7 @@ const discover_1 = __importDefault(require("./discover"));
 const genre_1 = __importDefault(require("./genre"));
 const country_1 = __importDefault(require("./country"));
 const year_1 = __importDefault(require("./year"));
+const sortby_1 = __importDefault(require("./sortby"));
 const list_1 = __importDefault(require("./list"));
 const watchlist_1 = __importDefault(require("./watchlist"));
 const auth_1 = __importDefault(require("./auth"));
@@ -25,6 +26,7 @@ function route(app) {
     app.use('/genre', genre_1.default);
     app.use('/country', country_1.default);
     app.use('/year', year_1.default);
+    app.use('/sortby', sortby_1.default);
     app.use('/list', list_1.default);
     app.use('/watchlist', watchlist_1.default);
     app.use('/auth', auth_1.default);

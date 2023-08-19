@@ -1,5 +1,5 @@
 import express from 'express';
-import TV from '@/controllers/TVController';
+import TV from '@/controllers/tvController';
 import TvSlug from '@/controllers/tvSlugController';
 
 const router = express.Router();

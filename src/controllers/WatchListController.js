@@ -3,8 +3,6 @@ import MovieDetail from '../models/movie';
 import TVDetail from '../models/tv';
 import errorMsg from '../utils/errorMsg';
 import { mongooseToObject } from '../utils/mongoose';
-import { multipleMongooseToObject } from '../utils/mongoose';
-import { ItemList } from '../models/ItemList';
 
 class WatchListController {
   // GET /

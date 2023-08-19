@@ -9,6 +9,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import compression from 'compression';
+import multer from 'multer';
 import route from './routes';
 import db from './config/db';
 
@@ -32,6 +33,8 @@ app.use(
     extended: true,
   })
 );
+app.use(multer().any());
+
 const server = http.createServer(app);
 
 route(app);

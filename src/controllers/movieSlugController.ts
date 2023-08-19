@@ -82,7 +82,7 @@ class MovieSlugController {
         default:
           next(
             createHttpError.NotFound(
-              `Not found with slug: ${req.params.slug} !`
+              `Movies with slug: ${req.params.slug} is not found!`
             )
           );
           break;

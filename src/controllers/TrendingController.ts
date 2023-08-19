@@ -16,7 +16,7 @@ class TrendingController {
 
           const total = await Trending.countDocuments({});
 
-          res.json({
+          return res.json({
             page: page + 1,
             results: trending,
             total: total,

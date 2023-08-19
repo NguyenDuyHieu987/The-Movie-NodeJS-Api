@@ -16,7 +16,7 @@ class TrendingController {
                         .skip(page * limit)
                         .limit(limit);
                     const total = await trending_1.default.countDocuments({});
-                    res.json({
+                    return res.json({
                         page: page + 1,
                         results: trending,
                         total: total,

@@ -4,11 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const Schema = mongoose_1.default.Schema;
-const Year = new Schema({
+const Year = new mongoose_1.default.Schema({
     name: { type: String },
-    // createdAt: { type: Date, default: Date.now },
-    // updatedAt: { type: Date, default: Date.now },
 });
-exports.default = mongoose_1.default.model('Year', Year);
-//# sourceMappingURL=Year.js.map
+exports.default = mongoose_1.default.model('years', Year);
+//# sourceMappingURL=year.js.map

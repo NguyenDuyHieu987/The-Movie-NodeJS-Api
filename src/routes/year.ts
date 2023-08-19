@@ -1,9 +1,8 @@
 import express from 'express';
-import yearController from '../controllers/YearController';
+import Year from '@/controllers/yearController';
 
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', yearController.index);
+router.get('/:slug', Year.get);
 
 export default router;

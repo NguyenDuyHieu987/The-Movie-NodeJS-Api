@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const ItemList_1 = require("./ItemList");
 const Schema = mongoose_1.default.Schema;
 const WatchList = new Schema({
     created_by: { type: String },
@@ -15,7 +14,6 @@ const WatchList = new Schema({
     iso_639_1: { type: String },
     name: { type: String },
     poster_path: { type: String },
-    // results: [typeOfItem],
     // createdAt: { type: Date, default: Date.now },
     // updatedAt: { type: Date, default: Date.now },
 });

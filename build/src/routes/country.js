@@ -4,9 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const CountryController_1 = __importDefault(require("../controllers/CountryController"));
+const countryController_1 = __importDefault(require("@/controllers/countryController"));
 const router = express_1.default.Router();
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', CountryController_1.default.index);
+router.get('/:slug', countryController_1.default.get);
 exports.default = router;
 //# sourceMappingURL=country.js.map

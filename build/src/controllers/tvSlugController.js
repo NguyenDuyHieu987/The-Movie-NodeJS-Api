@@ -72,7 +72,7 @@ class MovieSlugController {
                     });
                     break;
                 default:
-                    next(http_errors_1.default.NotFound(`Not found with slug: ${req.params.slug} !`));
+                    next(http_errors_1.default.NotFound(`Movies with slug: ${req.params.slug} is not found!`));
                     break;
             }
         }

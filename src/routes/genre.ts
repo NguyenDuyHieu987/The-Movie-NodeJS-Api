@@ -1,8 +1,7 @@
 import express from 'express';
-import genreController from '../controllers/GenreController';
+import Genre from '@/controllers/genreController';
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', genreController.index);
+router.get('/:slug', Genre.get);
 
 export default router;

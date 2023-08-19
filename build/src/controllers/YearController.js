@@ -3,36 +3,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = require("../utils/mongoose");
-const mongoose_2 = require("../utils/mongoose");
-const Year_1 = __importDefault(require("../models/Year"));
-const errorMsg_1 = __importDefault(require("../utils/errorMsg"));
+const http_errors_1 = __importDefault(require("http-errors"));
+const year_1 = __importDefault(require("@/models/year"));
 class YearController {
-    // GET /
-    index(req, res, next) {
+    async get(req, res, next) {
         try {
             switch (req.params.slug) {
                 case 'all':
-                    Year_1.default.find({})
-                        .then((genreResponse) => {
-                        res.json((0, mongoose_2.multipleMongooseToObject)(genreResponse));
-                    })
-                        .catch((error) => {
-                        res.status(400).json(errorMsg_1.default.errDefault);
-                        next(error);
-                    });
+                    const data = await year_1.default.find();
+                    res.json({ results: data });
                     break;
                 default:
-                    res.status(400).json(errorMsg_1.default.errDefault);
+                    next(http_errors_1.default.NotFound(`Years with slug: ${req.params.slug} is not found!`));
                     break;
             }
         }
         catch (error) {
-            res.status(400).json(errorMsg_1.default.errDefault);
-        }
-        finally {
+            next(error);
         }
     }
 }
 exports.default = new YearController();
-//# sourceMappingURL=YearController.js.map
+//# sourceMappingURL=yearController.js.map

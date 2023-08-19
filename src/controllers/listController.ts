@@ -1,16 +1,14 @@
-import List from '../models/List';
-import MovieDetail from '../models/movie';
-import TVDetail from '../models/tv';
-import errorMsg from '../utils/errorMsg';
-import { ItemList } from '../models/ItemList';
-
-import { mongooseToObject } from '../utils/mongoose';
-import { multipleMongooseToObject } from '../utils/mongoose';
+import type { NextFunction, Request, Response } from 'express';
+import List from '@/models/list';
+import MovieDetail from '@/models/movie';
+import TVDetail from '@/models/tv';
+import errorMsg from '@/utils/errorMsg';
+import { mongooseToObject } from '@/utils/mongoose';
 
 class ListController {
   // GET /
 
-  index(req, res, next) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
       List.findOne({ id: req.params.slug })
         .then((listResponse) => {
@@ -26,7 +24,7 @@ class ListController {
     }
   }
 
-  addItem(req, res, next) {
+  addItem(req: Request, res: Response, next: NextFunction) {
     try {
       if (req.body.media_type === 'movie') {
         MovieDetail.findOne({
@@ -34,17 +32,17 @@ class ListController {
         })
           .then((dataMovies) => {
             // res.json(mongooseToObject(listResponse));
-            const itemList = new ItemList({
-              ...mongooseToObject(dataMovies),
-              media_type: 'movie',
-            });
+            // const itemList = new ItemList({
+            //   ...mongooseToObject(dataMovies),
+            //   media_type: 'movie',
+            // });
             // itemList.save();
             // console.log(itemList);
             // res.json(mongooseToObject(dataMovies));
 
             List.findOneAndUpdate(
               { id: req.params.slug },
-              { $addToSet: { items: itemList } },
+              { $addToSet: { items: {} } },
               { new: true },
               (err, doc) => {
                 if (err) {
@@ -64,17 +62,17 @@ class ListController {
           .then((dataTV) => {
             // res.json(mongooseToObject(listResponse));
 
-            const itemList = new ItemList({
-              ...mongooseToObject(dataTV),
-              media_type: 'tv',
-            });
+            // const itemList = new ItemList({
+            //   ...mongooseToObject(dataTV),
+            //   media_type: 'tv',
+            // });
             // itemList.save();
             // console.log(itemList);
             // res.json(mongooseToObject(dataMovies));
 
             List.findOneAndUpdate(
               { id: req.params.slug },
-              { $addToSet: { items: itemList } },
+              { $addToSet: { items: {} } },
               { new: true },
               (err, doc) => {
                 if (err) {
@@ -94,7 +92,7 @@ class ListController {
     }
   }
 
-  removeItem(req, res, next) {
+  removeItem(req: Request, res: Response, next: NextFunction) {
     try {
       List.findOneAndUpdate(
         { id: req.params.slug },
@@ -112,7 +110,7 @@ class ListController {
     }
   }
 
-  newList(req, res, next) {
+  newList(req: Request, res: Response, next: NextFunction) {
     try {
       List.findOneAndUpdate(
         { id: req.params.slug },

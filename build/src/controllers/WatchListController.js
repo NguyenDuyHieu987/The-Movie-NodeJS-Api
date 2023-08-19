@@ -8,8 +8,6 @@ const movie_1 = __importDefault(require("../models/movie"));
 const tv_1 = __importDefault(require("../models/tv"));
 const errorMsg_1 = __importDefault(require("../utils/errorMsg"));
 const mongoose_1 = require("../utils/mongoose");
-const mongoose_2 = require("../utils/mongoose");
-const ItemList_1 = require("../models/ItemList");
 class WatchListController {
     // GET /
     index(req, res, next) {
@@ -84,7 +82,7 @@ class WatchListController {
                 })
                     .then((dataMovies) => {
                     if (req.body.watchlist === true) {
-                        const itemList = new ItemList_1.ItemList({
+                        const itemList = new ItemList({
                             ...(0, mongoose_1.mongooseToObject)(dataMovies),
                             media_type: 'movie',
                         });
@@ -107,7 +105,7 @@ class WatchListController {
                 })
                     .then((dataTV) => {
                     if (req.body.watchlist === true) {
-                        const itemList = new ItemList_1.ItemList({
+                        const itemList = new ItemList({
                             ...(0, mongoose_1.mongooseToObject)(dataTV),
                             media_type: 'tv',
                         });

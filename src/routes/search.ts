@@ -1,9 +1,8 @@
 import express from 'express';
-import searchController from '../controllers/SearchController';
+import Search from '@/controllers/searchController';
 
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', searchController.index);
+router.get('/:type', Search.search);
 
 export default router;

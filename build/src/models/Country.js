@@ -4,14 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const Schema = mongoose_1.default.Schema;
-const Country = new Schema({
+const Country = new mongoose_1.default.Schema({
     iso_639_1: { type: String },
     english_name: { type: String },
     name: { type: String },
-    name2: { type: String },
-    // createdAt: { type: Date, default: Date.now },
-    // updatedAt: { type: Date, default: Date.now },
+    short_name: { type: String },
 });
-exports.default = mongoose_1.default.model('Country', Country);
-//# sourceMappingURL=Country.js.map
+exports.default = mongoose_1.default.model('countries', Country);
+//# sourceMappingURL=country.js.map

@@ -14,6 +14,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const compression_1 = __importDefault(require("compression"));
+const multer_1 = __importDefault(require("multer"));
 const routes_1 = __importDefault(require("./routes"));
 const db_1 = __importDefault(require("./config/db"));
 dotenv_1.default.config();
@@ -31,6 +32,7 @@ app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({
     extended: true,
 }));
+app.use((0, multer_1.default)().any());
 const server = http_1.default.createServer(app);
 (0, routes_1.default)(app);
 const PORT = 5000;

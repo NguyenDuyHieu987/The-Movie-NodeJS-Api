@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const uuid_1 = require("uuid");
 const Movie = new mongoose_1.default.Schema({
     adult: { type: Boolean },
     backdrop_path: { type: String },
@@ -11,7 +12,7 @@ const Movie = new mongoose_1.default.Schema({
     budget: { type: Number },
     genres: { type: Array },
     homepage: { type: String },
-    id: { type: String },
+    id: { type: String, default: (0, uuid_1.v4)() },
     imdb_id: { type: String },
     name: { type: String },
     original_language: { type: String },
@@ -36,6 +37,6 @@ const Movie = new mongoose_1.default.Schema({
     views: { type: Number },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 exports.default = mongoose_1.default.model('movies', Movie);
 //# sourceMappingURL=movie.js.map
