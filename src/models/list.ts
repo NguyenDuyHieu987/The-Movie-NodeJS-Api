@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
-const List = new mongoose.Schema(
+const Lists = new mongoose.Schema(
   {
     id: { type: String, default: uuidv4() },
     user_id: { type: String },
@@ -24,4 +24,4 @@ const List = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('lists', List);
+export default mongoose.model('lists', Lists);

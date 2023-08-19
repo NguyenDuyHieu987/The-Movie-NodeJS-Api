@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const uuid_1 = require("uuid");
-const List = new mongoose_1.default.Schema({
+const Lists = new mongoose_1.default.Schema({
     id: { type: String, default: (0, uuid_1.v4)() },
     user_id: { type: String },
     movie_id: { type: String },
@@ -24,5 +24,5 @@ const List = new mongoose_1.default.Schema({
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model('lists', List);
+exports.default = mongoose_1.default.model('lists', Lists);
 //# sourceMappingURL=list.js.map
