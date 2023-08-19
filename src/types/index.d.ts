@@ -14,8 +14,22 @@ export declare type user = {
   username: string;
   full_name: string;
   email: string;
-  role: string;
-  avatar: string | number;
-  auth_type: string;
-  created_at?: string;
+  role: 'normal' | 'admin';
+  avatar: string;
+  auth_type: 'email' | 'facebook' | 'google';
+  created_at: string;
+  updated_at?: string;
+};
+
+export declare type SigupForm = {
+  id: string;
+  username: string;
+  password: string;
+  full_name: string;
+  email: string;
+  role: 'normal' | 'admin';
+  avatar: string;
+  auth_type: 'email' | 'facebook' | 'google';
+  created_at: string;
+  updated_at: string;
 };

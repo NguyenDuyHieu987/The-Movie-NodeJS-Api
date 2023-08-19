@@ -12,6 +12,11 @@ import compression from 'compression';
 import multer from 'multer';
 import route from './routes';
 import MongoDB from './config/db';
+import RedisCache from './config/redis';
+
+const redisCache = new RedisCache();
+
+redisCache.connect();
 
 dotenv.config();
 

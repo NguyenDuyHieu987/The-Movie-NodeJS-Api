@@ -24,7 +24,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-class db {
+class MongoDB {
+    constructor() { }
     async connect() {
         try {
             mongoose_1.default.set('strictQuery', false);
@@ -42,5 +43,5 @@ class db {
         }
     }
 }
-exports.default = new db();
+exports.default = new MongoDB();
 //# sourceMappingURL=index.js.map

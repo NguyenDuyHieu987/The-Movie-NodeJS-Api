@@ -12,8 +12,9 @@ const ErrorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  let statusCode = error?.status || 500;
-  let errorMessage = error?.message || 'An unknown error occurred';
+  let statusCode = error?.status || error?.statusCode || 500;
+  let errorMessage =
+    error?.message || error?.body?.message || 'An unknown error occurred';
 
   if (isHttpError(error)) {
     statusCode = error.status;

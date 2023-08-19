@@ -2,82 +2,57 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import TvSlug from '@/models/tvSlug';
 import TV from '@/models/tv';
+import RedisCache from '@/config/redis';
 
-class MovieSlugController {
+class MovieSlugController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let data: any[] = [];
+      let total: number = 0;
 
       switch (req.params.slug) {
         case 'all':
-          const data = await TV.find()
+          data = await TV.find()
             .skip(page * 20)
             .limit(20);
 
-          const total = await TV.countDocuments({});
-
-          res.json({
-            page: page + 1,
-            results: data,
-            total: total,
-            page_size: 20,
-          });
+          total = await TV.countDocuments({});
           break;
         case 'airingtoday':
-          const airingtoday = await TvSlug.AiringToday.find()
+          data = await TvSlug.AiringToday.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalAiringToday = await TvSlug.AiringToday.countDocuments({});
-
-          res.json({
-            page: page + 1,
-            results: airingtoday,
-            total: totalAiringToday,
-            page_size: 20,
-          });
+          total = await TvSlug.AiringToday.countDocuments({});
           break;
         case 'ontheair':
-          const ontheair = await TvSlug.OnTheAir.find()
+          data = await TvSlug.OnTheAir.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalOnTheAir = await TvSlug.OnTheAir.countDocuments({});
-
-          res.json({
-            page: page + 1,
-            results: ontheair,
-            total: totalOnTheAir,
-            page_size: 20,
-          });
+          total = await TvSlug.OnTheAir.countDocuments({});
           break;
         case 'popular':
-          const popular = await TvSlug.Popular.find()
+          data = await TvSlug.Popular.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalPopular = await TvSlug.Popular.countDocuments({});
-
-          res.json({
-            page: page + 1,
-            results: popular,
-            total: totalPopular,
-            page_size: 20,
-          });
+          total = await TvSlug.Popular.countDocuments({});
           break;
         case 'toprated':
-          const toprated = await TvSlug.TopRated.find()
+          data = await TvSlug.TopRated.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalTopRated = await TvSlug.TopRated.countDocuments({});
-
-          res.json({
-            page: page + 1,
-            results: toprated,
-            total: totalTopRated,
-            page_size: 20,
-          });
+          total = await TvSlug.TopRated.countDocuments({});
           break;
         default:
           next(
@@ -87,6 +62,21 @@ class MovieSlugController {
           );
           break;
       }
+
+      const response = {
+        page: page + 1,
+        results: data,
+        total: total,
+        page_size: 20,
+      };
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
+
+      res.json(response);
     } catch (error) {
       next(error);
     }

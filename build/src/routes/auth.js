@@ -9,7 +9,8 @@ const router = express_1.default.Router();
 router.post('/login', authController_1.default.login);
 router.post('/loginfacebook', authController_1.default.loginFacebook);
 router.post('/logingoogle', authController_1.default.loginGoogle);
-router.post('/signup', authController_1.default.signup);
 router.post('/getusertoken', authController_1.default.getUserByToken);
+router.post('/verify-signup/:type', authController_1.default.signup_verify);
+router.post('/signup', authController_1.default.signup);
 exports.default = router;
 //# sourceMappingURL=auth.js.map

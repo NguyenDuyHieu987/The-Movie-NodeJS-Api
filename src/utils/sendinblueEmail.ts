@@ -1,15 +1,17 @@
-import SibApiV3Sdk from 'sib-api-v3-typescript';
+import * as SibApiV3Sdk from '@sendinblue/client';
 import fs from 'fs';
-const EmailSender = fs.readFileSync('../emailTemplates/EmailSender.html');
+import path from 'path';
+const EmailSender = fs
+  .readFileSync(path.join(__dirname, '../emailTemplates/EmailSender.html'), {
+    encoding: 'utf-8',
+  })
+  .toString();
 
 class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
     new SibApiV3Sdk.TransactionalEmailsApi();
-
-  public sendSmtpEmail: SibApiV3Sdk.SendSmtpEmail =
+  private sendSmtpEmail: SibApiV3Sdk.SendSmtpEmail =
     new SibApiV3Sdk.SendSmtpEmail();
-
-  protected hieu = 'hieu';
 
   constructor() {
     SendiblueEmail.apiInstance.setApiKey(
@@ -18,12 +20,17 @@ class SendiblueEmail {
     );
   }
 
-  async SendEmail(
-    to: string,
-    otp: string,
-    title: string = 'Xác minh tài khoản của bạn',
-    noteExp = 1
-  ) {
+  async SendEmail({
+    to,
+    otp,
+    title = 'Xác minh tài khoản của bạn',
+    noteExp = 1,
+  }: {
+    to: string;
+    otp: string;
+    title: string;
+    noteExp?: number;
+  }) {
     this.sendSmtpEmail = {
       subject: 'Mã xác thực email của bạn',
       sender: { name: 'Phimhay247', email: 'account@phimhay247.site' },
@@ -32,7 +39,7 @@ class SendiblueEmail {
           email: to,
         },
       ],
-      htmlContent: EmailSender.toString(),
+      htmlContent: EmailSender,
       params: {
         title: title,
         PIN: otp,
@@ -44,9 +51,13 @@ class SendiblueEmail {
       },
     };
 
-    return await SendiblueEmail.apiInstance.sendTransacEmail(
-      this.sendSmtpEmail
-    );
+    return await SendiblueEmail.apiInstance
+      .sendTransacEmail(this.sendSmtpEmail)
+      .then((res) => res)
+      .catch((err) => {
+        // console.log(err.body);
+        throw err.response;
+      });
   }
 }
 

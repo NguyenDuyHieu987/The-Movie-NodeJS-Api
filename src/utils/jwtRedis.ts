@@ -6,7 +6,6 @@ class JwtRedis extends RedisCache {
   constructor(prefix: string = '') {
     super();
     JwtRedis.redisPrefix = prefix;
-    this.connect();
   }
 
   private static initKey(key: string): string {
@@ -15,18 +14,17 @@ class JwtRedis extends RedisCache {
     return my_key;
   }
 
-  sign(jwt: string, option: { exp: number | undefined }) {
+  async sign(jwt: string, option: { exp: number | undefined }) {
     const key = JwtRedis.initKey(jwt);
 
-    this.RedisCache().set(key, 'True', { EX: option.exp, NX: true });
-
-    this.connect();
+    await RedisCache.client.setEx(key, option.exp!, 'True');
+    // await RedisCache.client.set(key, 'True', { EX: option.exp, NX: true });
   }
 
   async verify(jwt: string): Promise<boolean> {
     const key = JwtRedis.initKey(jwt);
 
-    if (await this.RedisCache().exists(key)) {
+    if (await RedisCache.client.exists(key)) {
       return true;
     } else {
       return false;

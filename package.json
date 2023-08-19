@@ -13,6 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@sendinblue/client": "^3.3.1",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -23,7 +24,6 @@
     "node-fetch": "^2.6.13",
     "redis": "^4.6.7",
     "sib-api-v3-sdk": "^8.5.0",
-    "sib-api-v3-typescript": "^2.2.2",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^9.0.0"
   },

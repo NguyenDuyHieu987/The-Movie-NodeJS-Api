@@ -1,4 +1,8 @@
-export default function GenerateOTP(length: number = 6): number {
+export default function GenerateOTP({
+  length = 6,
+}: {
+  length: number;
+}): string {
   const digits = '0123456789';
   let OTP = '';
 
@@ -10,5 +14,5 @@ export default function GenerateOTP(length: number = 6): number {
     i++;
   }
 
-  return +OTP;
+  return OTP;
 }

@@ -2,82 +2,62 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import MovieSlug from '@/models/movieSlug';
 import Movie from '@/models/movie';
+import RedisCache from '@/config/redis';
 
-class MovieSlugController {
+class MovieSlugController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let data: any[] = [];
+      let total: number = 0;
 
       switch (req.params.slug) {
         case 'all':
-          const data = await Movie.find()
+          data = await Movie.find()
             .skip(page * 20)
             .limit(20);
 
-          const total = await Movie.countDocuments({});
+          total = await Movie.countDocuments({});
 
-          res.json({
-            page: page + 1,
-            results: data,
-            total: total,
-            page_size: 20,
-          });
           break;
         case 'nowplaying':
-          const nowplaying = await MovieSlug.NowPlaying.find()
+          data = await MovieSlug.NowPlaying.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalNowPlaying = await MovieSlug.NowPlaying.countDocuments({});
+          total = await MovieSlug.NowPlaying.countDocuments({});
 
-          res.json({
-            page: page + 1,
-            results: nowplaying,
-            total: totalNowPlaying,
-            page_size: 20,
-          });
           break;
         case 'upcoming':
-          const upcoming = await MovieSlug.UpComing.find()
+          data = await MovieSlug.UpComing.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalUpComing = await MovieSlug.UpComing.countDocuments({});
+          total = await MovieSlug.UpComing.countDocuments({});
 
-          res.json({
-            page: page + 1,
-            results: upcoming,
-            total: totalUpComing,
-            page_size: 20,
-          });
           break;
         case 'popular':
-          const popular = await MovieSlug.Popular.find()
+          data = await MovieSlug.Popular.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalPopular = await MovieSlug.Popular.countDocuments({});
+          total = await MovieSlug.Popular.countDocuments({});
 
-          res.json({
-            page: page + 1,
-            results: popular,
-            total: totalPopular,
-            page_size: 20,
-          });
           break;
         case 'toprated':
-          const toprated = await MovieSlug.TopRated.find()
+          data = await MovieSlug.TopRated.find()
             .skip(page * 20)
             .limit(20);
 
-          const totalTopRated = await MovieSlug.TopRated.countDocuments({});
+          total = await MovieSlug.TopRated.countDocuments({});
 
-          res.json({
-            page: page + 1,
-            results: toprated,
-            total: totalTopRated,
-            page_size: 20,
-          });
           break;
         default:
           next(
@@ -87,6 +67,21 @@ class MovieSlugController {
           );
           break;
       }
+
+      const response = {
+        page: page + 1,
+        results: data,
+        total: total,
+        page_size: 20,
+      };
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
+
+      res.json(response);
     } catch (error) {
       next(error);
     }

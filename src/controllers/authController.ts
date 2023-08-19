@@ -1,13 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
-import List from '@/models/list';
-import WatchList from '@/models/WatchList';
+import createHttpError from 'http-errors';
 import Account from '@/models/account';
-import type { user } from '@/types';
+import type { SigupForm, user } from '@/types';
 import SendinblueEmail from '@/utils/sendinblueEmail';
 import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
+import ValidateEmail from '@/utils/EmailValidation';
 
 class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -40,7 +40,7 @@ class AuthController {
 
           return res.header('Authorization', encoded).json({
             isLogin: true,
-            exp_token_hours: process.env.JWT_EXP_OFFSET!,
+            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
               id: account.id,
               username: account.username,
@@ -117,7 +117,7 @@ class AuthController {
 
           return res.header('Authorization', encoded).json({
             isSignUp: true,
-            exp_token_hours: process.env.JWT_EXP_OFFSET!,
+            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
               id: newAccount.id,
               username: newAccount.username,
@@ -167,7 +167,7 @@ class AuthController {
 
           return res.header('Authorization', encoded).json({
             isLogin: true,
-            exp_token_hours: process.env.JWT_EXP_OFFSET!,
+            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
               id: accountLogedIn.id,
               username: accountLogedIn.username,
@@ -245,7 +245,7 @@ class AuthController {
 
           return res.header('Authorization', encoded).json({
             isSignUp: true,
-            exp_token_hours: process.env.JWT_EXP_OFFSET!,
+            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
               id: newAccount.id,
               username: newAccount.username,
@@ -306,10 +306,9 @@ class AuthController {
     try {
       const user_token = req.headers.authorization!.replace('Bearer ', '');
 
-      const user = jwt.verify(
-        user_token,
-        process.env.JWT_SIGNATURE_SECRET!
-      ) as user;
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
 
       const isAlive = await jwtRedis.verify(user_token);
 
@@ -345,50 +344,113 @@ class AuthController {
     }
   }
 
-  signup(req: Request, res: Response, next: NextFunction) {
+  async signup(req: Request, res: Response, next: NextFunction) {
     try {
-      Account.find({
-        email: req.body.email,
-      })
-        .then((dataAccount) => {
-          if (dataAccount.length == 0) {
-            const formData = req.body;
-            const account = new Account(formData);
-            account.save();
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
 
-            const list = new List({
-              created_by: req.body.user_name,
-              description: 'List which users are added',
-              favorite_count: 0,
-              id: req.body.id,
-              items: [],
-              iso_639_1: 'en',
-              name: 'List',
-              poster_path: null,
-            });
-            list.save();
+      const user = jwt.verify(user_token, req.body.otp, {
+        algorithms: ['HS256'],
+      }) as SigupForm;
 
-            const watchList = new WatchList({
-              created_by: req.body.user_name,
-              description: 'Videos which users played',
-              favorite_count: 0,
-              id: req.body.id,
-              item_count: 0,
-              iso_639_1: 'en',
-              name: 'WatchList',
-              poster_path: null,
-              results: [],
-            });
-            watchList.save();
+      const account = await Account.findOne({
+        id: user.id,
+        auth_type: 'email',
+      });
 
-            res.json({ isSignUp: true, result: 'Sign up successfully' });
-          } else {
-            res.json({ isSignUp: false, result: 'Email already exist' });
-          }
-        })
-        .catch((error) => {
-          next(error);
+      if (account == null) {
+        Account.collection.insertOne({
+          id: user.id,
+          username: user.username,
+          password: user.password,
+          full_name: user.full_name,
+          avatar: user.avatar,
+          email: user.email,
+          auth_type: user.auth_type,
+          role: user.role,
+          created_at: Date.now(),
+          updated_at: Date.now(),
         });
+
+        res.json({
+          isSignUp: true,
+          result: 'Sign up account successfully',
+        });
+      } else {
+        res.json({ isAccountExist: true, result: 'Account is already exists' });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async signup_verify(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formUser: SigupForm = req.body;
+
+      switch (req.params.type) {
+        case 'email':
+          const account = await Account.findOne({
+            email: formUser.email,
+            auth_type: 'email',
+          });
+
+          if (account == null) {
+            if (ValidateEmail(formUser.email)) {
+              // if (true) {
+              const OTP = GenerateOTP({ length: 6 });
+
+              const encoded = jwt.sign(
+                {
+                  id: formUser.id,
+                  username: formUser.username,
+                  password: formUser.password,
+                  email: formUser.email,
+                  full_name: formUser.full_name,
+                  avatar: formUser.avatar,
+                  role: 'normal',
+                  auth_type: 'email',
+                  description: 'Register new account',
+                  exp:
+                    Math.floor(Date.now() / 1000) +
+                    +process.env.JWT_EXP_OFFSET!,
+                },
+                OTP,
+                { algorithm: 'HS256' }
+              );
+
+              const emailResponse = await SendinblueEmail.SendEmail({
+                to: formUser.email,
+                otp: OTP,
+                title: 'Xác nhận đăng ký tài khoản',
+                noteExp: +process.env.OTP_EXP_OFFSET!,
+              });
+
+              // console.log(emailResponse);
+
+              res.set('Access-Control-Expose-Headers', 'Authorization');
+
+              res.header('Authorization', encoded).json({ success: true });
+            } else {
+              res.json({
+                isInValidEmail: true,
+                result: 'Email is Invalid',
+              });
+            }
+          } else {
+            res.json({
+              isEmailExist: true,
+              result: 'Email is already exists',
+            });
+          }
+          break;
+        default:
+          next(
+            createHttpError.NotFound(
+              `Verify sign up with type: ${req.params.type} is not found!`
+            )
+          );
+          break;
+      }
     } catch (error) {
       next(error);
     }

@@ -5,9 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
-const list_1 = __importDefault(require("@/models/list"));
-const WatchList_1 = __importDefault(require("@/models/WatchList"));
+const http_errors_1 = __importDefault(require("http-errors"));
 const account_1 = __importDefault(require("@/models/account"));
+const sendinblueEmail_1 = __importDefault(require("@/utils/sendinblueEmail"));
+const generateOTP_1 = __importDefault(require("@/utils/generateOTP"));
+const jwtRedis_1 = __importDefault(require("@/utils/jwtRedis"));
+const EmailValidation_1 = __importDefault(require("@/utils/EmailValidation"));
 class AuthController {
     async login(req, res, next) {
         try {
@@ -32,7 +35,7 @@ class AuthController {
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isLogin: true,
-                        exp_token_hours: process.env.JWT_EXP_OFFSET,
+                        exp_token_hours: +process.env.JWT_EXP_OFFSET,
                         result: {
                             id: account.id,
                             username: account.username,
@@ -62,9 +65,7 @@ class AuthController {
     }
     async loginFacebook(req, res, next) {
         try {
-            const accessToken = req.headers.authorization
-                ?.toString()
-                .replace('Bearer ', '');
+            const accessToken = req.headers.authorization.replace('Bearer ', '');
             const facebookUser = await (0, node_fetch_1.default)(`https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`).then((response) => response.json());
             const account = await account_1.default.findOne({ id: facebookUser.id });
             if (account == null) {
@@ -97,7 +98,7 @@ class AuthController {
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isSignUp: true,
-                        exp_token_hours: process.env.JWT_EXP_OFFSET,
+                        exp_token_hours: +process.env.JWT_EXP_OFFSET,
                         result: {
                             id: newAccount.id,
                             username: newAccount.username,
@@ -138,7 +139,7 @@ class AuthController {
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isLogin: true,
-                        exp_token_hours: process.env.JWT_EXP_OFFSET,
+                        exp_token_hours: +process.env.JWT_EXP_OFFSET,
                         result: {
                             id: accountLogedIn.id,
                             username: accountLogedIn.username,
@@ -165,9 +166,7 @@ class AuthController {
     }
     async loginGoogle(req, res, next) {
         try {
-            const accessToken = req.headers.authorization
-                ?.toString()
-                .replace('Bearer ', '');
+            const accessToken = req.headers.authorization.replace('Bearer ', '');
             const googleUser = await (0, node_fetch_1.default)(`https://www.googleapis.com/oauth2/v3/userinfo`, {
                 headers: { Authorization: accessToken },
             }).then((response) => response.json());
@@ -202,7 +201,7 @@ class AuthController {
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isSignUp: true,
-                        exp_token_hours: process.env.JWT_EXP_OFFSET,
+                        exp_token_hours: +process.env.JWT_EXP_OFFSET,
                         result: {
                             id: newAccount.id,
                             username: newAccount.username,
@@ -255,75 +254,133 @@ class AuthController {
             next(error);
         }
     }
-    getUserByToken(req, res, next) {
+    async getUserByToken(req, res, next) {
         try {
-            account_1.default.findOne({
-                user_token: req.body.user_token,
-            })
-                .then((dataAccount) => {
-                res.json({
+            const user_token = req.headers.authorization.replace('Bearer ', '');
+            const user = jsonwebtoken_1.default.verify(user_token, process.env.JWT_SIGNATURE_SECRET, {
+                algorithms: ['HS256'],
+            });
+            const isAlive = await jwtRedis_1.default.verify(user_token);
+            if (isAlive) {
+                res.set('Access-Control-Expose-Headers', 'Authorization');
+                return res.header('Authorization', user_token).json({
                     isLogin: true,
                     result: {
-                        id: dataAccount.id,
-                        user_name: dataAccount.user_name,
-                        full_name: dataAccount.created_by,
-                        avatar: dataAccount.avatar,
-                        email: dataAccount.email,
-                        user_token: dataAccount.user_token,
+                        id: user.id,
+                        username: user.username,
+                        full_name: user.full_name,
+                        avatar: user.avatar,
+                        email: user.email,
+                        auth_type: user.auth_type,
+                        role: user.role,
+                        created_at: user.created_at,
                     },
                 });
-            })
-                .catch((error) => {
-                res.json({ isLogin: false, result: 'Invalid token' });
-                next(error);
+            }
+            else {
+                res.json({ isLogin: false, result: 'Token is no longer active' });
+            }
+        }
+        catch (error) {
+            if (error instanceof jsonwebtoken_1.default.TokenExpiredError) {
+                return res.json({ isTokenExpired: true, result: 'Token is expired' });
+            }
+            if (error instanceof jsonwebtoken_1.default.JsonWebTokenError) {
+                return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+            }
+            next(error);
+        }
+    }
+    async signup(req, res, next) {
+        try {
+            const user_token = req.headers.authorization.replace('Bearer ', '');
+            const user = jsonwebtoken_1.default.verify(user_token, req.body.otp, {
+                algorithms: ['HS256'],
             });
+            const account = await account_1.default.findOne({
+                id: user.id,
+                auth_type: 'email',
+            });
+            if (account == null) {
+                account_1.default.collection.insertOne({
+                    id: user.id,
+                    username: user.username,
+                    password: user.password,
+                    full_name: user.full_name,
+                    avatar: user.avatar,
+                    email: user.email,
+                    auth_type: user.auth_type,
+                    role: user.role,
+                    created_at: Date.now(),
+                    updated_at: Date.now(),
+                });
+                res.json({
+                    isSignUp: true,
+                    result: 'Sign up account successfully',
+                });
+            }
+            else {
+                res.json({ isAccountExist: true, result: 'Account is already exists' });
+            }
         }
         catch (error) {
             next(error);
         }
     }
-    signup(req, res, next) {
+    async signup_verify(req, res, next) {
         try {
-            account_1.default.find({
-                email: req.body.email,
-            })
-                .then((dataAccount) => {
-                if (dataAccount.length == 0) {
-                    const formData = req.body;
-                    const account = new account_1.default(formData);
-                    account.save();
-                    const list = new list_1.default({
-                        created_by: req.body.user_name,
-                        description: 'List which users are added',
-                        favorite_count: 0,
-                        id: req.body.id,
-                        items: [],
-                        iso_639_1: 'en',
-                        name: 'List',
-                        poster_path: null,
+            const formUser = req.body;
+            switch (req.params.type) {
+                case 'email':
+                    const account = await account_1.default.findOne({
+                        email: formUser.email,
+                        auth_type: 'email',
                     });
-                    list.save();
-                    const watchList = new WatchList_1.default({
-                        created_by: req.body.user_name,
-                        description: 'Videos which users played',
-                        favorite_count: 0,
-                        id: req.body.id,
-                        item_count: 0,
-                        iso_639_1: 'en',
-                        name: 'WatchList',
-                        poster_path: null,
-                        results: [],
-                    });
-                    watchList.save();
-                    res.json({ isSignUp: true, result: 'Sign up successfully' });
-                }
-                else {
-                    res.json({ isSignUp: false, result: 'Email already exist' });
-                }
-            })
-                .catch((error) => {
-                next(error);
-            });
+                    if (account == null) {
+                        if ((0, EmailValidation_1.default)(formUser.email)) {
+                            // if (true) {
+                            const OTP = (0, generateOTP_1.default)({ length: 6 });
+                            const encoded = jsonwebtoken_1.default.sign({
+                                id: formUser.id,
+                                username: formUser.username,
+                                password: formUser.password,
+                                email: formUser.email,
+                                full_name: formUser.full_name,
+                                avatar: formUser.avatar,
+                                role: 'normal',
+                                auth_type: 'email',
+                                description: 'Register new account',
+                                exp: Math.floor(Date.now() / 1000) +
+                                    +process.env.JWT_EXP_OFFSET,
+                            }, OTP, { algorithm: 'HS256' });
+                            const emailResponse = await sendinblueEmail_1.default.SendEmail({
+                                to: formUser.email,
+                                otp: OTP,
+                                title: 'Xác nhận đăng ký tài khoản',
+                                noteExp: +process.env.OTP_EXP_OFFSET,
+                            });
+                            // console.log(emailResponse);
+                            res.set('Access-Control-Expose-Headers', 'Authorization');
+                            res.header('Authorization', encoded).json({ success: true });
+                        }
+                        else {
+                            res.json({
+                                isInValidEmail: true,
+                                result: 'Email is Invalid',
+                            });
+                        }
+                    }
+                    else {
+                        res.json({
+                            isEmailExist: true,
+                            result: 'Email is already exists',
+                        });
+                    }
+                    break;
+                default:
+                    next(http_errors_1.default.NotFound(`Verify sign up with type: ${req.params.type} is not found!`));
+                    break;
+            }
         }
         catch (error) {
             next(error);

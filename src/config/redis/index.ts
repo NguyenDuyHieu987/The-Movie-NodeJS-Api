@@ -1,13 +1,20 @@
 import { RedisClientType, createClient } from 'redis';
+import dotenv from 'dotenv';
+dotenv.config();
 
 class RedisCache {
-  private static client: RedisClientType = createClient({
-    url: process.env.REDIS_URL!,
+  protected static client: RedisClientType = createClient({
+    url: process.env.REDIS_URL,
+    password: process.env.REDIS_PASSWORD,
+    socket: {
+      host: process.env.REDIS_HOST,
+      port: +process.env.REDIS_PORT!,
+    },
   });
 
   constructor() {}
 
-  RedisCache(): RedisClientType {
+  redisClient(): RedisClientType {
     return RedisCache.client;
   }
 

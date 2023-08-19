@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function GenerateOTP(length = 6) {
+function GenerateOTP({ length = 6, }) {
     const digits = '0123456789';
     let OTP = '';
     let i = 0;
@@ -9,7 +9,7 @@ function GenerateOTP(length = 6) {
         OTP += Math.floor(Math.random() * 10);
         i++;
     }
-    return +OTP;
+    return OTP;
 }
 exports.default = GenerateOTP;
 //# sourceMappingURL=generateOTP.js.map
