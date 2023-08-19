@@ -53,6 +53,6 @@
     "node": ">=18.x"
   },
   "_moduleAliases": {
-    "@": ""
+    "@": "build/src"
   }
 }
