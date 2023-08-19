@@ -4,7 +4,9 @@ import path from 'path';
 const EmailSender = fs
   .readFileSync(
     path.join(
-      __dirname.replace('utils', ''),
+      __dirname
+        .replace('utils', '')
+        .replace('src', process.env.NODE_ENV == 'production' ? '' : 'src'),
       '/emailTemplates/EmailSender.html'
     ),
     {
