@@ -240,8 +240,8 @@ class AuthController {
           email: googleUser.email,
           auth_type: 'google',
           role: 'normal',
-          created_at: Date.now(),
-          updated_at: Date.now(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
 
         const newAccount = await Account.findOne({
@@ -402,8 +402,8 @@ class AuthController {
           email: user.email,
           auth_type: user.auth_type,
           role: user.role,
-          created_at: Date.now(),
-          updated_at: Date.now(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
 
         res.json({
@@ -531,7 +531,6 @@ class AuthController {
                   : 'http://localhost:3000/';
 
               const resetPasswordLink = `${app_url}/ForgotPassword?/#reset&token=${encoded}`;
-              console.log(resetPasswordLink);
 
               const emailResponse =
                 await SendinblueEmail.VerificationForgotPassword({

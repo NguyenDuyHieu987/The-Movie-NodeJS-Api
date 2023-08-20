@@ -25,9 +25,9 @@ class JwtRedis extends RedisCache {
     const key = JwtRedis.initKey(jwt);
 
     if (await RedisCache.client.exists(key)) {
-      return true;
-    } else {
       return false;
+    } else {
+      return true;
     }
   }
 }
