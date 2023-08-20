@@ -30,10 +30,15 @@ class AuthController {
               role: account.role,
               auth_type: account.auth_type,
               created_at: account.created_at,
-              exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET!,
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256' }
+            {
+              algorithm: 'HS256',
+              expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+            }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -71,11 +76,15 @@ class AuthController {
       const accessToken: string = req.headers.authorization!.replace(
         'Bearer ',
         ''
-      ) as string;
+      );
 
       const facebookUser: any = await fetch(
         `https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`
-      ).then((response: any) => response.json());
+      )
+        .then((response: any) => response.json())
+        .catch((error) => {
+          throw error;
+        });
 
       const account = await Account.findOne({ id: facebookUser!.id });
 
@@ -88,12 +97,13 @@ class AuthController {
           email: facebookUser.email,
           auth_type: 'facebook',
           role: 'normal',
-          created_at: Date.now(),
-          updated_at: Date.now(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
 
         const newAccount = await Account.findOne({
           id: facebookUser.id,
+          auth_type: 'facebook',
         });
 
         if (newAccount != null) {
@@ -107,10 +117,12 @@ class AuthController {
               role: newAccount.role,
               auth_type: newAccount.auth_type,
               created_at: newAccount.created_at,
-              exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET!,
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256' }
+            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -157,10 +169,12 @@ class AuthController {
               role: accountLogedIn.role,
               auth_type: accountLogedIn.auth_type,
               created_at: accountLogedIn.created_at,
-              exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET!,
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256' }
+            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -196,14 +210,18 @@ class AuthController {
       const accessToken: string = req.headers.authorization!.replace(
         'Bearer ',
         ''
-      ) as string;
+      );
 
       const googleUser: any = await fetch(
-        `https://www.googleapis.com/oauth2/v3/userinfo`,
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`,
         {
           headers: { Authorization: accessToken },
         }
-      ).then((response: any) => response.json());
+      )
+        .then((response: any) => response.json())
+        .catch((error) => {
+          throw error;
+        });
 
       const account = await Account.findOne({ id: googleUser!.sub });
 
@@ -222,6 +240,7 @@ class AuthController {
 
         const newAccount = await Account.findOne({
           id: googleUser.sub,
+          auth_type: 'google',
         });
 
         if (newAccount != null) {
@@ -235,10 +254,12 @@ class AuthController {
               role: newAccount.role,
               auth_type: newAccount.auth_type,
               created_at: newAccount.created_at,
-              exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET!,
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256' }
+            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -274,10 +295,12 @@ class AuthController {
             role: account.role,
             auth_type: account.auth_type,
             created_at: account.created_at,
-            exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET!,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600,
           },
           process.env.JWT_SIGNATURE_SECRET!,
-          { algorithm: 'HS256' }
+          { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -412,10 +435,13 @@ class AuthController {
                   description: 'Register new account',
                   exp:
                     Math.floor(Date.now() / 1000) +
-                    +process.env.JWT_EXP_OFFSET!,
+                    +process.env.OTP_EXP_OFFSET! * 60,
                 },
                 OTP,
-                { algorithm: 'HS256' }
+                {
+                  algorithm: 'HS256',
+                  expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
+                }
               );
 
               const emailResponse = await SendinblueEmail.VerificationOTP({
@@ -476,9 +502,15 @@ class AuthController {
                   email: account.email,
                   auth_type: 'email',
                   description: 'Forgot your password',
+                  exp:
+                    Math.floor(Date.now() / 1000) +
+                    +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
                 },
                 process.env.JWT_SIGNATURE_SECRET!,
-                { algorithm: 'HS256' }
+                {
+                  algorithm: 'HS256',
+                  expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+                }
               );
 
               const app_url =
@@ -543,7 +575,9 @@ class AuthController {
       });
 
       res.json({ isLogout: true, result: 'Log out successfully' });
-    } catch (error) {}
+    } catch (error) {
+      next(error);
+    }
   }
 }
 
