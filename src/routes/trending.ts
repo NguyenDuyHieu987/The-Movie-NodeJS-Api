@@ -1,8 +1,8 @@
 import express from 'express';
-import trending from '@/controllers/trendingController';
+import Trending from '@/controllers/trendingController';
 
 const router = express.Router();
 
-router.get('/:slug', trending.get);
+router.get('/:slug', Trending.get);
 
 export default router;

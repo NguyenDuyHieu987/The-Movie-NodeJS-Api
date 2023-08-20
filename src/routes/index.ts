@@ -19,6 +19,7 @@ import similarRouter from './similar';
 import planRouter from './plan';
 import ratingRouter from './rating';
 import commentRouter from './comment';
+import rankingRouter from './ranking';
 import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
@@ -41,6 +42,7 @@ export default function route(app: Application) {
   app.use('/plan', planRouter);
   app.use('/rating', ratingRouter);
   app.use('/comment', commentRouter);
+  app.use('/ranking', rankingRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
     return next(
       createHttpError(

@@ -19,28 +19,16 @@ class TrendingController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      let response: {
-        page: number;
-        results: any[];
-        total: number;
-        page_size: number;
-      } = {
-        page: page + 1,
-        results: [],
-        total: 0,
-        page_size: limit,
-      };
+      let data: any[] = [];
+      let total: number = 0;
 
       switch (req.params.slug) {
         case 'all':
-          const trending = await Trending.find()
+          data = await Trending.find()
             .skip(page * limit)
             .limit(limit);
 
-          const total = await Trending.countDocuments({});
-
-          response.results = trending;
-          response.total = total;
+          total = await Trending.countDocuments({});
 
           break;
         default:
@@ -51,6 +39,13 @@ class TrendingController extends RedisCache {
           );
           break;
       }
+
+      const response = {
+        page: page + 1,
+        results: data,
+        total: total,
+        page_size: limit,
+      };
 
       await RedisCache.client.setEx(
         key,
