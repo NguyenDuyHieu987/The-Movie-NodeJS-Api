@@ -1,14 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import List from '@/models/list';
+import History from '@/models/history';
 import createHttpError from 'http-errors';
 import RedisCache from '@/config/redis';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import type { user } from '@/types';
 
-class ListController extends RedisCache {
+class HistoryController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token = req.headers.authorization!.replace('Bearer ', '');
@@ -24,19 +24,19 @@ class ListController extends RedisCache {
 
       switch (req.params.slug) {
         case 'all':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
           })
             .skip(skip * limit)
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          total = await History.countDocuments({
             user_id: user.id,
           });
           break;
         case 'movie':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
             media_type: 'movie',
           })
@@ -44,13 +44,13 @@ class ListController extends RedisCache {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          total = await History.countDocuments({
             user_id: user.id,
             media_type: 'movie',
           });
           break;
         case 'tv':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
             media_type: 'tv',
           })
@@ -58,7 +58,7 @@ class ListController extends RedisCache {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          total = await History.countDocuments({
             user_id: user.id,
             media_type: 'tv',
           });
@@ -66,7 +66,7 @@ class ListController extends RedisCache {
         default:
           next(
             createHttpError.NotFound(
-              `List with slug: ${req.params.slug} is not found!`
+              `History with slug: ${req.params.slug} is not found!`
             )
           );
           break;
@@ -94,7 +94,7 @@ class ListController extends RedisCache {
 
       switch (req.params.slug) {
         case 'all':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
             $or: [
               { name: { $regex: query, $options: 'i' } },
@@ -103,7 +103,7 @@ class ListController extends RedisCache {
           }).sort({ created_at: -1 });
           break;
         case 'movie':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
             media_type: 'movie',
             $or: [
@@ -113,7 +113,7 @@ class ListController extends RedisCache {
           }).sort({ created_at: -1 });
           break;
         case 'tv':
-          data = await List.find({
+          data = await History.find({
             user_id: user.id,
             media_type: 'tv',
             $or: [
@@ -125,7 +125,7 @@ class ListController extends RedisCache {
         default:
           next(
             createHttpError.NotFound(
-              `List with slug: ${req.params.slug} is not found!`
+              `History with slug: ${req.params.slug} is not found!`
             )
           );
           break;
@@ -148,7 +148,7 @@ class ListController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const data = await List.findOne({
+      const data = await History.findOne({
         user_id: user.id,
         movie_id: req.params.movieId,
         media_type: req.params.type,
@@ -159,7 +159,7 @@ class ListController extends RedisCache {
       } else {
         return res.json({
           success: false,
-          result: 'Failed to get item in list',
+          result: 'Failed to get item in History',
         });
       }
     } catch (error) {
@@ -177,22 +177,22 @@ class ListController extends RedisCache {
 
       const movieId = req.body.movie_id;
       const mediaType = req.body.media_type;
-      const idItemList = uuidv4();
+      const idItemHistory = uuidv4();
 
       switch (mediaType) {
         case 'movie':
           const movie = await Movie.findOne({ id: movieId });
 
           if (movie != null) {
-            const itemList = await List.findOne({
+            const itemHistory = await History.findOne({
               user_id: user.id,
               movie_id: movieId,
               media_type: 'movie',
             });
 
-            if (itemList != null) {
-              List.create({
-                id: idItemList,
+            if (itemHistory != null) {
+              History.create({
+                id: idItemHistory,
                 user_id: user.id,
                 movie_id: movieId,
                 name: movie.name,
@@ -210,12 +210,12 @@ class ListController extends RedisCache {
 
               res.json({
                 success: true,
-                results: 'Add item to list suucessfully',
+                results: 'Add item to history suucessfully',
               });
             } else {
               next(
                 createHttpError.InternalServerError(
-                  'Movie is already exist in list'
+                  'Movie is already exist in history'
                 )
               );
             }
@@ -227,15 +227,15 @@ class ListController extends RedisCache {
           const tv = await TV.findOne({ id: movieId });
 
           if (tv != null) {
-            const itemList = await List.findOne({
+            const itemHistory = await History.findOne({
               user_id: user.id,
               movie_id: movieId,
               media_type: 'tv',
             });
 
-            if (itemList != null) {
-              List.create({
-                id: idItemList,
+            if (itemHistory != null) {
+              History.create({
+                id: idItemHistory,
                 user_id: user.id,
                 movie_id: movieId,
                 name: tv.name,
@@ -253,12 +253,12 @@ class ListController extends RedisCache {
 
               res.json({
                 success: true,
-                results: 'Add item to list suucessfully',
+                results: 'Add item to history suucessfully',
               });
             } else {
               next(
                 createHttpError.InternalServerError(
-                  'Movie is already exist in list'
+                  'Movie is already exist in history'
                 )
               );
             }
@@ -291,7 +291,7 @@ class ListController extends RedisCache {
       const movieId = req.body.movie_id;
       const mediaType = req.body.media_type;
 
-      const result = await List.deleteOne(
+      const result = await History.deleteOne(
         id != null
           ? {
               id: id,
@@ -305,11 +305,13 @@ class ListController extends RedisCache {
       if (result.deletedCount == 1) {
         res.json({
           success: true,
-          results: 'Remove item from list suucessfully',
+          results: 'Remove item from history suucessfully',
         });
       } else {
         next(
-          createHttpError.InternalServerError('Delete movie from list failed')
+          createHttpError.InternalServerError(
+            'Delete movie from history failed'
+          )
         );
       }
     } catch (error) {
@@ -325,12 +327,12 @@ class ListController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const result = await List.deleteMany({
+      const result = await History.deleteMany({
         user_id: user.id,
       });
 
       if (result.deletedCount >= 1) {
-        const list = List.find({ user_id: user.id });
+        const list = History.find({ user_id: user.id });
 
         res.json({
           success: true,
@@ -339,7 +341,7 @@ class ListController extends RedisCache {
       } else {
         next(
           createHttpError.InternalServerError(
-            'Delete all movie from list failed'
+            'Delete all movie from history failed'
           )
         );
       }
@@ -349,4 +351,4 @@ class ListController extends RedisCache {
   }
 }
 
-export default new ListController();
+export default new HistoryController();

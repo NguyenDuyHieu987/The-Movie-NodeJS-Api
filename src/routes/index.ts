@@ -10,7 +10,7 @@ import countryRouter from './country';
 import yearRouter from './year';
 import sortOptionRouter from './sortby';
 import listRouter from './list';
-import watchlistRouter from './watchlist';
+import historyRouter from './history';
 import authRouter from './auth';
 import creditRouter from './credit';
 import videoRouter from './video';
@@ -29,7 +29,7 @@ export default function route(app: Application) {
   app.use('/year', yearRouter);
   app.use('/sortby', sortOptionRouter);
   app.use('/list', listRouter);
-  app.use('/watchlist', watchlistRouter);
+  app.use('/history', historyRouter);
   app.use('/credits', creditRouter);
   app.use('/videos', videoRouter);
   app.use('/images', imageRouter);
