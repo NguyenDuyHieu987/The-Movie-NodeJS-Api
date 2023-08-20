@@ -55,7 +55,7 @@ class MovieSlugController extends RedisCache {
           total = await TvSlug.TopRated.countDocuments({});
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movies with slug: ${req.params.slug} is not found!`
             )

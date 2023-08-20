@@ -19,6 +19,18 @@ class TrendingController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
+      let response: {
+        page: number;
+        results: any[];
+        total: number;
+        page_size: number;
+      } = {
+        page: page + 1,
+        results: [],
+        total: 0,
+        page_size: limit,
+      };
+
       switch (req.params.slug) {
         case 'all':
           const trending = await Trending.find()
@@ -27,30 +39,26 @@ class TrendingController extends RedisCache {
 
           const total = await Trending.countDocuments({});
 
-          const response = {
-            page: page + 1,
-            results: trending,
-            total: total,
-            page_size: limit,
-          };
-
-          await RedisCache.client.setEx(
-            key,
-            +process.env.REDIS_CACHE_TIME!,
-            JSON.stringify(response)
-          );
-
-          res.json(response);
+          response.results = trending;
+          response.total = total;
 
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Not found with slug: ${req.params.slug} !`
             )
           );
           break;
       }
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
+
+      res.json(response);
     } catch (error) {
       next(error);
     } finally {

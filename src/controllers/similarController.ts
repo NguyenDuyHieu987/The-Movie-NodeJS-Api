@@ -48,7 +48,7 @@ class SimilarController extends RedisCache {
               .limit(limit)
               .sort({ views: -1 });
           } else {
-            next(createHttpError.NotFound(`Movie is not exist`));
+            return next(createHttpError.NotFound(`Movie is not exist`));
           }
           break;
         case 'tv':
@@ -75,11 +75,11 @@ class SimilarController extends RedisCache {
               .limit(limit)
               .sort({ views: -1 });
           } else {
-            next(createHttpError.NotFound(`Movie is not exist`));
+            return next(createHttpError.NotFound(`Movie is not exist`));
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${mediaType} is not found`
             )

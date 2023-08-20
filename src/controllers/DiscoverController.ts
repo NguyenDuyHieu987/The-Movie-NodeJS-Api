@@ -196,7 +196,7 @@ class DiscoverController extends RedisCache {
 
               result.results = movie5.concat(tv5);
               break;
-            default:
+            case '':
               const movie = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
@@ -210,6 +210,13 @@ class DiscoverController extends RedisCache {
                 .limit(limit);
 
               result.results = movie.concat(tv);
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover with sort by: ${sortBy} is not found!`
+                )
+              );
               break;
           }
           break;
@@ -266,7 +273,7 @@ class DiscoverController extends RedisCache {
 
               result.results = movie5;
               break;
-            default:
+            case '':
               const movie = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
@@ -274,6 +281,13 @@ class DiscoverController extends RedisCache {
                 .limit(limit);
 
               result.results = movie;
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover with sort by: ${sortBy} is not found!`
+                )
+              );
               break;
           }
           break;
@@ -329,7 +343,7 @@ class DiscoverController extends RedisCache {
 
               result.results = tv5;
               break;
-            default:
+            case '':
               const tv = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
@@ -338,10 +352,17 @@ class DiscoverController extends RedisCache {
 
               result.results = tv;
               break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover with sort by: ${sortBy} is not found!`
+                )
+              );
+              break;
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Not found with slug: ${req.params.slug} !`
             )
@@ -355,7 +376,7 @@ class DiscoverController extends RedisCache {
         JSON.stringify(result)
       );
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       next(error);
     }
