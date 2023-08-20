@@ -4,9 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const DiscoverController_1 = __importDefault(require("../controllers/DiscoverController"));
+const discoverController_1 = __importDefault(require("@/controllers/discoverController"));
 const router = express_1.default.Router();
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', DiscoverController_1.default.index);
+router.get('/:slug', discoverController_1.default.get);
 exports.default = router;
 //# sourceMappingURL=discover.js.map

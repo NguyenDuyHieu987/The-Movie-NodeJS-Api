@@ -12,6 +12,9 @@ const generateOTP_1 = __importDefault(require("@/utils/generateOTP"));
 const jwtRedis_1 = __importDefault(require("@/utils/jwtRedis"));
 const EmailValidation_1 = __importDefault(require("@/utils/EmailValidation"));
 class AuthController {
+    constructor() {
+        jwtRedis_1.default.setPrefix('user_logout');
+    }
     async logIn(req, res, next) {
         try {
             const account = await account_1.default.findOne({
@@ -30,8 +33,12 @@ class AuthController {
                         role: account.role,
                         auth_type: account.auth_type,
                         created_at: account.created_at,
-                        exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET,
-                    }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                        exp: Math.floor(Date.now() / 1000) +
+                            +process.env.JWT_EXP_OFFSET * 3600,
+                    }, process.env.JWT_SIGNATURE_SECRET, {
+                        algorithm: 'HS256',
+                        // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+                    });
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isLogin: true,
@@ -66,10 +73,25 @@ class AuthController {
     async logInFacebook(req, res, next) {
         try {
             const accessToken = req.headers.authorization.replace('Bearer ', '');
-            const facebookUser = await (0, node_fetch_1.default)(`https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`).then((response) => response.json());
+            const facebookUser = await (0, node_fetch_1.default)(`https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`)
+                .then((response) => response.json())
+                .catch((error) => {
+                throw error;
+            });
             const account = await account_1.default.findOne({ id: facebookUser.id });
             if (account == null) {
-                account_1.default.collection.insertOne({
+                // await Account.collection.insertOne({
+                //   id: facebookUser.id,
+                //   username: facebookUser.name,
+                //   full_name: facebookUser.name,
+                //   avatar: facebookUser.picture.data.url,
+                //   email: facebookUser.email,
+                //   auth_type: 'facebook',
+                //   role: 'normal',
+                //   created_at: new Date().toISOString(),
+                //   updated_at: new Date().toISOString(),
+                // });
+                await account_1.default.create({
                     id: facebookUser.id,
                     username: facebookUser.name,
                     full_name: facebookUser.name,
@@ -77,11 +99,12 @@ class AuthController {
                     email: facebookUser.email,
                     auth_type: 'facebook',
                     role: 'normal',
-                    created_at: Date.now(),
-                    updated_at: Date.now(),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                 });
                 const newAccount = await account_1.default.findOne({
                     id: facebookUser.id,
+                    auth_type: 'facebook',
                 });
                 if (newAccount != null) {
                     const encoded = jsonwebtoken_1.default.sign({
@@ -93,8 +116,12 @@ class AuthController {
                         role: newAccount.role,
                         auth_type: newAccount.auth_type,
                         created_at: newAccount.created_at,
-                        exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET,
-                    }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                        exp: Math.floor(Date.now() / 1000) +
+                            +process.env.JWT_EXP_OFFSET * 3600,
+                    }, process.env.JWT_SIGNATURE_SECRET, {
+                        algorithm: 'HS256',
+                        // expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+                    });
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isSignUp: true,
@@ -134,8 +161,12 @@ class AuthController {
                         role: accountLogedIn.role,
                         auth_type: accountLogedIn.auth_type,
                         created_at: accountLogedIn.created_at,
-                        exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET,
-                    }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                        exp: Math.floor(Date.now() / 1000) +
+                            +process.env.JWT_EXP_OFFSET * 3600,
+                    }, process.env.JWT_SIGNATURE_SECRET, {
+                        algorithm: 'HS256',
+                        //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+                    });
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isLogin: true,
@@ -167,12 +198,16 @@ class AuthController {
     async logInGoogle(req, res, next) {
         try {
             const accessToken = req.headers.authorization.replace('Bearer ', '');
-            const googleUser = await (0, node_fetch_1.default)(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+            const googleUser = await (0, node_fetch_1.default)(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`, {
                 headers: { Authorization: accessToken },
-            }).then((response) => response.json());
+            })
+                .then((response) => response.json())
+                .catch((error) => {
+                throw error;
+            });
             const account = await account_1.default.findOne({ id: googleUser.sub });
             if (account == null) {
-                account_1.default.collection.insertOne({
+                await account_1.default.create({
                     id: googleUser.sub,
                     username: googleUser.name,
                     full_name: googleUser.name,
@@ -180,11 +215,12 @@ class AuthController {
                     email: googleUser.email,
                     auth_type: 'google',
                     role: 'normal',
-                    created_at: Date.now(),
-                    updated_at: Date.now(),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                 });
                 const newAccount = await account_1.default.findOne({
                     id: googleUser.sub,
+                    auth_type: 'google',
                 });
                 if (newAccount != null) {
                     const encoded = jsonwebtoken_1.default.sign({
@@ -196,8 +232,12 @@ class AuthController {
                         role: newAccount.role,
                         auth_type: newAccount.auth_type,
                         created_at: newAccount.created_at,
-                        exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET,
-                    }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                        exp: Math.floor(Date.now() / 1000) +
+                            +process.env.JWT_EXP_OFFSET * 3600,
+                    }, process.env.JWT_SIGNATURE_SECRET, {
+                        algorithm: 'HS256',
+                        //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+                    });
                     res.set('Access-Control-Expose-Headers', 'Authorization');
                     return res.header('Authorization', encoded).json({
                         isSignUp: true,
@@ -231,8 +271,12 @@ class AuthController {
                     role: account.role,
                     auth_type: account.auth_type,
                     created_at: account.created_at,
-                    exp: Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET,
-                }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                    exp: Math.floor(Date.now() / 1000) +
+                        +process.env.JWT_EXP_OFFSET * 3600,
+                }, process.env.JWT_SIGNATURE_SECRET, {
+                    algorithm: 'HS256',
+                    //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+                });
                 res.set('Access-Control-Expose-Headers', 'Authorization');
                 return res.header('Authorization', encoded).json({
                     isLogin: true,
@@ -302,7 +346,7 @@ class AuthController {
                 auth_type: 'email',
             });
             if (account == null) {
-                account_1.default.collection.insertOne({
+                await account_1.default.create({
                     id: user.id,
                     username: user.username,
                     password: user.password,
@@ -311,8 +355,8 @@ class AuthController {
                     email: user.email,
                     auth_type: user.auth_type,
                     role: user.role,
-                    created_at: Date.now(),
-                    updated_at: Date.now(),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                 });
                 res.json({
                     isSignUp: true,
@@ -351,8 +395,11 @@ class AuthController {
                                 auth_type: 'email',
                                 description: 'Register new account',
                                 exp: Math.floor(Date.now() / 1000) +
-                                    +process.env.JWT_EXP_OFFSET,
-                            }, OTP, { algorithm: 'HS256' });
+                                    +process.env.OTP_EXP_OFFSET * 60,
+                            }, OTP, {
+                                algorithm: 'HS256',
+                                // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
+                            });
                             const emailResponse = await sendinblueEmail_1.default.VerificationOTP({
                                 to: formUser.email,
                                 otp: OTP,
@@ -405,12 +452,16 @@ class AuthController {
                                 email: account.email,
                                 auth_type: 'email',
                                 description: 'Forgot your password',
-                            }, process.env.JWT_SIGNATURE_SECRET, { algorithm: 'HS256' });
+                                exp: Math.floor(Date.now() / 1000) +
+                                    +process.env.FORGOT_PASSWORD_EXP_OFFSET * 60,
+                            }, process.env.JWT_SIGNATURE_SECRET, {
+                                algorithm: 'HS256',
+                                // expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+                            });
                             const app_url = process.env.NODE_ENV == 'production'
                                 ? process.env.APP_URL
                                 : 'http://localhost:3000/';
                             const resetPasswordLink = `${app_url}/ForgotPassword?/#reset&token=${encoded}`;
-                            console.log(resetPasswordLink);
                             const emailResponse = await sendinblueEmail_1.default.VerificationForgotPassword({
                                 to: req.body.email,
                                 resetPasswordLink: resetPasswordLink,
@@ -456,7 +507,9 @@ class AuthController {
             });
             res.json({ isLogout: true, result: 'Log out successfully' });
         }
-        catch (error) { }
+        catch (error) {
+            next(error);
+        }
     }
 }
 exports.default = new AuthController();

@@ -26,6 +26,6 @@ const History = new mongoose_1.default.Schema({
     dominant_poster_color: { type: Array },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('histories', History);
 //# sourceMappingURL=history.js.map

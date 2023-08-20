@@ -50,7 +50,7 @@ class MovieSlugController extends redis_1.default {
                     total = await tvSlug_1.default.TopRated.countDocuments({});
                     break;
                 default:
-                    next(http_errors_1.default.NotFound(`Movies with slug: ${req.params.slug} is not found!`));
+                    return next(http_errors_1.default.NotFound(`Movies with slug: ${req.params.slug} is not found!`));
                     break;
             }
             const response = {

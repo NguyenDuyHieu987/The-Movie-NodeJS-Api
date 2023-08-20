@@ -1,7 +1,7 @@
 import express from 'express';
-import Discovers from '@/controllers/discoverController';
+import Discover from '@/controllers/discoverController';
 const router = express.Router();
 
-router.get('/:slug', Discovers.get);
+router.get('/:slug', Discover.get);
 
 export default router;

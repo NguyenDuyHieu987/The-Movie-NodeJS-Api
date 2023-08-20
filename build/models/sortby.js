@@ -7,6 +7,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const Year = new mongoose_1.default.Schema({
     id: { type: String },
     name: { type: String },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('sortbys', Year);
 //# sourceMappingURL=sortby.js.map

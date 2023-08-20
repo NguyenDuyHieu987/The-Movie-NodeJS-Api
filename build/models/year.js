@@ -6,6 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const Year = new mongoose_1.default.Schema({
     name: { type: String },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('years', Year);
 //# sourceMappingURL=year.js.map

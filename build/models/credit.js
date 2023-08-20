@@ -8,6 +8,6 @@ const uuid_1 = require("uuid");
 const Credit = new mongoose_1.default.Schema({
     id: { type: String, default: (0, uuid_1.v4)() },
     items: { type: Object },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('credits', Credit);
 //# sourceMappingURL=credit.js.map

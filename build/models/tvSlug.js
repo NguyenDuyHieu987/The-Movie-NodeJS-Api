@@ -18,7 +18,7 @@ const MovieSlug = new mongoose_1.default.Schema({
     media_type: { type: String },
     genres: { type: Array },
     episode_run_time: { type: Array },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = {
     AiringToday: mongoose_1.default.model('tvairingtodays', MovieSlug),
     OnTheAir: mongoose_1.default.model('tvontheairs', MovieSlug),

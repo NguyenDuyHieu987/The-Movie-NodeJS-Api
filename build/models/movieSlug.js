@@ -17,7 +17,7 @@ const MovieSlug = new mongoose_1.default.Schema({
     media_type: { type: String },
     genres: { type: Array },
     runtime: { type: Number },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = {
     NowPlaying: mongoose_1.default.model('nowplayings', MovieSlug),
     UpComing: mongoose_1.default.model('upcomings', MovieSlug),

@@ -8,6 +8,6 @@ const uuid_1 = require("uuid");
 const Video = new mongoose_1.default.Schema({
     id: { type: String, default: (0, uuid_1.v4)() },
     items: { type: Array },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('videos', Video);
 //# sourceMappingURL=video.js.map

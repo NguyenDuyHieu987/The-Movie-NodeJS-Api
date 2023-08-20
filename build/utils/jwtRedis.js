@@ -14,6 +14,9 @@ class JwtRedis extends redis_1.default {
         const my_key = `${JwtRedis.redisPrefix}_${key}`;
         return my_key;
     }
+    async setPrefix(prefix) {
+        JwtRedis.redisPrefix = prefix;
+    }
     async sign(jwt, option) {
         const key = JwtRedis.initKey(jwt);
         await redis_1.default.client.setEx(key, option.exp, 'True');
@@ -22,10 +25,10 @@ class JwtRedis extends redis_1.default {
     async verify(jwt) {
         const key = JwtRedis.initKey(jwt);
         if (await redis_1.default.client.exists(key)) {
-            return true;
+            return false;
         }
         else {
-            return false;
+            return true;
         }
     }
 }

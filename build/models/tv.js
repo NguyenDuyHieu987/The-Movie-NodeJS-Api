@@ -47,6 +47,6 @@ const TV = new mongoose_1.default.Schema({
     views: { type: Number },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 exports.default = mongoose_1.default.model('tvs', TV);
 //# sourceMappingURL=tv.js.map
