@@ -1,10 +1,12 @@
 import express from 'express';
-import listController from '../controllers/listController';
+import List from '@/controllers/listController';
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', listController.get);
-router.post('/:slug/add_item', listController.addItem);
-router.post('/:slug/remove_item', listController.removeItem);
+router.get('/getlist/:slug', List.get);
+router.get('/searchlist/:slug', List.search);
+router.get('/getitem/:type/:movieId', List.getItem);
+router.post('/add_item', List.addItem);
+router.delete('/remove_item', List.removeItem);
+router.delete('/removeall_item', List.removeAllItem);
 
 export default router;
