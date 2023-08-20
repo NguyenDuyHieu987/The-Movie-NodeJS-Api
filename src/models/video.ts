@@ -6,7 +6,7 @@ const Video = new mongoose.Schema(
     id: { type: String, default: uuidv4() },
     items: { type: Array },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default mongoose.model('videos', Video);

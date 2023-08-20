@@ -6,7 +6,7 @@ const Credit = new mongoose.Schema(
     id: { type: String, default: uuidv4() },
     items: { type: Object },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default mongoose.model('credits', Credit);

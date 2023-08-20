@@ -15,7 +15,7 @@ const MovieSlug = new mongoose.Schema(
     genres: { type: Array },
     runtime: { type: Number },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default {

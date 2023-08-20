@@ -5,7 +5,7 @@ const Year = new mongoose.Schema(
     id: { type: String },
     name: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default mongoose.model('sortbys', Year);

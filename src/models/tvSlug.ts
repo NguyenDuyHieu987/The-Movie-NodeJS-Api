@@ -16,7 +16,7 @@ const MovieSlug = new mongoose.Schema(
     genres: { type: Array },
     episode_run_time: { type: Array },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default {

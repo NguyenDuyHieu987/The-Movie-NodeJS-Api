@@ -89,7 +89,19 @@ class AuthController {
       const account = await Account.findOne({ id: facebookUser!.id });
 
       if (account == null) {
-        Account.collection.insertOne({
+        // await Account.collection.insertOne({
+        //   id: facebookUser.id,
+        //   username: facebookUser.name,
+        //   full_name: facebookUser.name,
+        //   avatar: facebookUser.picture.data.url,
+        //   email: facebookUser.email,
+        //   auth_type: 'facebook',
+        //   role: 'normal',
+        //   created_at: new Date().toISOString(),
+        //   updated_at: new Date().toISOString(),
+        // });
+
+        await Account.create({
           id: facebookUser.id,
           username: facebookUser.name,
           full_name: facebookUser.name,
@@ -232,7 +244,7 @@ class AuthController {
       const account = await Account.findOne({ id: googleUser!.sub });
 
       if (account == null) {
-        Account.collection.insertOne({
+        Account.create({
           id: googleUser.sub,
           username: googleUser.name,
           full_name: googleUser.name,
@@ -393,7 +405,7 @@ class AuthController {
       });
 
       if (account == null) {
-        Account.collection.insertOne({
+        Account.create({
           id: user.id,
           username: user.username,
           password: user.password,

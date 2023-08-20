@@ -7,7 +7,7 @@ const Country = new mongoose.Schema(
     name: { type: String },
     short_name: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default mongoose.model('countries', Country);
