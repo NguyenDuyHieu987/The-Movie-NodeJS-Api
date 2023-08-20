@@ -10,6 +10,10 @@ import jwtRedis from '@/utils/jwtRedis';
 import ValidateEmail from '@/utils/EmailValidation';
 
 class AuthController {
+  constructor() {
+    jwtRedis.setPrefix('user_logout');
+  }
+
   async logIn(req: Request, res: Response, next: NextFunction) {
     try {
       const account = await Account.findOne({

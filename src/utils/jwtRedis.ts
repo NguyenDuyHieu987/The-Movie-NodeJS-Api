@@ -14,6 +14,10 @@ class JwtRedis extends RedisCache {
     return my_key;
   }
 
+  async setPrefix(prefix: string) {
+    JwtRedis.redisPrefix = prefix;
+  }
+
   async sign(jwt: string, option: { exp: number | undefined }) {
     const key = JwtRedis.initKey(jwt);
 

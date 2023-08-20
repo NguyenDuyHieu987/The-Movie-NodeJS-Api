@@ -21,10 +21,12 @@ import ratingRouter from './rating';
 import commentRouter from './comment';
 import rankingRouter from './ranking';
 import updateViewRouter from './updateView';
+import accountRouter from './account';
 import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
   app.use('/auth', authRouter);
+  app.use('/account', accountRouter);
   app.use('/movie', movieRouter);
   app.use('/tv', tvRouter);
   app.use('/search', searchRouter);
