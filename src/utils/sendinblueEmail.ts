@@ -7,14 +7,14 @@ import * as SibApiV3Sdk from '@sendinblue/client';
 //       __dirname
 //         .replace('utils', '')
 //         .replace('src', process.env.NODE_ENV == 'production' ? '' : 'src'),
-//       '/emailTemplates/EmailSender.html'
+//       '/emailTemplates/VerificationOTP.html'
 //     ),
 //     {
 //       encoding: 'utf-8',
 //     }
 //   )
 //   .toString();
-// import EmailSender from '@/emailTemplates/EmailSender';
+// import EmailSender from '@/emailTemplates/VerificationOTP';
 
 class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
@@ -29,7 +29,7 @@ class SendiblueEmail {
     );
   }
 
-  async SendEmail({
+  async VerificationOTP({
     to,
     otp,
     title = 'Xác minh tài khoản của bạn',
@@ -37,7 +37,7 @@ class SendiblueEmail {
   }: {
     to: string;
     otp: string;
-    title: string;
+    title?: string;
     noteExp?: number;
   }) {
     this.sendSmtpEmail = {
@@ -66,6 +66,45 @@ class SendiblueEmail {
       .then((res) => res)
       .catch((err) => {
         // console.log(err.body);
+        throw err.response;
+      });
+  }
+
+  async VerificationForgotPassword({
+    to,
+    resetPasswordLink,
+    title = 'Đặt lại mật khẩu của bạn',
+    noteExp = 10,
+  }: {
+    to: string;
+    resetPasswordLink: string;
+    title?: string;
+    noteExp?: number;
+  }) {
+    this.sendSmtpEmail = {
+      subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
+      sender: { name: 'Phimhay247', email: 'account@phimhay247.site' },
+      to: [
+        {
+          email: to,
+        },
+      ],
+      templateId: 5,
+      params: {
+        title: title,
+        resetPasswordLink: resetPasswordLink,
+        noteExp: `Yêu cầu này của bạn sẽ hết hiệu lực sau ${noteExp} phút.`,
+      },
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+      },
+    };
+
+    return await SendiblueEmail.apiInstance
+      .sendTransacEmail(this.sendSmtpEmail)
+      .then((res) => res)
+      .catch((err) => {
         throw err.response;
       });
   }

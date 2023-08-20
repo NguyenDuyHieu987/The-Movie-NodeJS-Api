@@ -418,18 +418,20 @@ class AuthController {
                 { algorithm: 'HS256' }
               );
 
-              const emailResponse = await SendinblueEmail.SendEmail({
+              const emailResponse = await SendinblueEmail.VerificationOTP({
                 to: formUser.email,
                 otp: OTP,
                 title: 'Xác nhận đăng ký tài khoản',
                 noteExp: +process.env.OTP_EXP_OFFSET!,
               });
 
-              // console.log(emailResponse);
-
               res.set('Access-Control-Expose-Headers', 'Authorization');
 
-              res.header('Authorization', encoded).json({ success: true });
+              res.header('Authorization', encoded).json({
+                isSended: true,
+                exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
+                result: 'Send otp email successfully',
+              });
             } else {
               res.json({
                 isInValidEmail: true,
@@ -446,7 +448,76 @@ class AuthController {
         default:
           next(
             createHttpError.NotFound(
-              `Verify sign up with type: ${req.params.type} is not found!`
+              `Verify sign up with method: ${req.params.type} is not support!`
+            )
+          );
+          break;
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async forgot_password(req: Request, res: Response, next: NextFunction) {
+    try {
+      switch (req.params.type) {
+        case 'email':
+          const account = await Account.findOne({
+            email: req.body.email,
+            auth_type: 'email',
+          });
+
+          if (account != null) {
+            if (await ValidateEmail(req.body.email)) {
+              // if (true) {
+              const encoded = jwt.sign(
+                {
+                  id: account.id,
+                  email: account.email,
+                  auth_type: 'email',
+                  description: 'Forgot your password',
+                },
+                process.env.JWT_SIGNATURE_SECRET!,
+                { algorithm: 'HS256' }
+              );
+
+              const app_url =
+                process.env.NODE_ENV == 'production'
+                  ? process.env.APP_URL!
+                  : 'http://localhost:3000/';
+
+              const resetPasswordLink = `${app_url}/ForgotPassword?/#reset&token=${encoded}`;
+              console.log(resetPasswordLink);
+
+              const emailResponse =
+                await SendinblueEmail.VerificationForgotPassword({
+                  to: req.body.email,
+                  resetPasswordLink: resetPasswordLink,
+                  noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!,
+                });
+
+              res.json({
+                isSended: true,
+                exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+                result: 'Send email successfully',
+              });
+            } else {
+              res.json({
+                isInValidEmail: true,
+                result: 'Email is Invalid',
+              });
+            }
+          } else {
+            res.json({
+              isEmailExist: true,
+              result: 'Email is already exists',
+            });
+          }
+          break;
+        default:
+          next(
+            createHttpError.NotFound(
+              `Forgot password with method: ${req.params.type} is not support!`
             )
           );
           break;
