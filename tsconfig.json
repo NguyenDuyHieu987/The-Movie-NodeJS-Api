@@ -10,7 +10,7 @@
       "skipLibCheck": true,
       "strict": true,
       "allowJs": true,
-      "rootDir": "./",
+      "rootDir": "src",
       "outDir": "build",
       "baseUrl": "./",
       "noImplicitAny": true,
