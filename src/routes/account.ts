@@ -1,6 +1,5 @@
 import express from 'express';
 import Account from '@/controllers/accountController';
-
 const router = express.Router();
 
 router.post('/change-password', Account.changePassword);
