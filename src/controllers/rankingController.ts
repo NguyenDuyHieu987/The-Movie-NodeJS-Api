@@ -31,8 +31,8 @@ class RankingController extends RedisCache {
             .sort({ views: -1 });
 
           const tv1 = await TV.find()
-            .skip(0 * limit)
-            .limit(limit)
+            .skip(0 * (limit / 2))
+            .limit(limit / 2)
             .sort({ views: -1 });
 
           data = movie1.concat(tv1);
