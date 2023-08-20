@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
 import Plan from '@/models/plan';
 import RedisCache from '@/config/redis';
 
@@ -14,15 +15,19 @@ class PlanController extends RedisCache {
 
       const data = await Plan.find().sort({ order: 1 });
 
-      const response = { results: data };
+      if (data != null) {
+        const response = { results: data };
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(response)
-      );
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
 
-      res.json(response);
+        res.json(response);
+      } else {
+        next(createHttpError.NotFound(`Plan is not exist`));
+      }
     } catch (error) {
       next(error);
     }

@@ -33,3 +33,19 @@ export declare type SigupForm = {
   created_at: string;
   updated_at: string;
 };
+
+export declare type commentForm = {
+  id: String;
+  user_id: String;
+  movie_id: String;
+  content: String;
+  username: String;
+  user_avatar: String;
+  movie_type: String;
+  parent_id?: String = null;
+  type: 'children' | 'parent';
+  childrens?: Number;
+  updated: Boolean;
+  created_at?: string;
+  updated_at?: string;
+};

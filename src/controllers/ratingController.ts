@@ -26,9 +26,9 @@ class RatingController {
       });
 
       if (rate != null) {
-        res.json({ success: false });
-      } else {
         res.json({ success: true, result: rate });
+      } else {
+        next(createHttpError.NotFound(`Rate is not exist`));
       }
     } catch (error) {
       next(error);
@@ -100,7 +100,7 @@ class RatingController {
               (tv.vote_count! * tv.vote_average! + rateValue) /
               (tv.vote_count! + 1);
 
-            const movieUpdated = await Movie.findByIdAndUpdate(
+            const movieUpdated = await TV.findByIdAndUpdate(
               { id: movieId },
               {
                 $set: {
