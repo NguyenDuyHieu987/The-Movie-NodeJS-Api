@@ -10,7 +10,7 @@ import jwtRedis from '@/utils/jwtRedis';
 import ValidateEmail from '@/utils/EmailValidation';
 
 class AuthController {
-  async login(req: Request, res: Response, next: NextFunction) {
+  async logIn(req: Request, res: Response, next: NextFunction) {
     try {
       const account = await Account.findOne({
         email: req.body.email,
@@ -66,7 +66,7 @@ class AuthController {
     }
   }
 
-  async loginFacebook(req: Request, res: Response, next: NextFunction) {
+  async logInFacebook(req: Request, res: Response, next: NextFunction) {
     try {
       const accessToken: string = req.headers.authorization!.replace(
         'Bearer ',
@@ -191,7 +191,7 @@ class AuthController {
     }
   }
 
-  async loginGoogle(req: Request, res: Response, next: NextFunction) {
+  async logInGoogle(req: Request, res: Response, next: NextFunction) {
     try {
       const accessToken: string = req.headers.authorization!.replace(
         'Bearer ',
@@ -344,7 +344,7 @@ class AuthController {
     }
   }
 
-  async signup(req: Request, res: Response, next: NextFunction) {
+  async signUp(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token = req.headers.authorization!.replace('Bearer ', '');
 
@@ -383,7 +383,7 @@ class AuthController {
     }
   }
 
-  async signup_verify(req: Request, res: Response, next: NextFunction) {
+  async signUpVerify(req: Request, res: Response, next: NextFunction) {
     try {
       const formUser: SigupForm = req.body;
 
@@ -458,7 +458,7 @@ class AuthController {
     }
   }
 
-  async forgot_password(req: Request, res: Response, next: NextFunction) {
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
     try {
       switch (req.params.type) {
         case 'email':
@@ -525,6 +525,25 @@ class AuthController {
     } catch (error) {
       next(error);
     }
+  }
+
+  async logOut(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token: string = req.headers.authorization!.replace(
+        'Bearer ',
+        ''
+      );
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      });
+
+      await jwtRedis.sign(user_token, {
+        exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,
+      });
+
+      res.json({ isLogout: true, result: 'Log out successfully' });
+    } catch (error) {}
   }
 }
 
