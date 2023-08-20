@@ -12,9 +12,13 @@ import sortOptionRouter from './sortby';
 import listRouter from './list';
 import watchlistRouter from './watchlist';
 import authRouter from './auth';
-import ErrorHandler from '../controllers/errorController';
+import creditRouter from './credit';
+import videoRouter from './video';
+import imageRouter from './image';
+import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
+  app.use('/auth', authRouter);
   app.use('/movie', movieRouter);
   app.use('/tv', tvRouter);
   app.use('/search', searchRouter);
@@ -26,7 +30,9 @@ export default function route(app: Application) {
   app.use('/sortby', sortOptionRouter);
   app.use('/list', listRouter);
   app.use('/watchlist', watchlistRouter);
-  app.use('/auth', authRouter);
+  app.use('/credits', creditRouter);
+  app.use('/videos', videoRouter);
+  app.use('/images', imageRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
     return next(
       createHttpError(
