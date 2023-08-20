@@ -1,6 +1,6 @@
 import * as SibApiV3Sdk from '@sendinblue/client';
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs';
+// import path from 'path';
 // const EmailSender = fs
 //   .readFileSync(
 //     path.join(
@@ -14,7 +14,7 @@ import path from 'path';
 //     }
 //   )
 //   .toString();
-import EmailSender from '@/emailTemplates/EmailSender';
+// import EmailSender from '@/emailTemplates/EmailSender';
 
 class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
@@ -48,7 +48,8 @@ class SendiblueEmail {
           email: to,
         },
       ],
-      htmlContent: EmailSender,
+      // htmlContent: EmailSender,
+      templateId: 4,
       params: {
         title: title,
         PIN: otp,

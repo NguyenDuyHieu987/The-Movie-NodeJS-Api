@@ -395,7 +395,7 @@ class AuthController {
           });
 
           if (account == null) {
-            if (ValidateEmail(formUser.email)) {
+            if (await ValidateEmail(formUser.email)) {
               // if (true) {
               const OTP = GenerateOTP({ length: 6 });
 

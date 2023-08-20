@@ -1,25 +1,26 @@
 import fetch from 'node-fetch';
-// import dotenv from 'dotenv';
-// dotenv.config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-export default function ValidateEmail(email: string): boolean {
-  const emailValidateResponse: any = fetch(
+export default async function ValidateEmail(email: string): Promise<boolean> {
+  const emailValidateResponse: any = await fetch(
     `https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.EMAIL_VALIDATION_API_KEY}&email=${email}`
   ).then((res) => res.json());
 
-  //   const emailValidateResponse = fetch(
+  //   const emailValidateResponse = await fetch(
   //     `https://mailbite.io/api/check?key=${process.env.EMAIL_VALIDATION_API_KEY}&email=${email}`
   //   ).then((res) => res.json());
 
-  //   const emailValidateResponse = fetch(
+  //   const emailValidateResponse = await fetch(
   //     `https://api.zerobounce.net/v2/validate?api_key=${process.env.EMAIL_VALIDATION_API_KEY}&email=${email}`
   //   ).then((res) => res.json());
 
-  //   const emailValidateResponse = fetch(
+  //   const emailValidateResponse = await fetch(
   //     `https://emailverification.whoisxmlapi.com/api/v2?apiKey=${process.env.EMAIL_VALIDATION_API_KEY}&emailAddress=${email}`
   //   );
 
   ////   Abstractapi
+
   const isValid = emailValidateResponse.is_smtp_valid.value == true;
 
   //// Mailbite
