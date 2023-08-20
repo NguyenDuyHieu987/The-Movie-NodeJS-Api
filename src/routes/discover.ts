@@ -1,8 +1,7 @@
 import express from 'express';
-import discoverRouterController from '../controllers/DiscoverController';
+import Discover from '@/controllers/DiscoverController';
 const router = express.Router();
 
-// router.get('/:slug', tvController.detail);
-router.get('/:slug', discoverRouterController.index);
+router.get('/:slug', Discover.get);
 
 export default router;
