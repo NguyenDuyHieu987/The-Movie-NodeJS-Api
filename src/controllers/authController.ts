@@ -244,7 +244,7 @@ class AuthController {
       const account = await Account.findOne({ id: googleUser!.sub });
 
       if (account == null) {
-        Account.create({
+        await Account.create({
           id: googleUser.sub,
           username: googleUser.name,
           full_name: googleUser.name,
@@ -405,7 +405,7 @@ class AuthController {
       });
 
       if (account == null) {
-        Account.create({
+        await Account.create({
           id: user.id,
           username: user.username,
           password: user.password,

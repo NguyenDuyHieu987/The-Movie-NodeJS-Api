@@ -11,6 +11,7 @@ const Account = new mongoose.Schema(
     role: { type: String, enum: ['normal', 'admin'], default: 'normal' },
     auth_type: { type: String, enum: ['email', 'google', 'facebook'] },
     created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
   },
   { timestamps: true, versionKey: false }
 );

@@ -7,7 +7,6 @@ import Video from '@/models/video';
 import Credit from '@/models/credit';
 import List from '@/models/list';
 import History from '@/models/history';
-import Season from '@/models/Season';
 import createHttpError from 'http-errors';
 
 class TVController {

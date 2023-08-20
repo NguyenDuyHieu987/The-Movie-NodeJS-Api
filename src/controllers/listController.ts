@@ -3,12 +3,11 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import List from '@/models/list';
 import createHttpError from 'http-errors';
-import RedisCache from '@/config/redis';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import type { user } from '@/types';
 
-class ListController extends RedisCache {
+class ListController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token = req.headers.authorization!.replace('Bearer ', '');

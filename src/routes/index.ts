@@ -16,6 +16,8 @@ import creditRouter from './credit';
 import videoRouter from './video';
 import imageRouter from './image';
 import similarRouter from './similar';
+import planRouter from './plan';
+import ratingRouter from './rating';
 import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
@@ -35,6 +37,8 @@ export default function route(app: Application) {
   app.use('/videos', videoRouter);
   app.use('/images', imageRouter);
   app.use('/similar', similarRouter);
+  app.use('/plan', planRouter);
+  app.use('/rating', ratingRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
     return next(
       createHttpError(
