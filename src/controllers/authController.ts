@@ -37,7 +37,7 @@ class AuthController {
             process.env.JWT_SIGNATURE_SECRET!,
             {
               algorithm: 'HS256',
-              expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+              // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
             }
           );
 
@@ -122,7 +122,10 @@ class AuthController {
                 +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
+            {
+              algorithm: 'HS256',
+              // expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+            }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -174,7 +177,10 @@ class AuthController {
                 +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
+            {
+              algorithm: 'HS256',
+              //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+            }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -259,7 +265,10 @@ class AuthController {
                 +process.env.JWT_EXP_OFFSET! * 3600,
             },
             process.env.JWT_SIGNATURE_SECRET!,
-            { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
+            {
+              algorithm: 'HS256',
+              //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+            }
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -300,7 +309,10 @@ class AuthController {
               +process.env.JWT_EXP_OFFSET! * 3600,
           },
           process.env.JWT_SIGNATURE_SECRET!,
-          { algorithm: 'HS256', expiresIn: process.env.JWT_EXP_OFFSET! + 'h' }
+          {
+            algorithm: 'HS256',
+            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -440,7 +452,7 @@ class AuthController {
                 OTP,
                 {
                   algorithm: 'HS256',
-                  expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
+                  // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
                 }
               );
 
@@ -509,7 +521,7 @@ class AuthController {
                 process.env.JWT_SIGNATURE_SECRET!,
                 {
                   algorithm: 'HS256',
-                  expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+                  // expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
                 }
               );
 
