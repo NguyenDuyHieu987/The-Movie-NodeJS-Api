@@ -175,9 +175,12 @@ class HistoryController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const movieId = req.body.movie_id;
-      const mediaType = req.body.media_type;
-      const idItemHistory = uuidv4();
+      const movieId: string = req.body.movie_id;
+      const mediaType: string = req.body.media_type;
+      const idItemHistory: string = uuidv4();
+      const duration: number = req.body.duration;
+      const percent: number = req.body.percent;
+      const seconds: number = req.body.seconds;
 
       switch (mediaType) {
         case 'movie':
@@ -190,7 +193,7 @@ class HistoryController extends RedisCache {
               media_type: 'movie',
             });
 
-            if (itemHistory != null) {
+            if (itemHistory == null) {
               History.create({
                 id: idItemHistory,
                 user_id: user.id,
@@ -204,6 +207,9 @@ class HistoryController extends RedisCache {
                 poster_path: movie.poster_path,
                 dominant_backdrop_color: movie.dominant_backdrop_color,
                 dominant_poster_color: movie.dominant_poster_color,
+                duration: duration,
+                percent: percent,
+                seconds: seconds,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               });
@@ -213,11 +219,48 @@ class HistoryController extends RedisCache {
                 results: 'Add item to history suucessfully',
               });
             } else {
-              next(
-                createHttpError.InternalServerError(
-                  'Movie is already exist in history'
-                )
-              );
+              const oldDuration: number = itemHistory.duration!;
+              const oldSeconds: number = itemHistory.seconds!;
+              const oldPercent: number = itemHistory.percent!;
+
+              if (seconds > oldSeconds && percent > oldPercent) {
+                History.updateOne(
+                  {
+                    user_id: user.id,
+                    movie_id: movieId,
+                    media_type: 'movie',
+                  },
+                  {
+                    $set: {
+                      duration: duration,
+                      percent: percent,
+                      seconds: seconds,
+                      updated_at: new Date().toISOString(),
+                    },
+                  }
+                );
+              } else {
+                History.updateOne(
+                  {
+                    user_id: user.id,
+                    movie_id: movieId,
+                    media_type: 'movie',
+                  },
+                  {
+                    $set: {
+                      duration: duration,
+                      percent: percent,
+                      seconds: seconds,
+                      updated_at: new Date().toISOString(),
+                    },
+                  }
+                );
+              }
+
+              res.json({
+                success: true,
+                results: 'Add item to history suucessfully',
+              });
             }
           } else {
             next(createHttpError.NotFound('Movie is not exists'));
@@ -233,7 +276,7 @@ class HistoryController extends RedisCache {
               media_type: 'tv',
             });
 
-            if (itemHistory != null) {
+            if (itemHistory == null) {
               History.create({
                 id: idItemHistory,
                 user_id: user.id,
@@ -247,6 +290,9 @@ class HistoryController extends RedisCache {
                 poster_path: tv.poster_path,
                 dominant_backdrop_color: tv.dominant_backdrop_color,
                 dominant_poster_color: tv.dominant_poster_color,
+                duration: duration,
+                percent: percent,
+                seconds: seconds,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               });
@@ -256,11 +302,48 @@ class HistoryController extends RedisCache {
                 results: 'Add item to history suucessfully',
               });
             } else {
-              next(
-                createHttpError.InternalServerError(
-                  'Movie is already exist in history'
-                )
-              );
+              const oldDuration: number = itemHistory.duration!;
+              const oldSeconds: number = itemHistory.seconds!;
+              const oldPercent: number = itemHistory.percent!;
+
+              if (seconds > oldSeconds && percent > oldPercent) {
+                History.updateOne(
+                  {
+                    user_id: user.id,
+                    movie_id: movieId,
+                    media_type: 'tv',
+                  },
+                  {
+                    $set: {
+                      duration: duration,
+                      percent: percent,
+                      seconds: seconds,
+                      updated_at: new Date().toISOString(),
+                    },
+                  }
+                );
+              } else {
+                History.updateOne(
+                  {
+                    user_id: user.id,
+                    movie_id: movieId,
+                    media_type: 'tv',
+                  },
+                  {
+                    $set: {
+                      duration: duration,
+                      percent: percent,
+                      seconds: seconds,
+                      updated_at: new Date().toISOString(),
+                    },
+                  }
+                );
+              }
+
+              res.json({
+                success: true,
+                results: 'Add item to history suucessfully',
+              });
             }
           } else {
             next(createHttpError.NotFound('Movie is not exists'));
@@ -287,9 +370,9 @@ class HistoryController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const id = req.body?.id || null;
-      const movieId = req.body.movie_id;
-      const mediaType = req.body.media_type;
+      const id: string | null = req.body?.id || null;
+      const movieId: string = req.body.movie_id;
+      const mediaType: string = req.body.media_type;
 
       const result = await History.deleteOne(
         id != null
@@ -332,11 +415,11 @@ class HistoryController extends RedisCache {
       });
 
       if (result.deletedCount >= 1) {
-        const list = History.find({ user_id: user.id });
+        const history = History.find({ user_id: user.id });
 
         res.json({
           success: true,
-          results: list,
+          results: history,
         });
       } else {
         next(

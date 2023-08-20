@@ -175,9 +175,9 @@ class ListController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const movieId = req.body.movie_id;
-      const mediaType = req.body.media_type;
-      const idItemList = uuidv4();
+      const movieId: string = req.body.movie_id;
+      const mediaType: string = req.body.media_type;
+      const idItemList: string = uuidv4();
 
       switch (mediaType) {
         case 'movie':
@@ -190,7 +190,7 @@ class ListController extends RedisCache {
               media_type: 'movie',
             });
 
-            if (itemList != null) {
+            if (itemList == null) {
               List.create({
                 id: idItemList,
                 user_id: user.id,
@@ -233,7 +233,7 @@ class ListController extends RedisCache {
               media_type: 'tv',
             });
 
-            if (itemList != null) {
+            if (itemList == null) {
               List.create({
                 id: idItemList,
                 user_id: user.id,
@@ -287,9 +287,9 @@ class ListController extends RedisCache {
         algorithms: ['HS256'],
       }) as user;
 
-      const id = req.body?.id || null;
-      const movieId = req.body.movie_id;
-      const mediaType = req.body.media_type;
+      const id: string | null = req.body?.id || null;
+      const movieId: string = req.body.movie_id;
+      const mediaType: string = req.body.media_type;
 
       const result = await List.deleteOne(
         id != null
