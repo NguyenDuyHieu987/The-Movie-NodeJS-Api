@@ -1,5 +1,5 @@
 import express from 'express';
-import UpdateView from '@/controllers/UpdateViewContronllers';
+import UpdateView from '@/controllers/updateViewContronllers';
 
 const router = express.Router();
 
