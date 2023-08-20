@@ -5,10 +5,6 @@ import TV from '@/models/tv';
 import RedisCache from '@/config/redis';
 
 class RankingController extends RedisCache {
-  constructor() {
-    super();
-  }
-
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;

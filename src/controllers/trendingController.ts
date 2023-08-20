@@ -4,10 +4,6 @@ import Trending from '@/models/trending';
 import RedisCache from '@/config/redis';
 
 class TrendingController extends RedisCache {
-  constructor() {
-    super();
-  }
-
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;
