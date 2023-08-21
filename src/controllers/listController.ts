@@ -290,16 +290,11 @@ class ListController {
       const movieId: string = req.body.movie_id;
       const mediaType: string = req.body.media_type;
 
-      const result = await List.deleteOne(
-        id != null
-          ? {
-              id: id,
-              user_id: user.id,
-              movie_id: movieId,
-              media_type: mediaType,
-            }
-          : { user_id: user.id, movie_id: movieId, media_type: mediaType }
-      );
+      const result = await List.deleteOne({
+        user_id: user.id,
+        movie_id: movieId,
+        media_type: mediaType,
+      });
 
       if (result.deletedCount == 1) {
         res.json({
