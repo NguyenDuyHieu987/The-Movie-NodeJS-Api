@@ -22,6 +22,7 @@ import commentRouter from './comment';
 import rankingRouter from './ranking';
 import updateViewRouter from './updateView';
 import accountRouter from './account';
+import recommendRouter from './recommend';
 import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
@@ -42,6 +43,7 @@ export default function route(app: Application) {
   app.use('/videos', videoRouter);
   app.use('/images', imageRouter);
   app.use('/similar', similarRouter);
+  app.use('/recommend', recommendRouter);
   app.use('/plan', planRouter);
   app.use('/rating', ratingRouter);
   app.use('/comment', commentRouter);
