@@ -4,10 +4,6 @@ import SortOption from '@/models/sortby';
 import RedisCache from '@/config/redis';
 
 class SortOptionController extends RedisCache {
-  constructor() {
-    super();
-  }
-
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
