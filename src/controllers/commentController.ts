@@ -98,7 +98,7 @@ class CommentController {
 
         let result = null;
 
-        if (commentForm.hasOwnProperty('parent_id')) {
+        if (Object.hasOwnProperty.bind(commentForm)('parent_id')) {
           if (
             commentForm.parent_id != undefined &&
             commentForm.parent_id != null

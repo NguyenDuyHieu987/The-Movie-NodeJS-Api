@@ -296,8 +296,6 @@ class ListController {
         media_type: mediaType,
       });
 
-      console.log(result);
-
       if (result.deletedCount == 1) {
         res.json({
           success: true,
