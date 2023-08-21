@@ -409,7 +409,7 @@ class HistoryController {
       });
 
       if (result.deletedCount >= 1) {
-        const history = History.find({ user_id: user.id });
+        const history = await History.find({ user_id: user.id });
 
         res.json({
           success: true,

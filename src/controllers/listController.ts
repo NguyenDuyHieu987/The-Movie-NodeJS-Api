@@ -296,6 +296,8 @@ class ListController {
         media_type: mediaType,
       });
 
+      console.log(result);
+
       if (result.deletedCount == 1) {
         res.json({
           success: true,
@@ -324,7 +326,7 @@ class ListController {
       });
 
       if (result.deletedCount >= 1) {
-        const list = List.find({ user_id: user.id });
+        const list = await List.find({ user_id: user.id });
 
         res.json({
           success: true,
