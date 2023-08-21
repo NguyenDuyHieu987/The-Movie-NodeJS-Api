@@ -1,8 +1,8 @@
-import 'module-alias/register';
-import { addAliases } from 'module-alias';
-addAliases({
-  '@': `${__dirname}`,
-});
+// import 'module-alias/register';
+// import { addAliases } from 'module-alias';
+// addAliases({
+//   '@': `${__dirname}`,
+// });
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
