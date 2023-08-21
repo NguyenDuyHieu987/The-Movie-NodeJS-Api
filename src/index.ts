@@ -13,9 +13,10 @@ import multer from 'multer';
 import route from './routes';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
-dotenv.config();
 
 const redisCache = new RedisCache();
+
+dotenv.config();
 
 redisCache.connect();
 
