@@ -20,6 +20,10 @@ dotenv.config();
 
 redisCache.connect();
 
+process.on('exit', () => {
+  redisCache.quit();
+});
+
 MongoDB.connect();
 
 const app = express();

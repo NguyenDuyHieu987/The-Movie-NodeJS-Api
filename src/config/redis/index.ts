@@ -26,6 +26,10 @@ class RedisCache {
   async disConnect() {
     await RedisCache.client.disconnect();
   }
+
+  async quit() {
+    await RedisCache.client.quit();
+  }
 }
 
 export default RedisCache;
