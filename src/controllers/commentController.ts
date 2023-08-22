@@ -82,7 +82,7 @@ class CommentController {
           isExistMovies = (await TV.findOne({ id: movieId })) != null;
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${movieType} is not found`
             )
@@ -206,7 +206,7 @@ class CommentController {
           isExistMovies = (await TV.findOne({ id: movieId })) != null;
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${movieType} is not found`
             )
@@ -236,10 +236,12 @@ class CommentController {
         if (result.matchedCount == 1) {
           return res.json({ success: true, content: commentForm.content });
         } else {
-          return createHttpError.InternalServerError('Update comment failed');
+          return next(
+            createHttpError.InternalServerError('Update comment failed')
+          );
         }
       } else {
-        return createHttpError.NotFound('Movie is not exists');
+        return next(createHttpError.NotFound('Movie is not exists'));
       }
     } catch (error) {
       next(error);
@@ -267,7 +269,7 @@ class CommentController {
           isExistMovies = (await TV.findOne({ id: movieId })) != null;
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${movieType} is not found`
             )
@@ -288,19 +290,40 @@ class CommentController {
             type: 'parent',
           });
 
-          const result2 = await Comment.deleteMany({
+          const childrens = await Comment.find({
             movie_id: movieId,
             movie_type: movieType,
             parent_id: commentForm.id,
             type: 'children',
           });
 
-          if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
-            return res.json({
-              success: true,
+          if (childrens.length > 0) {
+            const result2 = await Comment.deleteMany({
+              movie_id: movieId,
+              movie_type: movieType,
+              parent_id: commentForm.id,
+              type: 'children',
             });
-          } else {
-            next(createHttpError.InternalServerError('Delete comment failed'));
+
+            if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
+              return res.json({
+                success: true,
+              });
+            } else {
+              return next(
+                createHttpError.InternalServerError('Delete comment failed')
+              );
+            }
+          } else if (childrens.length == 0) {
+            if (result1.deletedCount == 1) {
+              return res.json({
+                success: true,
+              });
+            } else {
+              return next(
+                createHttpError.InternalServerError('Delete comment failed')
+              );
+            }
           }
         } else if (commentForm.type == 'children') {
           const result1 = await Comment.deleteOne({
@@ -329,7 +352,9 @@ class CommentController {
               success: true,
             });
           } else {
-            next(createHttpError.InternalServerError('Delete comment failed'));
+            return next(
+              createHttpError.InternalServerError('Delete comment failed')
+            );
           }
         }
       } else {
