@@ -25,7 +25,12 @@ class CommentController {
         .skip(skip * limit)
         .limit(limit);
 
-      res.json({ results: comment });
+      const total = await Comment.countDocuments({
+        movie_id: movieId,
+        movie_type: movieType,
+      });
+
+      res.json({ results: comment, total: total });
     } catch (error) {
       next(error);
     }
