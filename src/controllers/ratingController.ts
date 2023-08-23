@@ -16,7 +16,7 @@ class RatingController {
         algorithms: ['HS256'],
       }) as user;
 
-      const mediaType: string = req.params.type;
+      const mediaType: string = req.params.movieType;
       const movieId: string = req.params.movieId;
 
       const rate = await Rate.findOne({
@@ -43,7 +43,7 @@ class RatingController {
         algorithms: ['HS256'],
       }) as user;
 
-      const mediaType = req.params.type;
+      const mediaType = req.params.movieType;
       const movieId = req.params.movieId;
       const rateValue: number = req.body.value;
 
