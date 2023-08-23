@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'The-Movie-NodeJs-Api'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E288F3B1546B4303B3C4C190EA8DC2AD }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8E4383D049A6419CB80EDFD48C906226 }}
           package: .
