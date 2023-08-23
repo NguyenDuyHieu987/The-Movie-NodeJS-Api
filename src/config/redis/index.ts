@@ -5,12 +5,14 @@ dotenv.config();
 class RedisCache {
   protected static client: RedisClientType = createClient({
     url: process.env.REDIS_URL,
+    username: 'default',
     password: process.env.REDIS_PASSWORD,
     socket: {
       host: process.env.REDIS_HOST,
       port: +process.env.REDIS_PORT!,
-      connectTimeout: 10000,
+      connectTimeout: 5000,
     },
+    pingInterval: 1000,
   });
 
   constructor() {}

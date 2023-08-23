@@ -43,8 +43,8 @@ class RatingController {
         algorithms: ['HS256'],
       }) as user;
 
-      const movieId = req.body.movieId;
-      const mediaType = req.body.type;
+      const mediaType = req.params.type;
+      const movieId = req.params.movieId;
       const rateValue: number = req.body.value;
 
       switch (mediaType) {
