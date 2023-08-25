@@ -7,9 +7,6 @@ const http_errors_1 = __importDefault(require("http-errors"));
 const sortby_1 = __importDefault(require("@/models/sortby"));
 const redis_1 = __importDefault(require("@/config/redis"));
 class SortOptionController extends redis_1.default {
-    constructor() {
-        super();
-    }
     async get(req, res, next) {
         try {
             const key = req.originalUrl;

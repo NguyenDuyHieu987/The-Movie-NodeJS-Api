@@ -26,6 +26,7 @@ const comment_1 = __importDefault(require("./comment"));
 const ranking_1 = __importDefault(require("./ranking"));
 const updateView_1 = __importDefault(require("./updateView"));
 const account_1 = __importDefault(require("./account"));
+const recommend_1 = __importDefault(require("./recommend"));
 const errorController_1 = __importDefault(require("@/controllers/errorController"));
 function route(app) {
     app.use('/auth', auth_1.default);
@@ -45,6 +46,7 @@ function route(app) {
     app.use('/videos', video_1.default);
     app.use('/images', image_1.default);
     app.use('/similar', similar_1.default);
+    app.use('/recommend', recommend_1.default);
     app.use('/plan', plan_1.default);
     app.use('/rating', rating_1.default);
     app.use('/comment', comment_1.default);

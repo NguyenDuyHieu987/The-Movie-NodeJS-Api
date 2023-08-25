@@ -24,7 +24,11 @@ class CommentController {
                 .sort({ created_at: -1 })
                 .skip(skip * limit)
                 .limit(limit);
-            res.json({ results: comment });
+            const total = await comment_1.default.countDocuments({
+                movie_id: movieId,
+                movie_type: movieType,
+            });
+            res.json({ results: comment, total: total });
         }
         catch (error) {
             next(error);
@@ -69,7 +73,7 @@ class CommentController {
                     isExistMovies = (await tv_1.default.findOne({ id: movieId })) != null;
                     break;
                 default:
-                    next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
+                    return next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
                     break;
             }
             if (isExistMovies) {
@@ -79,7 +83,7 @@ class CommentController {
                 }
                 const idComment = (0, uuid_1.v4)();
                 let result = null;
-                if (commentForm.hasOwnProperty('parent_id')) {
+                if (Object.hasOwnProperty.bind(commentForm)('parent_id')) {
                     if (commentForm.parent_id != undefined &&
                         commentForm.parent_id != null) {
                         result = await comment_1.default.create({
@@ -172,7 +176,7 @@ class CommentController {
                     isExistMovies = (await tv_1.default.findOne({ id: movieId })) != null;
                     break;
                 default:
-                    next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
+                    return next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
                     break;
             }
             if (isExistMovies) {
@@ -193,11 +197,11 @@ class CommentController {
                     return res.json({ success: true, content: commentForm.content });
                 }
                 else {
-                    return http_errors_1.default.InternalServerError('Update comment failed');
+                    return next(http_errors_1.default.InternalServerError('Update comment failed'));
                 }
             }
             else {
-                return http_errors_1.default.NotFound('Movie is not exists');
+                return next(http_errors_1.default.NotFound('Movie is not exists'));
             }
         }
         catch (error) {
@@ -221,7 +225,7 @@ class CommentController {
                     isExistMovies = (await tv_1.default.findOne({ id: movieId })) != null;
                     break;
                 default:
-                    next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
+                    return next(http_errors_1.default.NotFound(`Movie with type: ${movieType} is not found`));
                     break;
             }
             if (isExistMovies) {
@@ -235,19 +239,37 @@ class CommentController {
                         parent_id: null,
                         type: 'parent',
                     });
-                    const result2 = await comment_1.default.deleteMany({
+                    const childrens = await comment_1.default.find({
                         movie_id: movieId,
                         movie_type: movieType,
                         parent_id: commentForm.id,
                         type: 'children',
                     });
-                    if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
-                        return res.json({
-                            success: true,
+                    if (childrens.length > 0) {
+                        const result2 = await comment_1.default.deleteMany({
+                            movie_id: movieId,
+                            movie_type: movieType,
+                            parent_id: commentForm.id,
+                            type: 'children',
                         });
+                        if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
+                            return res.json({
+                                success: true,
+                            });
+                        }
+                        else {
+                            return next(http_errors_1.default.InternalServerError('Delete comment failed'));
+                        }
                     }
-                    else {
-                        next(http_errors_1.default.InternalServerError('Delete comment failed'));
+                    else if (childrens.length == 0) {
+                        if (result1.deletedCount == 1) {
+                            return res.json({
+                                success: true,
+                            });
+                        }
+                        else {
+                            return next(http_errors_1.default.InternalServerError('Delete comment failed'));
+                        }
                     }
                 }
                 else if (commentForm.type == 'children') {
@@ -273,7 +295,7 @@ class CommentController {
                         });
                     }
                     else {
-                        next(http_errors_1.default.InternalServerError('Delete comment failed'));
+                        return next(http_errors_1.default.InternalServerError('Delete comment failed'));
                     }
                 }
             }

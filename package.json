@@ -8,7 +8,7 @@
   "license": "ISC",
   "scripts": {
     "start": "cls && nodemon src/index.ts",
-    "start:prod": "npm run build && NODE_PATH=./ node build/index.js",
+    "start:prod": "rimraf ./build && tsc && NODE_PATH=./ node build/index.js",
     "build": "rimraf ./build && tsc",
     "test": "jest"
   },

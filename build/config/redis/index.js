@@ -9,11 +9,14 @@ dotenv_1.default.config();
 class RedisCache {
     static client = (0, redis_1.createClient)({
         url: process.env.REDIS_URL,
+        username: 'default',
         password: process.env.REDIS_PASSWORD,
         socket: {
             host: process.env.REDIS_HOST,
             port: +process.env.REDIS_PORT,
+            connectTimeout: 5000,
         },
+        pingInterval: 1000,
     });
     constructor() { }
     redisClient() {
@@ -24,6 +27,9 @@ class RedisCache {
     }
     async disConnect() {
         await RedisCache.client.disconnect();
+    }
+    async quit() {
+        await RedisCache.client.quit();
     }
 }
 exports.default = RedisCache;

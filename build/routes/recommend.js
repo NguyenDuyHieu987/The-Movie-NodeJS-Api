@@ -4,9 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const ratingController_1 = __importDefault(require("@/controllers/ratingController"));
+const recommendController_1 = __importDefault(require("@/controllers/recommendController"));
 const router = express_1.default.Router();
-router.get('/get/:movieType/:movieId', ratingController_1.default.get);
-router.post('/:movieType/:movieId', ratingController_1.default.rate);
+router.get('/get', recommendController_1.default.get);
 exports.default = router;
-//# sourceMappingURL=rating.js.map
+//# sourceMappingURL=recommend.js.map

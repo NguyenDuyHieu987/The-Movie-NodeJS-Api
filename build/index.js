@@ -19,8 +19,11 @@ const routes_1 = __importDefault(require("./routes"));
 const db_1 = __importDefault(require("./config/db"));
 const redis_1 = __importDefault(require("./config/redis"));
 const redisCache = new redis_1.default();
-redisCache.connect();
 dotenv_1.default.config();
+redisCache.connect();
+process.on('exit', () => {
+    redisCache.quit();
+});
 db_1.default.connect();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -38,8 +41,8 @@ app.use(body_parser_1.default.urlencoded({
 app.use((0, multer_1.default)().any());
 const server = http_1.default.createServer(app);
 (0, routes_1.default)(app);
-const PORT = 5000;
+const PORT = 3000;
 server.listen(process.env.PORT || PORT, () => {
-    console.log(`App listening on port: ${PORT}`);
+    console.log(`App is listening on port: ${PORT}`);
 });
 //# sourceMappingURL=index.js.map

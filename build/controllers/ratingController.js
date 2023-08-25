@@ -16,7 +16,7 @@ class RatingController {
             const user = jsonwebtoken_1.default.verify(user_token, process.env.JWT_SIGNATURE_SECRET, {
                 algorithms: ['HS256'],
             });
-            const mediaType = req.params.type;
+            const mediaType = req.params.movieType;
             const movieId = req.params.movieId;
             const rate = await rate_1.default.findOne({
                 user_id: user.id,
@@ -40,8 +40,8 @@ class RatingController {
             const user = jsonwebtoken_1.default.verify(user_token, process.env.JWT_SIGNATURE_SECRET, {
                 algorithms: ['HS256'],
             });
-            const movieId = req.body.movieId;
-            const mediaType = req.body.type;
+            const mediaType = req.params.movieType;
+            const movieId = req.params.movieId;
             const rateValue = req.body.value;
             switch (mediaType) {
                 case 'movie':

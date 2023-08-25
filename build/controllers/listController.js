@@ -251,14 +251,11 @@ class ListController {
             const id = req.body?.id || null;
             const movieId = req.body.movie_id;
             const mediaType = req.body.media_type;
-            const result = await list_1.default.deleteOne(id != null
-                ? {
-                    id: id,
-                    user_id: user.id,
-                    movie_id: movieId,
-                    media_type: mediaType,
-                }
-                : { user_id: user.id, movie_id: movieId, media_type: mediaType });
+            const result = await list_1.default.deleteOne({
+                user_id: user.id,
+                movie_id: movieId,
+                media_type: mediaType,
+            });
             if (result.deletedCount == 1) {
                 res.json({
                     success: true,
@@ -283,7 +280,7 @@ class ListController {
                 user_id: user.id,
             });
             if (result.deletedCount >= 1) {
-                const list = list_1.default.find({ user_id: user.id });
+                const list = await list_1.default.find({ user_id: user.id });
                 res.json({
                     success: true,
                     results: list,
