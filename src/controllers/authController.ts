@@ -361,6 +361,8 @@ class AuthController {
         algorithms: ['HS256'],
       }) as user;
 
+      console.log(req.headers['user-agent']);
+
       const isAlive = await jwtRedis.verify(user_token);
 
       if (isAlive) {

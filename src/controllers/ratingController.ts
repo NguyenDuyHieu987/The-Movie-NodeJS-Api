@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
 import Rate from '@/models/rate';
-import type { user } from '@/types';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
+import type { user } from '@/types';
 
 class RatingController {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -56,7 +56,7 @@ class RatingController {
               (movie.vote_count! * movie.vote_average! + rateValue) /
               (movie.vote_count! + 1);
 
-            const movieUpdated = await Movie.findByIdAndUpdate(
+            const movieUpdated = await Movie.findOneAndUpdate(
               { id: movieId },
               {
                 $set: {
@@ -100,7 +100,7 @@ class RatingController {
               (tv.vote_count! * tv.vote_average! + rateValue) /
               (tv.vote_count! + 1);
 
-            const movieUpdated = await TV.findByIdAndUpdate(
+            const movieUpdated = await TV.findOneAndUpdate(
               { id: movieId },
               {
                 $set: {

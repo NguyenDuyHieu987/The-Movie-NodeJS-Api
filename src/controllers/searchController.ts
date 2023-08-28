@@ -84,7 +84,7 @@ class SearchController {
 
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Search with type: ${req.params.type} is not found!`
             )

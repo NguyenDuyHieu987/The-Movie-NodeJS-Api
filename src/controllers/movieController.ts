@@ -7,6 +7,7 @@ import Video from '@/models/video';
 import Credit from '@/models/credit';
 import List from '@/models/list';
 import History from '@/models/history';
+import Rate from '@/models/rate';
 import createHttpError from 'http-errors';
 
 class MovieController {
@@ -68,11 +69,20 @@ class MovieController {
           process.env.JWT_SIGNATURE_SECRET!
         ) as user;
 
+        let extraValue2 = {};
+
         const item_list = await List.findOne({
           user_id: user.id,
           movie_id: req.params.id,
           media_type: 'movie',
         });
+
+        if (item_list != null) {
+          extraValue2 = {
+            ...extraValue2,
+            in_list: item_list != null,
+          };
+        }
 
         const item_history = await History.findOne({
           user_id: user.id,
@@ -81,29 +91,36 @@ class MovieController {
         });
 
         if (item_history != null) {
-          return res.json({
-            ...data?.toObject(),
-            ...extraValue,
-            ...{
-              in_list: item_list != null,
-              in_history: true,
-              history_progress: {
-                duration: item_history.duration,
-                percent: item_history.percent,
-                seconds: item_history.seconds,
-              },
+          extraValue2 = {
+            ...extraValue2,
+            history_progress: {
+              duration: item_history.duration,
+              percent: item_history.percent,
+              seconds: item_history.seconds,
             },
-          });
-        } else {
-          return res.json({
-            ...data?.toObject(),
-            ...extraValue,
-            ...{
-              in_list: item_list != null,
-              in_history: false,
-            },
-          });
+          };
         }
+
+        const item_rate = await Rate.findOne({
+          user_id: user.id,
+          movie_id: req.params.id,
+          movie_type: 'movie',
+        });
+
+        console.log(item_rate);
+
+        if (item_rate != null) {
+          extraValue2 = {
+            ...extraValue2,
+            rated_value: item_rate.rate_value,
+          };
+        }
+
+        return res.json({
+          ...data?.toObject(),
+          ...extraValue,
+          ...extraValue2,
+        });
       }
 
       return res.json({ ...data?.toObject(), ...extraValue });
