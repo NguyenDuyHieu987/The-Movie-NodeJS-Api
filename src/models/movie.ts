@@ -7,7 +7,14 @@ const Movie = new mongoose.Schema(
     backdrop_path: { type: String },
     belongs_to_collection: { type: Object },
     budget: { type: Number },
-    genres: { type: Array },
+    genres: {
+      type: [
+        {
+          id: Number,
+          name: String,
+        },
+      ],
+    },
     homepage: { type: String },
     id: { type: String, default: uuidv4() },
     imdb_id: { type: String },

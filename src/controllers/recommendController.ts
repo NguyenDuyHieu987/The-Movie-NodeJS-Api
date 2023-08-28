@@ -1,95 +1,113 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
+import List from '@/models/list';
+import History from '@/models/history';
 import RedisCache from '@/config/redis';
+import { user } from '@/types';
 
-class SimilarController extends RedisCache {
+class RecommendController extends RedisCache {
   constructor() {
     super();
   }
 
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const mediaType: string = req.params.type;
-      const movieId: string = req.params.movieId;
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
       const page: number = +req.query?.page! - 1 || 0;
       const limit: number = +req.query?.limit! || 12;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
-      let similar: any[] = [];
 
       if (dataCache != null) {
         return res.json(JSON.parse(dataCache));
       }
 
-      switch (mediaType) {
-        case 'movie':
-          const movie = await Movie.findOne({ id: movieId });
+      const list = await List.find({
+        user_id: user.id,
+      })
+        .skip(0)
+        .limit(20)
+        .sort({ created_at: -1 });
 
-          if (movie != null) {
-            const genre: any[] = movie.genres;
-            const country: string = movie.original_language!;
+      const history = await List.find({
+        user_id: user.id,
+      })
+        .skip(0)
+        .limit(20)
+        .sort({ created_at: -1 });
 
-            similar = await Movie.find({
-              id: {
-                $nin: [movieId],
-              },
-              $or: [
-                { original_language: { $regex: country } },
-                {
-                  genres: {
-                    $elemMatch: { $or: [...genre] },
-                  },
-                },
-              ],
-            })
-              .skip(page * limit)
-              .limit(limit)
-              .sort({ views: -1 });
-          } else {
-            return next(createHttpError.NotFound(`Movie is not exist`));
-          }
-          break;
-        case 'tv':
-          const tv = await TV.findOne({ id: movieId });
-
-          if (tv != null) {
-            const genre: any[] = tv.genres;
-            const country: string = tv.original_language!;
-
-            similar = await TV.find({
-              id: {
-                $nin: [movieId],
-              },
-              $or: [
-                { original_language: { $regex: country } },
-                {
-                  genres: {
-                    $elemMatch: { $or: [...genre] },
-                  },
-                },
-              ],
-            })
-              .skip(page * limit)
-              .limit(limit)
-              .sort({ views: -1 });
-          } else {
-            return next(createHttpError.NotFound(`Movie is not exist`));
-          }
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${mediaType} is not found`
-            )
-          );
-          break;
+      if (list.length == 0 && history.length == 0) {
+        return res.json({
+          results: [],
+        });
       }
+
+      let genres: any[] = [];
+      let countries: any[] = [];
+
+      list.forEach((item) => {
+        item.genres.forEach((genre) => {
+          genres = [...genres, { id: genre.id }];
+        });
+
+        countries = [...countries, item.original_language];
+      });
+
+      const movie = await Movie.find({
+        $or: [
+          {
+            original_language: {
+              $in: countries,
+            },
+          },
+          {
+            genres: {
+              $elemMatch: {
+                $or: genres,
+              },
+            },
+          },
+        ],
+      })
+        .skip(page * limit)
+        .limit(limit)
+        .sort({ views: -1 });
+
+      const tv = await TV.find({
+        $or: [
+          {
+            original_language: {
+              $in: countries,
+            },
+          },
+          {
+            genres: {
+              $elemMatch: {
+                $or: [...genres],
+              },
+            },
+          },
+        ],
+      })
+        .skip(page * limit)
+        .limit(limit)
+        .sort({ views: -1 });
+
+      const result = movie.concat(tv);
 
       const response = {
         page: page + 1,
-        results: similar,
+        results: result,
+        movie: movie,
+        tv: tv,
         page_size: limit,
       };
 
@@ -106,4 +124,4 @@ class SimilarController extends RedisCache {
   }
 }
 
-export default new SimilarController();
+export default new RecommendController();

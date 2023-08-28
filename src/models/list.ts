@@ -15,7 +15,14 @@ const List = new mongoose.Schema(
     original_language: { type: String },
     poster_path: { type: String },
     media_type: { type: String },
-    genres: { type: Array },
+    genres: {
+      type: [
+        {
+          id: Number,
+          name: String,
+        },
+      ],
+    },
     dominant_backdrop_color: { type: Array },
     dominant_poster_color: { type: Array },
     created_at: { type: Date, default: Date.now },

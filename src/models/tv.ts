@@ -8,7 +8,14 @@ const TV = new mongoose.Schema(
     created_by: { type: Array },
     episode_run_time: { type: Array },
     first_air_date: { type: String },
-    genres: { type: Array },
+    genres: {
+      type: [
+        {
+          id: Number,
+          name: String,
+        },
+      ],
+    },
     homepage: { type: String },
     id: { type: String, default: uuidv4() },
     in_production: { type: Boolean },

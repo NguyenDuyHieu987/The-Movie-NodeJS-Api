@@ -15,7 +15,14 @@ const History = new mongoose.Schema(
     original_language: { type: String },
     poster_path: { type: String },
     media_type: { type: String },
-    genres: { type: Array },
+    genres: {
+      type: [
+        {
+          id: Number,
+          name: String,
+        },
+      ],
+    },
     duration: { type: Number },
     percent: { type: Number },
     seconds: { type: Number },
