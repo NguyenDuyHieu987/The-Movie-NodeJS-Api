@@ -190,7 +190,7 @@ class ListController {
             });
 
             if (itemList == null) {
-              List.create({
+              await List.create({
                 id: idItemList,
                 user_id: user.id,
                 movie_id: movieId,
@@ -233,7 +233,7 @@ class ListController {
             });
 
             if (itemList == null) {
-              List.create({
+              await List.create({
                 id: idItemList,
                 user_id: user.id,
                 movie_id: movieId,

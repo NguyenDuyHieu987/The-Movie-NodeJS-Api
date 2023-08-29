@@ -2,7 +2,7 @@ import * as SibApiV3Sdk from '@sendinblue/client';
 // import fs from 'fs';
 // import path from 'path';
 // const EmailSender = fs
-//   .readFileSync(
+//   .readFile(
 //     path.join(
 //       __dirname
 //         .replace('utils', '')

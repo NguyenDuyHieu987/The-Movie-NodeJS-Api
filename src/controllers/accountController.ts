@@ -61,7 +61,7 @@ class AccountController {
           });
           break;
         case 'change-password':
-          const account = Account.findOne({
+          const account = await Account.findOne({
             email: user.email,
             auth_type: 'email',
             password: formUser.old_password,

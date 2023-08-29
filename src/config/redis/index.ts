@@ -10,7 +10,7 @@ class RedisCache {
     socket: {
       host: process.env.REDIS_HOST,
       port: +process.env.REDIS_PORT!,
-      connectTimeout: 5000,
+      connectTimeout: 50000,
     },
     pingInterval: 1000,
   });

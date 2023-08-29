@@ -193,7 +193,7 @@ class HistoryController {
             });
 
             if (itemHistory == null) {
-              History.create({
+              await History.create({
                 id: idItemHistory,
                 user_id: user.id,
                 movie_id: movieId,
@@ -223,7 +223,7 @@ class HistoryController {
               const oldPercent: number = itemHistory.percent!;
 
               if (seconds > oldSeconds && percent > oldPercent) {
-                History.updateOne(
+                await History.updateOne(
                   {
                     user_id: user.id,
                     movie_id: movieId,
@@ -239,7 +239,7 @@ class HistoryController {
                   }
                 );
               } else {
-                History.updateOne(
+                await History.updateOne(
                   {
                     user_id: user.id,
                     movie_id: movieId,
@@ -276,7 +276,7 @@ class HistoryController {
             });
 
             if (itemHistory == null) {
-              History.create({
+              await History.create({
                 id: idItemHistory,
                 user_id: user.id,
                 movie_id: movieId,
@@ -306,7 +306,7 @@ class HistoryController {
               const oldPercent: number = itemHistory.percent!;
 
               if (seconds > oldSeconds && percent > oldPercent) {
-                History.updateOne(
+                await History.updateOne(
                   {
                     user_id: user.id,
                     movie_id: movieId,
@@ -322,7 +322,7 @@ class HistoryController {
                   }
                 );
               } else {
-                History.updateOne(
+                await History.updateOne(
                   {
                     user_id: user.id,
                     movie_id: movieId,
