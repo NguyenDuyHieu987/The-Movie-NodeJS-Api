@@ -107,8 +107,6 @@ class MovieController {
           movie_type: 'movie',
         });
 
-        console.log(item_rate);
-
         if (item_rate != null) {
           extraValue2 = {
             ...extraValue2,
