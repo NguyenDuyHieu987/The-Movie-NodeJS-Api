@@ -14,6 +14,8 @@ const Comment = new mongoose.Schema(
     type: { type: String, enum: ['children', 'parent'], default: 'parent' },
     childrens: { type: Number },
     updated: { type: Boolean },
+    like: { type: Number },
+    dislike: { type: Number },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
   },

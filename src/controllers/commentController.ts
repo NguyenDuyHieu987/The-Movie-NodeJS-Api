@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
 import Comment from '@/models/comment';
+import CommentLike from '@/models/commentLike';
 import type { commentForm, user } from '@/types';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
@@ -119,6 +120,8 @@ class CommentController {
               parent_id: commentForm.parent_id,
               type: 'children',
               childrens: 0,
+              like: 0,
+              dislike: 0,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             });
@@ -149,6 +152,8 @@ class CommentController {
             parent_id: null,
             type: commentForm?.type || 'parent',
             childrens: 0,
+            like: 0,
+            dislike: 0,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -168,6 +173,8 @@ class CommentController {
               parent_id: commentForm?.parent_id || null,
               type: commentForm?.type || 'parent',
               childrens: 0,
+              like: 0,
+              dislike: 0,
               created_at: result.created_at,
               updated_at: result.updated_at,
             },
@@ -359,6 +366,264 @@ class CommentController {
         }
       } else {
         return createHttpError.NotFound('Movie is not exists');
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async like(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
+      const commentId: string = req.params.id;
+
+      const isLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'like',
+      });
+
+      const isDisLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'dislike',
+      });
+
+      if (isDisLike != null) {
+        const result = await CommentLike.deleteOne({
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'dislike',
+        });
+
+        const result2 = await Comment.findOneAndUpdate(
+          {
+            id: commentId,
+          },
+          {
+            $inc: { dislike: -1 },
+          },
+          {
+            returnDocument: 'after',
+          }
+        );
+
+        if (result.deletedCount < 1 || result2 == null) {
+          return next(
+            createHttpError.InternalServerError('Like comment failed')
+          );
+        }
+      }
+
+      if (isLike == null) {
+        const result = await CommentLike.create({
+          id: uuidv4(),
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'like',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+        if (result != null) {
+          const result2 = await Comment.findOneAndUpdate(
+            {
+              id: commentId,
+            },
+            {
+              $inc: { like: 1 },
+            },
+            {
+              returnDocument: 'after',
+            }
+          );
+
+          if (result2 != null) {
+            return res.json({
+              success: true,
+              action: 'like',
+              like: result2.like,
+            });
+          } else {
+            return next(
+              createHttpError.InternalServerError('Like comment failed')
+            );
+          }
+        } else {
+          return next(
+            createHttpError.InternalServerError('Like comment failed')
+          );
+        }
+      } else {
+        const result = await CommentLike.deleteOne({
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'like',
+        });
+
+        if (result.deletedCount == 1) {
+          const result2 = await Comment.findOneAndUpdate(
+            {
+              id: commentId,
+            },
+            {
+              $inc: { like: -1 },
+            },
+            {
+              returnDocument: 'after',
+            }
+          );
+
+          if (result2 != null) {
+            return res.json({
+              success: true,
+              action: 'unlike',
+              like: result2.like,
+            });
+          } else {
+            return next(
+              createHttpError.InternalServerError('Like comment failed')
+            );
+          }
+        } else {
+          return next(
+            createHttpError.InternalServerError('Like comment failed')
+          );
+        }
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async dislike(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
+      const commentId: string = req.params.id;
+
+      const isDisLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'dislike',
+      });
+
+      const isLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'like',
+      });
+
+      if (isLike != null) {
+        const result = await CommentLike.deleteOne({
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'like',
+        });
+
+        const result2 = await Comment.findOneAndUpdate(
+          {
+            id: commentId,
+          },
+          {
+            $inc: { like: -1 },
+          },
+          {
+            returnDocument: 'after',
+          }
+        );
+
+        if (result.deletedCount < 1 || result2 == null) {
+          return next(
+            createHttpError.InternalServerError('Dislike comment failed')
+          );
+        }
+      }
+
+      if (isDisLike == null) {
+        const result = await CommentLike.create({
+          id: uuidv4(),
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'dislike',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+        if (result != null) {
+          const result2 = await Comment.findOneAndUpdate(
+            {
+              id: commentId,
+            },
+            {
+              $inc: { dislike: 1 },
+            },
+            {
+              returnDocument: 'after',
+            }
+          );
+
+          if (result2 != null) {
+            return res.json({
+              success: true,
+              action: 'dislike',
+              dislike: result2.dislike,
+            });
+          } else {
+            return next(
+              createHttpError.InternalServerError('Dislike comment failed')
+            );
+          }
+        } else {
+          return next(
+            createHttpError.InternalServerError('Like comment failed')
+          );
+        }
+      } else {
+        const result = await CommentLike.deleteOne({
+          user_id: user.id,
+          comment_id: commentId,
+          type: 'dislike',
+        });
+
+        if (result.deletedCount == 1) {
+          const result2 = await Comment.findOneAndUpdate(
+            {
+              id: commentId,
+            },
+            {
+              $inc: { dislike: -1 },
+            },
+            {
+              returnDocument: 'after',
+            }
+          );
+
+          if (result2 != null) {
+            return res.json({
+              success: true,
+              action: 'undislike',
+              dislike: result2.dislike,
+            });
+          } else {
+            return next(
+              createHttpError.InternalServerError('Dislike comment failed')
+            );
+          }
+        } else {
+          return next(
+            createHttpError.InternalServerError('Dislike comment failed')
+          );
+        }
       }
     } catch (error) {
       next(error);
