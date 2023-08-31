@@ -9,5 +9,6 @@ router.put('/edit/:movieType/:movieId', Comment.edit);
 router.delete('/delete/:movieType/:movieId', Comment.delete);
 router.post('/like/:id', Comment.like);
 router.post('/dislike/:id', Comment.dislike);
+router.get('/check-like-dislike/:id', Comment.checkLikeDislike);
 
 export default router;

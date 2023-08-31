@@ -629,6 +629,46 @@ class CommentController {
       next(error);
     }
   }
+
+  async checkLikeDislike(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token = req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
+      const commentId: string = req.params.id;
+
+      const isLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'like',
+      });
+
+      if (isLike != null) {
+        return res.json({
+          success: true,
+          type: 'like',
+        });
+      }
+
+      const isDisLike = await CommentLike.findOne({
+        user_id: user.id,
+        comment_id: commentId,
+        type: 'dislike',
+      });
+
+      if (isDisLike != null) {
+        return res.json({
+          success: true,
+          type: 'dislike',
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new CommentController();
