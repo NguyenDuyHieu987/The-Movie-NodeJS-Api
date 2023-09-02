@@ -17,14 +17,86 @@ class CommentController {
       const movieId: string = req.params.movieId;
       const movieType: string = req.params.movieType;
 
-      const comment = await Comment.find({
-        movie_id: movieId,
-        movie_type: movieType,
-        type: 'parent',
-      })
-        .sort({ created_at: -1 })
-        .skip(skip * limit)
-        .limit(limit);
+      // const comment = await Comment.find({
+      //   movie_id: movieId,
+      //   movie_type: movieType,
+      //   type: 'parent',
+      // })
+      //   .sort({ created_at: -1 })
+      //   .skip(skip * limit)
+      //   .limit(limit);
+
+      const comment = await Comment.aggregate([
+        {
+          $match: {
+            movie_id: movieId,
+            movie_type: movieType,
+            type: 'parent',
+          },
+        },
+        {
+          $sort: { created_at: -1 },
+        },
+        {
+          $skip: skip * limit,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $lookup: {
+            from: 'comments',
+            localField: 'id',
+            foreignField: 'parent_id',
+            as: 'childrens',
+          },
+        },
+        {
+          $addFields: {
+            childrens: { $size: '$childrens' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'commentlikes',
+            localField: 'id',
+            foreignField: 'comment_id',
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$type', 'like'] },
+                },
+              },
+            ],
+            as: 'like',
+          },
+        },
+        {
+          $addFields: {
+            like: { $size: '$like' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'commentlikes',
+            localField: 'id',
+            foreignField: 'comment_id',
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$type', 'dislike'] },
+                },
+              },
+            ],
+            as: 'dislike',
+          },
+        },
+        {
+          $addFields: {
+            dislike: { $size: '$dislike' },
+          },
+        },
+      ]);
 
       const total = await Comment.countDocuments({
         movie_id: movieId,
@@ -119,25 +191,29 @@ class CommentController {
               movie_type: movieType,
               parent_id: commentForm.parent_id,
               type: 'children',
-              childrens: 0,
-              like: 0,
-              dislike: 0,
+              // childrens: 0,
+              // like: 0,
+              // dislike: 0,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             });
 
-            if (result != null) {
-              await Comment.updateOne(
-                {
-                  id: commentForm.parent_id,
-                  movie_id: movieId,
-                  movie_type: movieType,
-                  type: 'parent',
-                },
-                {
-                  $inc: { childrens: 1 },
-                }
-              );
+            // if (result != null) {
+            //   await Comment.updateOne(
+            //     {
+            //       id: commentForm.parent_id,
+            //       movie_id: movieId,
+            //       movie_type: movieType,
+            //       type: 'parent',
+            //     },
+            //     {
+            //       $inc: { childrens: 1 },
+            //     }
+            //   );
+            // }
+
+            if (result == null) {
+              createHttpError.InternalServerError('Post comment failed');
             }
           }
         } else {
@@ -151,9 +227,9 @@ class CommentController {
             movie_type: movieType,
             parent_id: null,
             type: commentForm?.type || 'parent',
-            childrens: 0,
-            like: 0,
-            dislike: 0,
+            // childrens: 0,
+            // like: 0,
+            // dislike: 0,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -342,19 +418,22 @@ class CommentController {
             type: 'children',
           });
 
-          const result2 = await Comment.updateOne(
-            {
-              id: commentForm.parent_id,
-              movie_id: movieId,
-              movie_type: movieType,
-              type: 'parent',
-            },
-            {
-              $inc: { childrens: -1 },
-            }
-          );
+          // const result2 = await Comment.updateOne(
+          //   {
+          //     id: commentForm.parent_id,
+          //     movie_id: movieId,
+          //     movie_type: movieType,
+          //     type: 'parent',
+          //   },
+          //   {
+          //     $inc: { childrens: -1 },
+          //   }
+          // );
 
-          if (result1.deletedCount == 1 && result2.modifiedCount == 1) {
+          if (
+            result1.deletedCount == 1
+            //  &&  result2.modifiedCount == 1
+          ) {
             return res.json({
               success: true,
             });
@@ -401,19 +480,22 @@ class CommentController {
           type: 'dislike',
         });
 
-        const result2 = await Comment.findOneAndUpdate(
-          {
-            id: commentId,
-          },
-          {
-            $inc: { dislike: -1 },
-          },
-          {
-            returnDocument: 'after',
-          }
-        );
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { dislike: -1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
 
-        if (result.deletedCount < 1 || result2 == null) {
+        if (
+          result.deletedCount < 1
+          // || result2 == null
+        ) {
           return next(
             createHttpError.InternalServerError('Like comment failed')
           );
@@ -431,29 +513,29 @@ class CommentController {
         });
 
         if (result != null) {
-          const result2 = await Comment.findOneAndUpdate(
-            {
-              id: commentId,
-            },
-            {
-              $inc: { like: 1 },
-            },
-            {
-              returnDocument: 'after',
-            }
-          );
+          // const result2 = await Comment.findOneAndUpdate(
+          //   {
+          //     id: commentId,
+          //   },
+          //   {
+          //     $inc: { like: 1 },
+          //   },
+          //   {
+          //     returnDocument: 'after',
+          //   }
+          // );
 
-          if (result2 != null) {
-            return res.json({
-              success: true,
-              action: 'like',
-              like: result2.like,
-            });
-          } else {
-            return next(
-              createHttpError.InternalServerError('Like comment failed')
-            );
-          }
+          // if (result2 != null) {
+          return res.json({
+            success: true,
+            action: 'like',
+            // like: result2.like,
+          });
+          // } else {
+          //   return next(
+          //     createHttpError.InternalServerError('Like comment failed')
+          //   );
+          // }
         } else {
           return next(
             createHttpError.InternalServerError('Like comment failed')
@@ -467,29 +549,29 @@ class CommentController {
         });
 
         if (result.deletedCount == 1) {
-          const result2 = await Comment.findOneAndUpdate(
-            {
-              id: commentId,
-            },
-            {
-              $inc: { like: -1 },
-            },
-            {
-              returnDocument: 'after',
-            }
-          );
+          // const result2 = await Comment.findOneAndUpdate(
+          //   {
+          //     id: commentId,
+          //   },
+          //   {
+          //     $inc: { like: -1 },
+          //   },
+          //   {
+          //     returnDocument: 'after',
+          //   }
+          // );
 
-          if (result2 != null) {
-            return res.json({
-              success: true,
-              action: 'unlike',
-              like: result2.like,
-            });
-          } else {
-            return next(
-              createHttpError.InternalServerError('Unlike comment failed')
-            );
-          }
+          // if (result2 != null) {
+          return res.json({
+            success: true,
+            action: 'unlike',
+            // like: result2.like,
+          });
+          // } else {
+          //   return next(
+          //     createHttpError.InternalServerError('Unlike comment failed')
+          //   );
+          // }
         } else {
           return next(
             createHttpError.InternalServerError('Unlike comment failed')
@@ -530,19 +612,22 @@ class CommentController {
           type: 'like',
         });
 
-        const result2 = await Comment.findOneAndUpdate(
-          {
-            id: commentId,
-          },
-          {
-            $inc: { like: -1 },
-          },
-          {
-            returnDocument: 'after',
-          }
-        );
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { like: -1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
 
-        if (result.deletedCount < 1 || result2 == null) {
+        if (
+          result.deletedCount < 1
+          // || result2 == null
+        ) {
           return next(
             createHttpError.InternalServerError('Dislike comment failed')
           );
@@ -560,29 +645,29 @@ class CommentController {
         });
 
         if (result != null) {
-          const result2 = await Comment.findOneAndUpdate(
-            {
-              id: commentId,
-            },
-            {
-              $inc: { dislike: 1 },
-            },
-            {
-              returnDocument: 'after',
-            }
-          );
+          // const result2 = await Comment.findOneAndUpdate(
+          //   {
+          //     id: commentId,
+          //   },
+          //   {
+          //     $inc: { dislike: 1 },
+          //   },
+          //   {
+          //     returnDocument: 'after',
+          //   }
+          // );
 
-          if (result2 != null) {
-            return res.json({
-              success: true,
-              action: 'dislike',
-              dislike: result2.dislike,
-            });
-          } else {
-            return next(
-              createHttpError.InternalServerError('Dislike comment failed')
-            );
-          }
+          // if (result2 != null) {
+          return res.json({
+            success: true,
+            action: 'dislike',
+            // dislike: result2.dislike,
+          });
+          // } else {
+          //   return next(
+          //     createHttpError.InternalServerError('Dislike comment failed')
+          //   );
+          // }
         } else {
           return next(
             createHttpError.InternalServerError('Dislike comment failed')
@@ -596,29 +681,29 @@ class CommentController {
         });
 
         if (result.deletedCount == 1) {
-          const result2 = await Comment.findOneAndUpdate(
-            {
-              id: commentId,
-            },
-            {
-              $inc: { dislike: -1 },
-            },
-            {
-              returnDocument: 'after',
-            }
-          );
+          // const result2 = await Comment.findOneAndUpdate(
+          //   {
+          //     id: commentId,
+          //   },
+          //   {
+          //     $inc: { dislike: -1 },
+          //   },
+          //   {
+          //     returnDocument: 'after',
+          //   }
+          // );
 
-          if (result2 != null) {
-            return res.json({
-              success: true,
-              action: 'undislike',
-              dislike: result2.dislike,
-            });
-          } else {
-            return next(
-              createHttpError.InternalServerError('Undislike comment failed')
-            );
-          }
+          // if (result2 != null) {
+          return res.json({
+            success: true,
+            action: 'undislike',
+            // dislike: result2.dislike,
+          });
+          // } else {
+          //   return next(
+          //     createHttpError.InternalServerError('Undislike comment failed')
+          //   );
+          // }
         } else {
           return next(
             createHttpError.InternalServerError('Undislike comment failed')
@@ -665,6 +750,10 @@ class CommentController {
           type: 'dislike',
         });
       }
+
+      return res.json({
+        success: false,
+      });
     } catch (error) {
       next(error);
     }
