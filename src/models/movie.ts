@@ -17,6 +17,8 @@ const Movie = new mongoose.Schema(
     },
     homepage: { type: String },
     id: { type: String, default: uuidv4() },
+    season_id: { type: String },
+    series_id: { type: String },
     imdb_id: { type: String },
     name: { type: String },
     original_language: { type: String },

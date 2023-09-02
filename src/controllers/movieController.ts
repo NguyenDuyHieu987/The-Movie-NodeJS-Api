@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
 import type { image, credit, user } from '@/types';
 import jwt from 'jsonwebtoken';
 import Movie from '@/models/movie';
@@ -8,29 +9,23 @@ import Credit from '@/models/credit';
 import List from '@/models/list';
 import History from '@/models/history';
 import Rate from '@/models/rate';
-import createHttpError from 'http-errors';
 
 class MovieController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await Movie.findOne({
-        id: req.params.id,
-      });
-
-      if (data == null) {
-        return next(
-          createHttpError.NotFound(
-            `Movie with id: ${req.params.id} is not found`
-          )
-        );
-      }
-
       let append_to_response: string[] | null = null;
       let extraValue: {
-        images?: image;
-        videos?: Object[];
-        credits?: credit;
-      } = {};
+        // images?: image;
+        // videos?: object[];
+        // credits?: credit;
+        images?: any[];
+        videos?: any[];
+        credits?: any[];
+      } = {
+        images: [],
+        videos: [],
+        credits: [],
+      };
 
       if (req.query?.append_to_response) {
         append_to_response = (req.query.append_to_response as string).split(
@@ -38,28 +33,96 @@ class MovieController {
         );
 
         if (append_to_response.includes('images')) {
-          const images = await Image.findOne({
-            id: req.params.id,
-          });
+          // const images = await Image.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.images = images!.items;
+          // extraValue!.images = images!.items;
+
+          extraValue.images = [
+            {
+              $lookup: {
+                from: 'images',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'images',
+              },
+            },
+            { $unwind: '$images' },
+            {
+              $addFields: {
+                images: '$images.items',
+              },
+            },
+          ];
         }
 
         if (append_to_response.includes('videos')) {
-          const videos = await Video.findOne({
-            id: req.params.id,
-          });
+          // const videos = await Video.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.videos = videos!.items;
+          // extraValue!.videos = videos!.items;
+
+          extraValue.videos = [
+            {
+              $lookup: {
+                from: 'videos',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'videos',
+              },
+            },
+            { $unwind: '$videos' },
+            {
+              $addFields: {
+                videos: '$videos.items',
+              },
+            },
+          ];
         }
 
         if (append_to_response.includes('credits')) {
-          const credits = await Credit.findOne({
-            id: req.params.id,
-          });
+          // const credits = await Credit.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.credits = credits!.items;
+          // extraValue!.credits = credits!.items;
+
+          extraValue.credits = [
+            {
+              $lookup: {
+                from: 'credits',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'credits',
+              },
+            },
+            { $unwind: '$credits' },
+            {
+              $addFields: {
+                credits: '$credits.items',
+              },
+            },
+          ];
         }
+      }
+
+      const data = await Movie.aggregate([
+        {
+          $match: { id: req.params.id },
+        },
+        ...extraValue.images!,
+        ...extraValue.videos!,
+        ...extraValue.credits!,
+      ]);
+
+      if (data.length == 0) {
+        return next(
+          createHttpError.NotFound(
+            `Movie with id: ${req.params.id} is not found`
+          )
+        );
       }
 
       if (req.headers?.authorization) {
@@ -115,13 +178,16 @@ class MovieController {
         }
 
         return res.json({
-          ...data?.toObject(),
-          ...extraValue,
+          ...data[0],
+          // ...extraValue,
           ...extraValue2,
         });
       }
 
-      return res.json({ ...data?.toObject(), ...extraValue });
+      return res.json({
+        ...data[0],
+        // ...extraValue
+      });
     } catch (error) {
       next(error);
     }

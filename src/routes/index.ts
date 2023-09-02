@@ -23,6 +23,9 @@ import rankingRouter from './ranking';
 import updateViewRouter from './updateView';
 import accountRouter from './account';
 import recommendRouter from './recommend';
+import seasonRouter from './season';
+import episodeRouter from './episode';
+
 import ErrorHandler from '@/controllers/errorController';
 
 export default function route(app: Application) {
@@ -30,6 +33,8 @@ export default function route(app: Application) {
   app.use('/account', accountRouter);
   app.use('/movie', movieRouter);
   app.use('/tv', tvRouter);
+  app.use('/season', seasonRouter);
+  app.use('/episode', episodeRouter);
   app.use('/search', searchRouter);
   app.use('/discover', discoverRouter);
   app.use('/trending', trendingRouter);

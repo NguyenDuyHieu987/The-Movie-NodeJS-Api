@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
 import type { image, credit, user } from '@/types';
 import jwt from 'jsonwebtoken';
 import TV from '@/models/tv';
@@ -8,27 +9,29 @@ import Credit from '@/models/credit';
 import List from '@/models/list';
 import History from '@/models/history';
 import Rate from '@/models/rate';
-import createHttpError from 'http-errors';
+import Season from '@/models/season';
 
 class TVController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await TV.findOne({
-        id: req.params.id,
-      });
-
-      if (data == null) {
-        return createHttpError.NotFound(
-          `Movie with id: ${req.params.id} is not found`
-        );
-      }
-
       let append_to_response: string[] | null = null;
       let extraValue: {
-        images?: image;
-        videos?: Object[];
-        credits?: credit;
-      } = {};
+        // images?: image;
+        // videos?: object[];
+        // credits?: credit;
+        // seasons?: any;
+        images?: any[];
+        videos?: any[];
+        credits?: any[];
+        seasons?: any[];
+        episodes?: any[];
+      } = {
+        images: [],
+        videos: [],
+        credits: [],
+        seasons: [],
+        episodes: [],
+      };
 
       if (req.query?.append_to_response) {
         append_to_response = (req.query.append_to_response as string).split(
@@ -36,28 +39,168 @@ class TVController {
         );
 
         if (append_to_response.includes('images')) {
-          const images = await Image.findOne({
-            id: req.params.id,
-          });
+          // const images = await Image.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.images = images!.items;
+          // extraValue!.images = images!.items;
+
+          extraValue.images = [
+            {
+              $lookup: {
+                from: 'images',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'images',
+              },
+            },
+            { $unwind: '$images' },
+            {
+              $addFields: {
+                images: '$images.items',
+              },
+            },
+          ];
         }
 
         if (append_to_response.includes('videos')) {
-          const videos = await Video.findOne({
-            id: req.params.id,
-          });
+          // const videos = await Video.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.videos = videos!.items;
+          // extraValue!.videos = videos!.items;
+
+          extraValue.videos = [
+            {
+              $lookup: {
+                from: 'videos',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'videos',
+              },
+            },
+            { $unwind: '$videos' },
+            {
+              $addFields: {
+                videos: '$videos.items',
+              },
+            },
+          ];
         }
 
         if (append_to_response.includes('credits')) {
-          const credits = await Credit.findOne({
-            id: req.params.id,
-          });
+          // const credits = await Credit.findOne({
+          //   movie_id: req.params.id,
+          // });
 
-          extraValue!.credits = credits!.items;
+          // extraValue!.credits = credits!.items;
+
+          extraValue.credits = [
+            {
+              $lookup: {
+                from: 'credits',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'credits',
+              },
+            },
+            { $unwind: '$credits' },
+            {
+              $addFields: {
+                credits: '$credits.items',
+              },
+            },
+          ];
         }
+
+        if (append_to_response.includes('seasons')) {
+          // const seasons = await Season.findOne({
+          //   movie_id: req.params.id,
+          // });
+
+          // extraValue!.seasons = seasons;
+
+          extraValue.seasons = [
+            {
+              $lookup: {
+                from: 'seasons',
+                localField: 'series_id',
+                foreignField: 'series_id',
+                as: 'seasons',
+              },
+            },
+            {
+              $addFields: {
+                number_of_seasons: { $size: '$seasons' },
+              },
+            },
+          ];
+        }
+
+        if (append_to_response.includes('episodes')) {
+          // const episodes = await Episode.findOne({
+          //   movie_id: req.params.id,
+          // });
+
+          // extraValue!.episodes = episodes;
+
+          extraValue.episodes = [
+            {
+              $lookup: {
+                from: 'episodes',
+                localField: 'id',
+                foreignField: 'movie_id',
+                as: 'episodes',
+              },
+            },
+            {
+              $lookup: {
+                from: 'episodes',
+                localField: 'season_id',
+                foreignField: 'season_id',
+                as: 'episodes',
+              },
+            },
+          ];
+        }
+      }
+
+      const data = await TV.aggregate([
+        {
+          $match: { id: req.params.id },
+        },
+        ...extraValue.images!,
+        ...extraValue.videos!,
+        ...extraValue.credits!,
+        ...extraValue.seasons!,
+        ...extraValue.episodes!,
+        {
+          $lookup: {
+            from: 'episodes',
+            localField: 'id',
+            foreignField: 'movie_id',
+            as: 'number_of_episodes',
+          },
+        },
+        {
+          $lookup: {
+            from: 'episodes',
+            localField: 'season_id',
+            foreignField: 'season_id',
+            as: 'number_of_episodes',
+          },
+        },
+        {
+          $addFields: {
+            number_of_episodes: { $size: '$number_of_episodes' },
+          },
+        },
+      ]);
+
+      if (data.length == 0) {
+        return createHttpError.NotFound(
+          `Movie with id: ${req.params.id} is not found`
+        );
       }
 
       if (req.headers?.authorization) {
@@ -113,13 +256,16 @@ class TVController {
         }
 
         return res.json({
-          ...data?.toObject(),
-          ...extraValue,
+          ...data[0],
+          // ...extraValue,
           ...extraValue2,
         });
       }
 
-      return res.json({ ...data?.toObject(), ...extraValue });
+      return res.json({
+        ...data[0],
+        //  ...extraValue
+      });
     } catch (error) {
       next(error);
     }

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import Genre from '@/models/genre';
 import RedisCache from '@/config/redis';
+import TV from '@/models/tv';
 
 class GenreController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -9,9 +10,52 @@ class GenreController extends RedisCache {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
+
+      // TV.updateMany(
+      //   { genres: { $elemMatch: { id: 10762 } } },
+      //   { $set: { 'genres.$[element].name': 'Trẻ em' } },
+      //   { upsert: true, arrayFilters: [{ 'element.id': 10762 }] }
+      // );
+
+      const tv = await TV.aggregate([
+        {
+          $match: {
+            id: 'dd8f8524-a584-527f-b4e3-2a8777c50e53',
+          },
+        },
+        {
+          $lookup: {
+            from: 'seasons',
+            localField: 'series_id',
+            foreignField: 'series_id',
+            as: 'seasons',
+          },
+        },
+        {
+          $addFields: {
+            number_of_seasons: { $size: '$seasons' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'videos',
+            localField: 'id',
+            foreignField: 'movie_id',
+            as: 'videos',
+          },
+        },
+        { $unwind: '$videos' },
+        {
+          $addFields: {
+            videos: '$videos.items',
+          },
+        },
+      ]);
+
+      return res.json(tv[0]);
 
       switch (req.params.slug) {
         case 'all':

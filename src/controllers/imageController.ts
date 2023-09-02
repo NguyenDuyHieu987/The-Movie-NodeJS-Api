@@ -12,15 +12,15 @@ class ImageController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const data = await Image.findOne({ id: req.params.id });
+      const data = await Image.findOne({ movie_id: req.params.id });
 
       await RedisCache.client.setEx(
         key,
         +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(data)
+        JSON.stringify(data!.items)
       );
 
-      res.json(data);
+      res.json(data!.items);
     } catch (error) {
       next(error);
     }

@@ -487,12 +487,12 @@ class CommentController {
             });
           } else {
             return next(
-              createHttpError.InternalServerError('Like comment failed')
+              createHttpError.InternalServerError('Unlike comment failed')
             );
           }
         } else {
           return next(
-            createHttpError.InternalServerError('Like comment failed')
+            createHttpError.InternalServerError('Unlike comment failed')
           );
         }
       }
@@ -585,7 +585,7 @@ class CommentController {
           }
         } else {
           return next(
-            createHttpError.InternalServerError('Like comment failed')
+            createHttpError.InternalServerError('Dislike comment failed')
           );
         }
       } else {
@@ -616,12 +616,12 @@ class CommentController {
             });
           } else {
             return next(
-              createHttpError.InternalServerError('Dislike comment failed')
+              createHttpError.InternalServerError('Undislike comment failed')
             );
           }
         } else {
           return next(
-            createHttpError.InternalServerError('Dislike comment failed')
+            createHttpError.InternalServerError('Undislike comment failed')
           );
         }
       }
