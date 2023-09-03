@@ -22,8 +22,7 @@ class MovieSlugController extends RedisCache {
         case 'all':
           data = await Movie.find()
             .skip(page * 20)
-            .limit(20)
-            .sort({ views: -1 });
+            .limit(20);
 
           total = await Movie.countDocuments({});
 

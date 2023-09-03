@@ -124,6 +124,15 @@ class TVController {
             {
               $lookup: {
                 from: 'seasons',
+                localField: 'season_id',
+                foreignField: 'id',
+                as: 'season',
+              },
+            },
+            { $unwind: '$season' },
+            {
+              $lookup: {
+                from: 'seasons',
                 localField: 'series_id',
                 foreignField: 'series_id',
                 as: 'seasons',
