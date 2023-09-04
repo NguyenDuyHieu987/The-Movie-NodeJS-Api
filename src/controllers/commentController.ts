@@ -26,6 +26,69 @@ class CommentController {
       //   .skip(skip * limit)
       //   .limit(limit);
 
+      let likeDislike: any[] = [];
+
+      if (req.headers?.authorization) {
+        const user_token = req.headers.authorization.replace('Bearer ', '');
+        const user = jwt.verify(
+          user_token,
+          process.env.JWT_SIGNATURE_SECRET!
+        ) as user;
+
+        likeDislike = [
+          {
+            $lookup: {
+              from: 'commentlikes',
+              localField: 'id',
+              foreignField: 'comment_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$type', 'like'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'is_like',
+            },
+          },
+          {
+            $addFields: {
+              is_like: {
+                $eq: [{ $size: '$is_like' }, 1],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'commentlikes',
+              localField: 'id',
+              foreignField: 'comment_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$type', 'dislike'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'is_dislike',
+            },
+          },
+          {
+            $addFields: {
+              is_dislike: {
+                $eq: [{ $size: '$is_dislike' }, 1],
+              },
+            },
+          },
+        ];
+      }
+
       const comment = await Comment.aggregate([
         {
           $match: {
@@ -96,6 +159,7 @@ class CommentController {
             dislike: { $size: '$dislike' },
           },
         },
+        ...likeDislike,
       ]);
 
       const total = await Comment.countDocuments({
@@ -118,15 +182,139 @@ class CommentController {
       const movieType: string = req.params.movieType;
       const parentId: string = req.params.parentId;
 
-      const comment = await Comment.find({
-        movie_id: movieId,
-        parent_id: parentId,
-        movie_type: movieType,
-        type: 'children',
-      })
-        .sort({ created_at: -1 })
-        .skip(skip * limit)
-        .limit(limit);
+      // const comment = await Comment.find({
+      //   movie_id: movieId,
+      //   parent_id: parentId,
+      //   movie_type: movieType,
+      //   type: 'children',
+      // })
+      //   .sort({ created_at: -1 })
+      //   .skip(skip * limit)
+      //   .limit(limit);
+
+      let likeDislike: any[] = [];
+
+      if (req.headers?.authorization) {
+        const user_token = req.headers.authorization.replace('Bearer ', '');
+        const user = jwt.verify(
+          user_token,
+          process.env.JWT_SIGNATURE_SECRET!
+        ) as user;
+
+        likeDislike = [
+          {
+            $lookup: {
+              from: 'commentlikes',
+              localField: 'id',
+              foreignField: 'comment_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$type', 'like'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'is_like',
+            },
+          },
+          {
+            $addFields: {
+              is_like: {
+                $eq: [{ $size: '$is_like' }, 1],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'commentlikes',
+              localField: 'id',
+              foreignField: 'comment_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$type', 'dislike'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'is_dislike',
+            },
+          },
+          {
+            $addFields: {
+              is_dislike: {
+                $eq: [{ $size: '$is_dislike' }, 1],
+              },
+            },
+          },
+        ];
+      }
+
+      const comment = await Comment.aggregate([
+        {
+          $match: {
+            movie_id: movieId,
+            parent_id: parentId,
+            movie_type: movieType,
+            type: 'children',
+          },
+        },
+        {
+          $sort: { created_at: -1 },
+        },
+        {
+          $skip: skip * limit,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $lookup: {
+            from: 'commentlikes',
+            localField: 'id',
+            foreignField: 'comment_id',
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$type', 'like'] },
+                },
+              },
+            ],
+            as: 'like',
+          },
+        },
+        {
+          $addFields: {
+            like: { $size: '$like' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'commentlikes',
+            localField: 'id',
+            foreignField: 'comment_id',
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$type', 'dislike'] },
+                },
+              },
+            ],
+            as: 'dislike',
+          },
+        },
+        {
+          $addFields: {
+            dislike: { $size: '$dislike' },
+          },
+        },
+        ...likeDislike,
+      ]);
 
       res.json({ results: comment });
     } catch (error) {
