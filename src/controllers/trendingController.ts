@@ -80,11 +80,9 @@ class TrendingController extends RedisCache {
           {
             $addFields: {
               history_progress: {
-                history_progress: {
-                  duration: '$history_progress.duration',
-                  percent: '$history_progress.percent',
-                  seconds: '$history_progress.seconds',
-                },
+                duration: '$history_progress.duration',
+                percent: '$history_progress.percent',
+                seconds: '$history_progress.seconds',
               },
             },
           },

@@ -108,22 +108,15 @@ class MovieController {
         }
       }
 
-      const data = await Movie.aggregate([
-        {
-          $match: { id: req.params.id },
-        },
-        ...extraValue.images!,
-        ...extraValue.videos!,
-        ...extraValue.credits!,
-      ]);
-
-      if (data.length == 0) {
-        return next(
-          createHttpError.NotFound(
-            `Movie with id: ${req.params.id} is not found`
-          )
-        );
-      }
+      let extraValue2: {
+        list: any[];
+        history: any[];
+        rate: any[];
+      } = {
+        list: [],
+        history: [],
+        rate: [],
+      };
 
       if (req.headers?.authorization) {
         const user_token = req.headers.authorization.replace('Bearer ', '');
@@ -132,56 +125,172 @@ class MovieController {
           process.env.JWT_SIGNATURE_SECRET!
         ) as user;
 
-        let extraValue2 = {};
+        // const item_list = await List.findOne({
+        //   user_id: user.id,
+        //   movie_id: req.params.id,
+        //   media_type: 'movie',
+        // });
 
-        const item_list = await List.findOne({
-          user_id: user.id,
-          movie_id: req.params.id,
-          media_type: 'movie',
-        });
+        // if (item_list != null) {
+        //   extraValue2 = {
+        //     ...extraValue2,
+        //     in_list: item_list != null,
+        //   };
+        // }
 
-        if (item_list != null) {
-          extraValue2 = {
-            ...extraValue2,
-            in_list: item_list != null,
-          };
-        }
-
-        const item_history = await History.findOne({
-          user_id: user.id,
-          movie_id: req.params.id,
-          media_type: 'movie',
-        });
-
-        if (item_history != null) {
-          extraValue2 = {
-            ...extraValue2,
-            history_progress: {
-              duration: item_history.duration,
-              percent: item_history.percent,
-              seconds: item_history.seconds,
+        extraValue2.list = [
+          {
+            $lookup: {
+              from: 'lists',
+              localField: 'id',
+              foreignField: 'movie_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$media_type', 'movie'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'in_list',
             },
-          };
-        }
+          },
+          {
+            $addFields: {
+              in_list: {
+                $eq: [{ $size: '$in_list' }, 1],
+              },
+            },
+          },
+        ];
 
-        const item_rate = await Rate.findOne({
-          user_id: user.id,
-          movie_id: req.params.id,
-          movie_type: 'movie',
-        });
+        // const item_history = await History.findOne({
+        //   user_id: user.id,
+        //   movie_id: req.params.id,
+        //   media_type: 'movie',
+        // });
 
-        if (item_rate != null) {
-          extraValue2 = {
-            ...extraValue2,
-            rated_value: item_rate.rate_value,
-          };
-        }
+        // if (item_history != null) {
+        //   extraValue2 = {
+        //     ...extraValue2,
+        //     history_progress: {
+        //       duration: item_history.duration,
+        //       percent: item_history.percent,
+        //       seconds: item_history.seconds,
+        //     },
+        //   };
+        // }
 
-        return res.json({
-          ...data[0],
-          // ...extraValue,
-          ...extraValue2,
-        });
+        extraValue2.history = [
+          {
+            $lookup: {
+              from: 'histories',
+              localField: 'id',
+              foreignField: 'movie_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$media_type', 'movie'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'history_progress',
+            },
+          },
+          {
+            $addFields: {
+              history_progress: {
+                $cond: [
+                  {
+                    $eq: [{ $size: '$history_progress' }, 1],
+                  },
+                  {
+                    duration: '$history_progress.duration',
+                    percent: '$history_progress.percent',
+                    seconds: '$history_progress.seconds',
+                  },
+                  '$$REMOVE',
+                ],
+              },
+            },
+          },
+        ];
+
+        // const item_rate = await Rate.findOne({
+        //   user_id: user.id,
+        //   movie_id: req.params.id,
+        //   movie_type: 'movie',
+        // });
+
+        // if (item_rate != null) {
+        //   extraValue2 = {
+        //     ...extraValue2,
+        //     rated_value: item_rate.rate_value,
+        //   };
+        // }
+
+        extraValue2.rate = [
+          {
+            $lookup: {
+              from: 'rates',
+              localField: 'id',
+              foreignField: 'movie_id',
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: ['$movie_type', 'movie'] } },
+                      { $expr: { $eq: ['$user_id', user.id] } },
+                    ],
+                  },
+                },
+              ],
+              as: 'rated_value',
+            },
+          },
+          {
+            $unwind: {
+              path: '$rated_value',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $addFields: {
+              rated_value: '$rated_value.rate_value',
+            },
+          },
+        ];
+
+        // return res.json({
+        //   ...data[0],
+        //   // ...extraValue,
+        //   ...extraValue2,
+        // });
+      }
+
+      const data = await Movie.aggregate([
+        {
+          $match: { id: req.params.id },
+        },
+        ...extraValue.images!,
+        ...extraValue.videos!,
+        ...extraValue.credits!,
+        ...extraValue2.list,
+        ...extraValue2.history,
+        ...extraValue2.rate,
+      ]);
+
+      if (data.length == 0) {
+        return next(
+          createHttpError.NotFound(
+            `Movie with id: ${req.params.id} is not found`
+          )
+        );
       }
 
       return res.json({

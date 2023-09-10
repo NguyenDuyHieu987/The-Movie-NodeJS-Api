@@ -7,15 +7,14 @@ import RedisCache from '@/config/redis';
 class DiscoverController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
+      const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 20;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
       if (dataCache != null) {
         return res.json(JSON.parse(dataCache));
       }
-
-      const page: number = +req.query?.page! - 1 || 0;
-      const limit: number = +req.query?.limit! || 20;
 
       const sortBy: string = (req.query?.sort_by as string) || '';
 
@@ -44,8 +43,7 @@ class DiscoverController extends RedisCache {
               $lt: data_lte,
             },
           };
-        }
-        return {};
+        } else return {};
       };
 
       const convertFirstAirDate = (date_gte: string, data_lte: string) => {
@@ -62,8 +60,7 @@ class DiscoverController extends RedisCache {
               $lt: data_lte,
             },
           };
-        }
-        return {};
+        } else return {};
       };
 
       const releaseDate = convertReleaseDate(
@@ -221,66 +218,54 @@ class DiscoverController extends RedisCache {
           }
           break;
 
-        case 'movieall':
+        case 'movie':
           switch (sortBy) {
             case 'views_desc':
-              const movie1 = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ views: -1 });
-
-              result.results = movie1;
               break;
             case 'release_date_desc':
-              const movie2 = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ release_date: -1 });
-
-              result.results = movie2;
               break;
             case 'revenue_desc':
-              const movie3 = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ revenue: -1 });
-
-              result.results = movie3;
               break;
             case 'vote_average_desc':
-              const movie4 = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_average: -1 });
-
-              result.results = movie4;
               break;
             case 'vote_count_desc':
-              const movie5 = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_count: -1 });
-
-              result.results = movie5;
               break;
             case '':
-              const movie = await Movie.find({
+              result.results = await Movie.find({
                 $and: [releaseDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit);
-
-              result.results = movie;
               break;
             default:
               return next(
@@ -291,66 +276,54 @@ class DiscoverController extends RedisCache {
               break;
           }
           break;
-        case 'tvall':
+        case 'tv':
           switch (sortBy) {
             case 'views_desc':
-              const tv1 = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ views: -1 });
-
-              result.results = tv1;
               break;
             case 'release_date_desc':
-              const tv2 = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ first_air_date: -1 });
-
-              result.results = tv2;
               break;
             case 'revenue_desc':
-              const tv3 = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ revenue: -1 });
-
-              result.results = tv3;
               break;
             case 'vote_average_desc':
-              const tv4 = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_average: -1 });
-
-              result.results = tv4;
               break;
             case 'vote_count_desc':
-              const tv5 = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_count: -1 });
-
-              result.results = tv5;
               break;
             case '':
-              const tv = await TV.find({
+              result.results = await TV.find({
                 $and: [firstAirDate, genres, originalLanguage],
               })
                 .skip(page * limit)
                 .limit(limit);
-
-              result.results = tv;
               break;
             default:
               return next(
