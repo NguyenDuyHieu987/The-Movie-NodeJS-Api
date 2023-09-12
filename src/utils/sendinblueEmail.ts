@@ -42,7 +42,7 @@ class SendiblueEmail {
   }) {
     this.sendSmtpEmail = {
       subject: 'Mã xác thực email của bạn',
-      sender: { name: 'Phimhay247', email: 'account@phimhay247.site' },
+      sender: { name: 'Phimhay247', email: 'account@phimhay247z.org' },
       to: [
         {
           email: to,
