@@ -83,7 +83,7 @@ class SendiblueEmail {
   }) {
     this.sendSmtpEmail = {
       subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
-      sender: { name: 'Phimhay247', email: 'account@phimhay247.site' },
+      sender: { name: 'Phimhay247', email: 'account@phimhay247z.org' },
       to: [
         {
           email: to,
