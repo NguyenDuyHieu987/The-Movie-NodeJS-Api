@@ -4,18 +4,21 @@ dotenv.config();
 
 class RedisCache {
   protected static client: RedisClientType = createClient({
-    url: process.env.REDIS_URL,
+    url:
+      process.env.NODE_ENV == 'production'
+        ? process.env.REDIS_URL
+        : 'redis://127.0.0.1:6379',
     // username: 'default',
     // password: process.env.REDIS_PASSWORD,
-    socket: {
-      host:
-        process.env.NODE_ENV == 'production'
-          ? process.env.REDIS_HOST
-          : '127.0.0.1',
-      port:
-        process.env.NODE_ENV == 'production' ? +process.env.REDIS_PORT! : 6379,
-      connectTimeout: 50000,
-    },
+    // socket: {
+    //   host:
+    //     process.env.NODE_ENV == 'production'
+    //       ? process.env.REDIS_HOST
+    //       : '127.0.0.1',
+    //   port:
+    //     process.env.NODE_ENV == 'production' ? +process.env.REDIS_PORT! : 6379,
+    //   connectTimeout: 50000,
+    // },
     pingInterval: 1000,
   });
 
