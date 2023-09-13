@@ -170,11 +170,11 @@ class TVController {
                 as: 'episodes',
               },
             },
-            {
-              $addFields: {
-                number_of_episodes: { $size: '$episodes' },
-              },
-            },
+            // {
+            //   $addFields: {
+            //     number_of_episodes: { $size: '$episodes' },
+            //   },
+            // },
           ];
         }
       }
