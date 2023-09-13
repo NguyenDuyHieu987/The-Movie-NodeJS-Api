@@ -31,6 +31,7 @@ class UpdateViewController {
           );
 
           isUpdate = tv.modifiedCount == 1;
+          break;
         default:
           return next(
             createHttpError.NotFound(
