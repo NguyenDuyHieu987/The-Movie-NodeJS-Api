@@ -432,6 +432,14 @@ class AuthController {
         res.json({ isAccountExist: true, result: 'Account is already exists' });
       }
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isOTPExpired: true, result: 'OTP is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
+      }
+
       next(error);
     }
   }
