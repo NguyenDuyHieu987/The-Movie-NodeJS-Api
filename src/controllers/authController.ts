@@ -47,7 +47,16 @@ class AuthController {
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          return res.header('Authorization', encoded).json({
+          res.cookie('user_token', encoded, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+          });
+
+          res.header('Authorization', encoded);
+
+          return res.json({
             isLogin: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
@@ -145,8 +154,8 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
-
-          return res.header('Authorization', encoded).json({
+          res.header('Authorization', encoded);
+          return res.json({
             isSignUp: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
@@ -200,8 +209,8 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
-
-          return res.header('Authorization', encoded).json({
+          res.header('Authorization', encoded);
+          return res.json({
             isLogin: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
@@ -288,8 +297,9 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
+          res.header('Authorization', encoded);
 
-          return res.header('Authorization', encoded).json({
+          return res.json({
             isSignUp: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
             result: {
@@ -332,8 +342,9 @@ class AuthController {
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
+        res.header('Authorization', encoded);
 
-        return res.header('Authorization', encoded).json({
+        return res.json({
           isLogin: true,
           exp_token_hours: process.env.JWT_EXP_OFFSET!,
           result: {
@@ -367,8 +378,9 @@ class AuthController {
 
       if (isAlive) {
         res.set('Access-Control-Expose-Headers', 'Authorization');
+        res.header('Authorization', user_token);
 
-        return res.header('Authorization', user_token).json({
+        return res.json({
           isLogin: true,
           result: {
             id: user.id,
@@ -490,8 +502,9 @@ class AuthController {
               });
 
               res.set('Access-Control-Expose-Headers', 'Authorization');
+              res.header('Authorization', encoded);
 
-              res.header('Authorization', encoded).json({
+              res.json({
                 isSended: true,
                 exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
                 result: 'Send otp email successfully',

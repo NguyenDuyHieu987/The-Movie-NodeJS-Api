@@ -4,9 +4,9 @@ import Authentication from '@/controllers/authController';
 const router = express.Router();
 
 router.post('/login', Authentication.logIn);
-router.post('/loginfacebook', Authentication.logInFacebook);
-router.post('/logingoogle', Authentication.logInGoogle);
-router.get('/getusertoken', Authentication.getUserByToken);
+router.post('/login-facebook', Authentication.logInFacebook);
+router.post('/login-google', Authentication.logInGoogle);
+router.get('/getuser', Authentication.getUserByToken);
 router.post('/verify-signup/:type', Authentication.signUpVerify);
 router.post('/signup', Authentication.signUp);
 router.post('/forgot-password/:type', Authentication.forgotPassword);
