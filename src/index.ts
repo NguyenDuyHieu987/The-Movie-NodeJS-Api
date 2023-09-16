@@ -6,6 +6,7 @@ addAliases({
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import compression from 'compression';
@@ -28,7 +29,19 @@ MongoDB.connect();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: [
+      'http://localhost:3000',
+      'https://phimhay247z.org',
+      'https://dash.phimhay247z.org',
+      'https://dashboard.phimhay247z.org',
+      // www
+      'https://www.phimhay247z.org',
+    ],
+  })
+);
 app.use(compression());
 // app.use(express.json());
 // app.use(
@@ -36,6 +49,8 @@ app.use(compression());
 //     extended: true,
 //   })
 // );
+
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
