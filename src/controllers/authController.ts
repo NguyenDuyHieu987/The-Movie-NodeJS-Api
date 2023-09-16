@@ -48,9 +48,9 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: true,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
-            sameSite: 'none',
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
 
@@ -154,7 +154,16 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
+
+          res.cookie('user_token', encoded, {
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+          });
+
           res.header('Authorization', encoded);
+
           return res.json({
             isSignUp: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
@@ -209,7 +218,16 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
+
+          res.cookie('user_token', encoded, {
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+          });
+
           res.header('Authorization', encoded);
+
           return res.json({
             isLogin: true,
             exp_token_hours: +process.env.JWT_EXP_OFFSET!,
@@ -297,6 +315,14 @@ class AuthController {
           );
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
+
+          res.cookie('user_token', encoded, {
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+          });
+
           res.header('Authorization', encoded);
 
           return res.json({
@@ -342,6 +368,14 @@ class AuthController {
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+        });
+
         res.header('Authorization', encoded);
 
         return res.json({
@@ -366,7 +400,9 @@ class AuthController {
 
   async getUserByToken(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -378,6 +414,7 @@ class AuthController {
 
       if (isAlive) {
         res.set('Access-Control-Expose-Headers', 'Authorization');
+
         res.header('Authorization', user_token);
 
         return res.json({
@@ -398,10 +435,12 @@ class AuthController {
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
+        res.clearCookie('user_token');
         return res.json({ isTokenExpired: true, result: 'Token is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
+        res.clearCookie('user_token');
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
@@ -411,9 +450,9 @@ class AuthController {
 
   async signUp(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const signup_token = req.headers.authorization!.replace('Bearer ', '');
 
-      const user = jwt.verify(user_token, req.body.otp, {
+      const user = jwt.verify(signup_token, req.body.otp, {
         algorithms: ['HS256'],
       }) as SigupForm;
 
@@ -611,10 +650,9 @@ class AuthController {
 
   async logOut(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token: string = req.headers.authorization!.replace(
-        'Bearer ',
-        ''
-      );
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -624,8 +662,17 @@ class AuthController {
         exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,
       });
 
+      res.clearCookie('user_token');
+
       res.json({ isLogout: true, result: 'Log out successfully' });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
+
       next(error);
     }
   }

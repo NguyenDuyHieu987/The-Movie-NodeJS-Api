@@ -29,7 +29,10 @@ class CommentController {
       let likeDislike: any[] = [];
 
       if (req.headers?.authorization) {
-        const user_token = req.headers.authorization.replace('Bearer ', '');
+        const user_token =
+          req.cookies.user_token ||
+          req.headers.authorization!.replace('Bearer ', '');
+
         const user = jwt.verify(
           user_token,
           process.env.JWT_SIGNATURE_SECRET!
@@ -169,6 +172,12 @@ class CommentController {
 
       res.json({ results: comment, total: total });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
@@ -195,7 +204,10 @@ class CommentController {
       let likeDislike: any[] = [];
 
       if (req.headers?.authorization) {
-        const user_token = req.headers.authorization.replace('Bearer ', '');
+        const user_token =
+          req.cookies.user_token ||
+          req.headers.authorization!.replace('Bearer ', '');
+
         const user = jwt.verify(
           user_token,
           process.env.JWT_SIGNATURE_SECRET!
@@ -318,13 +330,21 @@ class CommentController {
 
       res.json({ results: comment });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async post(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -452,13 +472,21 @@ class CommentController {
         return next(createHttpError.NotFound('Movie is not exists'));
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async edit(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -515,13 +543,21 @@ class CommentController {
         return next(createHttpError.NotFound('Movie is not exists'));
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -635,13 +671,21 @@ class CommentController {
         return createHttpError.NotFound('Movie is not exists');
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async like(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -767,13 +811,21 @@ class CommentController {
         }
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async dislike(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -899,13 +951,21 @@ class CommentController {
         }
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async checkLikeDislike(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -943,6 +1003,12 @@ class CommentController {
         success: false,
       });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }

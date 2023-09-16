@@ -10,7 +10,9 @@ import type { user } from '@/types';
 class ListController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -76,13 +78,21 @@ class ListController {
         total: total,
       });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async search(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -135,13 +145,21 @@ class ListController {
         total: data.length,
       });
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async getItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -162,13 +180,21 @@ class ListController {
         });
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async addItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -274,13 +300,21 @@ class ListController {
           break;
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -307,13 +341,21 @@ class ListController {
         );
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async removeAllItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -338,6 +380,12 @@ class ListController {
         );
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }

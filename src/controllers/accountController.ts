@@ -14,7 +14,9 @@ class AccountController {
 
   async verify(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -147,29 +149,26 @@ class AccountController {
         });
       }
     } catch (error) {
+      if (
+        error instanceof jwt.TokenExpiredError ||
+        error instanceof jwt.JsonWebTokenError
+      ) {
+        res.clearCookie('user_token');
+      }
       next(error);
     }
   }
 
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const verify_token = req.headers.authorization!.replace('Bearer ', '');
 
-      const user = jwt.verify(user_token, req.body.otp, {
+      const user = jwt.verify(verify_token, req.body.otp, {
         algorithms: ['HS256'],
       }) as user & {
         old_password: string;
         new_password: string;
       };
-
-      const isAlive = await jwtRedis.verify(user_token);
-
-      if (!isAlive) {
-        return res.json({
-          isTokenAlive: false,
-          result: 'Token is no longer active',
-        });
-      }
 
       const result = await Account.updateOne(
         {
@@ -192,11 +191,11 @@ class AccountController {
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+        return res.json({ isOTPExpired: true, result: 'OTP is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+        return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
       }
 
       next(error);
@@ -205,24 +204,16 @@ class AccountController {
 
   async changeEmail(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const verify_token = req.headers.authorization!.replace('Bearer ', '');
+
       const formUser = req.body;
 
-      const user = jwt.verify(user_token, formUser.otp, {
+      const user = jwt.verify(verify_token, formUser.otp, {
         algorithms: ['HS256'],
       }) as user & {
         old_password: string;
         new_password: string;
       };
-
-      const isAlive = await jwtRedis.verify(user_token);
-
-      if (!isAlive) {
-        return res.json({
-          isTokenAlive: false,
-          result: 'Token is no longer active',
-        });
-      }
 
       const result = await Account.updateOne(
         {
@@ -246,11 +237,11 @@ class AccountController {
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+        return res.json({ isOTPExpired: true, result: 'OTP is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+        return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
       }
 
       next(error);
