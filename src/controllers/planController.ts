@@ -35,16 +35,10 @@ class PlanController extends RedisCache {
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      req.signedCookies();
-      const data = await Plan.find().sort({ order: 1 });
+      const planId: string = req.params.id;
+      const plan = await Plan.findOne({ id: planId });
 
-      if (data != null) {
-        const response = { results: data };
-
-        res.json(response);
-      } else {
-        next(createHttpError.NotFound(`Plan is not exist`));
-      }
+      next(createHttpError.NotFound(`Plan is not exist`));
     } catch (error) {
       next(error);
     }
