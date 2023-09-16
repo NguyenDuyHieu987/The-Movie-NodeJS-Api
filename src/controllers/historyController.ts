@@ -10,7 +10,9 @@ import type { user } from '@/types';
 class HistoryController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -82,7 +84,9 @@ class HistoryController {
 
   async search(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -141,7 +145,9 @@ class HistoryController {
 
   async getItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -168,7 +174,9 @@ class HistoryController {
 
   async addItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -363,7 +371,9 @@ class HistoryController {
 
   async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -398,7 +408,9 @@ class HistoryController {
 
   async removeAllItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
