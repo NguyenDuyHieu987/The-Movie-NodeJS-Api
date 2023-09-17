@@ -16,7 +16,7 @@ class RecommendController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -126,8 +126,8 @@ class RecommendController extends RedisCache {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }

@@ -7,7 +7,7 @@ import type { SigupForm, user } from '@/types';
 import SendinblueEmail from '@/utils/sendinblueEmail';
 import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
-import ValidateEmail from '@/utils/EmailValidation';
+import ValidateEmail from '@/utils/emailValidation';
 
 class AuthController {
   constructor() {
@@ -48,8 +48,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
+            httpOnly: req.sessionOptions.httpOnly,
+            sameSite: req.sessionOptions.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -156,8 +156,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
+            httpOnly: req.sessionOptions.httpOnly,
+            sameSite: req.sessionOptions.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -220,8 +220,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
+            httpOnly: req.sessionOptions.httpOnly,
+            sameSite: req.sessionOptions.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -317,8 +317,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
+            httpOnly: req.sessionOptions.httpOnly,
+            sameSite: req.sessionOptions.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -370,8 +370,8 @@ class AuthController {
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
         res.cookie('user_token', encoded, {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
           maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
         });
@@ -401,14 +401,10 @@ class AuthController {
   async getUserByToken(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       // console.log(req.cookies.user_token);
-
-      // if (user_token == undefined || user_token == null) {
-      //   return;
-      // }
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
@@ -442,8 +438,8 @@ class AuthController {
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
         return res.json({ isTokenExpired: true, result: 'Token is expired' });
@@ -451,8 +447,8 @@ class AuthController {
 
       if (error instanceof jwt.JsonWebTokenError) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
@@ -665,7 +661,7 @@ class AuthController {
   async logOut(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -677,8 +673,8 @@ class AuthController {
       });
 
       res.clearCookie('user_token', {
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
+        httpOnly: req.sessionOptions.httpOnly,
+        sameSite: req.sessionOptions.sameSite,
         secure: true,
       });
 
@@ -689,8 +685,8 @@ class AuthController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }

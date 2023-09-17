@@ -7,7 +7,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import session, { CookieOptions, SessionOptions } from 'express-session';
+import cookieSession from 'cookie-session';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import compression from 'compression';
@@ -21,7 +21,7 @@ const app = express();
 
 const redisCache = new RedisCache();
 
-const cookie: CookieOptions = {
+const cookieConfig = {
   httpOnly: false,
   maxAge: +process.env.COOKIE_MAX_AGE! * 3600 * 1000,
   // expires: new Date(
@@ -32,20 +32,21 @@ const cookie: CookieOptions = {
   secure: true,
 };
 
-const sessionConfig: SessionOptions = {
+const sessionConfig: any = {
   secret: process.env.JWT_SIGNATURE_SECRET!,
   name: process.env.APP_NAME!,
-  resave: false,
-  saveUninitialized: false,
+  // resave: false,
+  // saveUninitialized: false,
   // store: store,
-  cookie: cookie,
+  // cookie: cookieConfig,
+  ...cookieConfig,
 };
 
 if (process.env.NODE_ENV! == 'production') {
   app.set('trust proxy', 1); // trust first proxy
-  sessionConfig.cookie!.httpOnly = false;
-  sessionConfig.cookie!.secure = true;
-  sessionConfig.cookie!.sameSite = 'lax';
+  sessionConfig.httpOnly = false;
+  sessionConfig.sameSite = 'lax';
+  sessionConfig.secure = true;
 }
 
 redisCache.connect();
@@ -70,7 +71,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(session(sessionConfig));
+app.use(cookieSession(sessionConfig));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(compression());

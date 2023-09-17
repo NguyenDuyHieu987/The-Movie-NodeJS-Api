@@ -189,9 +189,9 @@ class TVController {
         rate: [],
       };
 
-      if (req.headers?.authorization || req.cookies.user_token != undefined) {
+      if (req.headers?.authorization || req.cookies?.user_token != undefined) {
         const user_token =
-          req.cookies.user_token ||
+          req.cookies?.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
@@ -377,8 +377,8 @@ class TVController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }

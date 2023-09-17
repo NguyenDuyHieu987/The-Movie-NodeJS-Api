@@ -30,7 +30,7 @@ class CommentController {
 
       if (req.headers?.authorization) {
         const user_token =
-          req.cookies.user_token ||
+          req.cookies?.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
@@ -177,8 +177,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -209,7 +209,7 @@ class CommentController {
 
       if (req.headers?.authorization) {
         const user_token =
-          req.cookies.user_token ||
+          req.cookies?.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
@@ -339,8 +339,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -351,7 +351,7 @@ class CommentController {
   async post(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -485,8 +485,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -497,7 +497,7 @@ class CommentController {
   async edit(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -560,8 +560,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -572,7 +572,7 @@ class CommentController {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -692,8 +692,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -704,7 +704,7 @@ class CommentController {
   async like(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -836,8 +836,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -848,7 +848,7 @@ class CommentController {
   async dislike(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -980,8 +980,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }
@@ -992,7 +992,7 @@ class CommentController {
   async checkLikeDislike(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies.user_token ||
+        req.cookies?.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -1036,8 +1036,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
+          httpOnly: req.sessionOptions.httpOnly,
+          sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
       }

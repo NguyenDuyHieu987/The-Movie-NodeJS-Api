@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import fetch from 'node-fetch';
 import Plan from '@/models/plan';
 import RedisCache from '@/config/redis';
 
@@ -38,7 +39,11 @@ class PlanController extends RedisCache {
       const planId: string = req.params.id;
       const plan = await Plan.findOne({ id: planId });
 
-      next(createHttpError.NotFound(`Plan is not exist`));
+      // const Response: any = await fetch(
+      //   process.env.VNP_URL! + '?' + new URLSearchParams({})
+      // ).then((res) => res.json());
+
+      // next(createHttpError.NotFound(`Plan is not exist`));
     } catch (error) {
       next(error);
     }
