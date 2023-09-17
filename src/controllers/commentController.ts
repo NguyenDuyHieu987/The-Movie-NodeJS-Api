@@ -176,7 +176,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -334,7 +338,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -476,7 +484,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -547,7 +559,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -675,7 +691,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -815,7 +835,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -955,7 +979,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }
@@ -1007,7 +1035,11 @@ class CommentController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
       next(error);
     }

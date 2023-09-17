@@ -404,6 +404,12 @@ class AuthController {
         req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
+      // console.log(req.cookies.user_token);
+
+      // if (user_token == undefined || user_token == null) {
+      //   return;
+      // }
+
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
       }) as user;
@@ -435,12 +441,20 @@ class AuthController {
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
         return res.json({ isTokenExpired: true, result: 'Token is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
@@ -662,15 +676,23 @@ class AuthController {
         exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,
       });
 
-      res.clearCookie('user_token');
+      res.clearCookie('user_token', {
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true,
+      });
 
-      res.json({ isLogout: true, result: 'Log out successfully' });
+      return res.json({ isLogout: true, result: 'Log out successfully' }).end();
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
 
       next(error);

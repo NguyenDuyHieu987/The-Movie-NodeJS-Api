@@ -189,7 +189,7 @@ class TVController {
         rate: [],
       };
 
-      if (req.headers?.authorization) {
+      if (req.headers?.authorization || req.cookies.user_token != undefined) {
         const user_token =
           req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
@@ -376,7 +376,11 @@ class TVController {
         error instanceof jwt.TokenExpiredError ||
         error instanceof jwt.JsonWebTokenError
       ) {
-        res.clearCookie('user_token');
+        res.clearCookie('user_token', {
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
       }
 
       next(error);

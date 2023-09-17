@@ -20,77 +20,77 @@ class TrendingController extends RedisCache {
       let data: any[] = [];
       let total: number = 0;
 
-      let listHistory: any[] = [];
+      // let listHistory: any[] = [];
 
-      if (req.headers?.authorization) {
-        const user_token =
-          req.cookies.user_token ||
-          req.headers.authorization!.replace('Bearer ', '');
+      // if (req.headers?.authorization) {
+      //   const user_token =
+      //     req.cookies.user_token ||
+      //     req.headers.authorization!.replace('Bearer ', '');
 
-        const user = jwt.verify(
-          user_token,
-          process.env.JWT_SIGNATURE_SECRET!
-        ) as user;
+      //   const user = jwt.verify(
+      //     user_token,
+      //     process.env.JWT_SIGNATURE_SECRET!
+      //   ) as user;
 
-        listHistory = [
-          {
-            $lookup: {
-              from: 'lists',
-              localField: 'id',
-              foreignField: 'movie_id',
-              let: {
-                media_type: '$$this.media_type',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
-                      { $expr: { $eq: ['$user_id', user.id] } },
-                    ],
-                  },
-                },
-              ],
-              as: 'in_list',
-            },
-          },
-          {
-            $addFields: {
-              in_list: {
-                $eq: [{ $size: '$in_list' }, 1],
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'histories',
-              localField: 'id',
-              foreignField: 'movie_id',
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
-                      { $expr: { $eq: ['$user_id', user.id] } },
-                    ],
-                  },
-                },
-              ],
-              as: 'history_progress',
-            },
-          },
-          { $unwind: '$history_progress' },
-          {
-            $addFields: {
-              history_progress: {
-                duration: '$history_progress.duration',
-                percent: '$history_progress.percent',
-                seconds: '$history_progress.seconds',
-              },
-            },
-          },
-        ];
-      }
+      //   listHistory = [
+      //     {
+      //       $lookup: {
+      //         from: 'lists',
+      //         localField: 'id',
+      //         foreignField: 'movie_id',
+      //         let: {
+      //           media_type: '$$this.media_type',
+      //         },
+      //         pipeline: [
+      //           {
+      //             $match: {
+      //               $and: [
+      //                 // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
+      //                 { $expr: { $eq: ['$user_id', user.id] } },
+      //               ],
+      //             },
+      //           },
+      //         ],
+      //         as: 'in_list',
+      //       },
+      //     },
+      //     {
+      //       $addFields: {
+      //         in_list: {
+      //           $eq: [{ $size: '$in_list' }, 1],
+      //         },
+      //       },
+      //     },
+      //     {
+      //       $lookup: {
+      //         from: 'histories',
+      //         localField: 'id',
+      //         foreignField: 'movie_id',
+      //         pipeline: [
+      //           {
+      //             $match: {
+      //               $and: [
+      //                 // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
+      //                 { $expr: { $eq: ['$user_id', user.id] } },
+      //               ],
+      //             },
+      //           },
+      //         ],
+      //         as: 'history_progress',
+      //       },
+      //     },
+      //     { $unwind: '$history_progress' },
+      //     {
+      //       $addFields: {
+      //         history_progress: {
+      //           duration: '$history_progress.duration',
+      //           percent: '$history_progress.percent',
+      //           seconds: '$history_progress.seconds',
+      //         },
+      //       },
+      //     },
+      //   ];
+      // }
 
       switch (req.params.slug) {
         case 'all':
@@ -135,12 +135,16 @@ class TrendingController extends RedisCache {
 
       res.json(response);
     } catch (error) {
-      if (
-        error instanceof jwt.TokenExpiredError ||
-        error instanceof jwt.JsonWebTokenError
-      ) {
-        res.clearCookie('user_token');
-      }
+      // if (
+      //   error instanceof jwt.TokenExpiredError ||
+      //   error instanceof jwt.JsonWebTokenError
+      // ) {
+      //   res.clearCookie('user_token', {
+      //     httpOnly: req.session.cookie.httpOnly,
+      //     sameSite: req.session.cookie.sameSite,
+      //     secure: true,
+      //   });
+      // }
 
       next(error);
     } finally {

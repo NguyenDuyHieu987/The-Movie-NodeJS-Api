@@ -22,14 +22,14 @@ const app = express();
 const redisCache = new RedisCache();
 
 const cookie: CookieOptions = {
-  httpOnly: true,
-  secure: true,
+  httpOnly: false,
   maxAge: +process.env.COOKIE_MAX_AGE! * 3600 * 1000,
   // expires: new Date(
   //   Date.now() + +process.env.COOKIE_MAX_AGE! * 3600 * 1000
   // ),
   // signed: true,
-  sameSite: 'none',
+  sameSite: 'lax',
+  secure: true,
 };
 
 const sessionConfig: SessionOptions = {
@@ -58,7 +58,6 @@ MongoDB.connect();
 
 app.use(
   cors({
-    credentials: true,
     origin: [
       'http://localhost:3000',
       'http://localhost:8080',
@@ -68,6 +67,7 @@ app.use(
       // www
       'https://www.phimhay247z.org',
     ],
+    credentials: true,
   })
 );
 app.use(session(sessionConfig));
