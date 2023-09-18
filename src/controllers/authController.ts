@@ -47,6 +47,8 @@ class AuthController {
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
+          console.log(req.sessionOptions);
+
           res.cookie('user_token', encoded, {
             httpOnly: req.sessionOptions.httpOnly,
             sameSite: req.sessionOptions.sameSite,
@@ -678,7 +680,7 @@ class AuthController {
         secure: true,
       });
 
-      return res.json({ isLogout: true, result: 'Log out successfully' }).end();
+      return res.json({ isLogout: true, result: 'Log out successfully' });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -689,6 +691,8 @@ class AuthController {
           sameSite: req.sessionOptions.sameSite,
           secure: true,
         });
+
+        return res.json({ isLogout: true, result: 'Log out successfully' });
       }
 
       next(error);
