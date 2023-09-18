@@ -11,7 +11,7 @@ class ListController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -95,7 +95,7 @@ class ListController {
   async search(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -166,7 +166,7 @@ class ListController {
   async getItem(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -205,7 +205,7 @@ class ListController {
   async addItem(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -329,7 +329,7 @@ class ListController {
   async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -374,7 +374,7 @@ class ListController {
   async removeAllItem(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {

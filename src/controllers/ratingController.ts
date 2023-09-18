@@ -11,7 +11,7 @@ class RatingController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -50,7 +50,7 @@ class RatingController {
   async rate(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {

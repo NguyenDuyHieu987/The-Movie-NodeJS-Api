@@ -30,7 +30,7 @@ class CommentController {
 
       if (req.headers?.authorization) {
         const user_token =
-          req.cookies?.user_token ||
+          req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
@@ -209,7 +209,7 @@ class CommentController {
 
       if (req.headers?.authorization) {
         const user_token =
-          req.cookies?.user_token ||
+          req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
@@ -351,7 +351,7 @@ class CommentController {
   async post(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -497,7 +497,7 @@ class CommentController {
   async edit(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -572,7 +572,7 @@ class CommentController {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -704,7 +704,7 @@ class CommentController {
   async like(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -848,7 +848,7 @@ class CommentController {
   async dislike(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
@@ -992,7 +992,7 @@ class CommentController {
   async checkLikeDislike(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
-        req.cookies?.user_token ||
+        req.cookies.user_token ||
         req.headers.authorization!.replace('Bearer ', '');
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {

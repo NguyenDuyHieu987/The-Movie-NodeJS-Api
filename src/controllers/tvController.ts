@@ -189,9 +189,9 @@ class TVController {
         rate: [],
       };
 
-      if (req.headers?.authorization || req.cookies?.user_token != undefined) {
+      if (req.headers?.authorization || req.cookies.user_token != undefined) {
         const user_token =
-          req.cookies?.user_token ||
+          req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
 
         const user = jwt.verify(
