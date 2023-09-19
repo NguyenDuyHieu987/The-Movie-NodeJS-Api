@@ -177,8 +177,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -339,8 +339,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -485,8 +485,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -560,8 +560,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -692,8 +692,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -836,8 +836,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -980,8 +980,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -1036,8 +1036,8 @@ class CommentController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }

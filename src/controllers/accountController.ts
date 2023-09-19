@@ -64,8 +64,8 @@ class AccountController {
           });
 
           res.cookie('verify_your_email', encoded, {
-            httpOnly: req.sessionOptions.httpOnly,
-            sameSite: req.sessionOptions.sameSite,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
             maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000,
           });
@@ -106,8 +106,8 @@ class AccountController {
             });
 
             res.cookie('verify_change_password_token', encoded, {
-              httpOnly: req.sessionOptions.httpOnly,
-              sameSite: req.sessionOptions.sameSite,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
               secure: true,
               maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000,
             });
@@ -173,8 +173,8 @@ class AccountController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }
@@ -245,8 +245,8 @@ class AccountController {
 
           if (result.modifiedCount == 1) {
             res.clearCookie('verify_change_password_token', {
-              httpOnly: req.sessionOptions.httpOnly,
-              sameSite: req.sessionOptions.sameSite,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
               secure: true,
             });
 
@@ -283,8 +283,8 @@ class AccountController {
               res.set('Access-Control-Expose-Headers', 'Authorization');
 
               res.cookie('user_token', encoded, {
-                httpOnly: req.sessionOptions.httpOnly,
-                sameSite: req.sessionOptions.sameSite,
+                httpOnly: req.session.cookie.httpOnly,
+                sameSite: req.session.cookie.sameSite,
                 secure: true,
                 maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
               });
@@ -311,8 +311,8 @@ class AccountController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
       }

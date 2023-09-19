@@ -7,21 +7,23 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import cookieSession from 'cookie-session';
+import session, { CookieOptions, SessionOptions } from 'express-session';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import compression from 'compression';
 import multer from 'multer';
+import MongoStore from 'connect-mongo';
 import route from './routes';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
+
 dotenv.config();
 
 const app = express();
 
 const redisCache = new RedisCache();
 
-const cookieConfig = {
+const cookieConfig: CookieOptions = {
   httpOnly: false,
   maxAge: +process.env.COOKIE_MAX_AGE! * 3600 * 1000,
   // expires: new Date(
@@ -32,21 +34,25 @@ const cookieConfig = {
   secure: true,
 };
 
-const sessionConfig: any = {
+const sessionConfig: SessionOptions = {
   secret: process.env.JWT_SIGNATURE_SECRET!,
   name: process.env.APP_NAME!,
-  // resave: false,
-  // saveUninitialized: false,
-  // store: store,
-  // cookie: cookieConfig,
-  ...cookieConfig,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl:
+      process.env.NODE_ENV == 'production'
+        ? process.env.MONGODB_URI!
+        : 'mongodb://127.0.0.1:27017/Phimhay247_DB',
+  }),
+  cookie: cookieConfig,
 };
 
 if (process.env.NODE_ENV! == 'production') {
   app.set('trust proxy', 1); // trust first proxy
-  sessionConfig.httpOnly = false;
-  sessionConfig.sameSite = 'lax';
-  sessionConfig.secure = true;
+  sessionConfig.cookie!.httpOnly = false;
+  sessionConfig.cookie!.sameSite = 'lax';
+  sessionConfig.cookie!.secure = true;
 }
 
 redisCache.connect();
@@ -71,7 +77,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(cookieSession(sessionConfig));
+app.use(session(sessionConfig));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(compression());

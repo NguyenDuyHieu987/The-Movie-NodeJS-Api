@@ -47,11 +47,11 @@ class AuthController {
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          console.log(req.sessionOptions);
+          console.log(req.session.cookie);
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.sessionOptions.httpOnly,
-            sameSite: req.sessionOptions.sameSite,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -158,8 +158,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.sessionOptions.httpOnly,
-            sameSite: req.sessionOptions.sameSite,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -222,8 +222,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.sessionOptions.httpOnly,
-            sameSite: req.sessionOptions.sameSite,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -319,8 +319,8 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            httpOnly: req.sessionOptions.httpOnly,
-            sameSite: req.sessionOptions.sameSite,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
             secure: true,
             maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
           });
@@ -372,8 +372,8 @@ class AuthController {
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
         res.cookie('user_token', encoded, {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
           maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
         });
@@ -440,8 +440,8 @@ class AuthController {
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
         return res.json({ isTokenExpired: true, result: 'Token is expired' });
@@ -449,8 +449,8 @@ class AuthController {
 
       if (error instanceof jwt.JsonWebTokenError) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
@@ -675,8 +675,8 @@ class AuthController {
       });
 
       res.clearCookie('user_token', {
-        httpOnly: req.sessionOptions.httpOnly,
-        sameSite: req.sessionOptions.sameSite,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
         secure: true,
       });
 
@@ -687,8 +687,8 @@ class AuthController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          httpOnly: req.sessionOptions.httpOnly,
-          sameSite: req.sessionOptions.sameSite,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
           secure: true,
         });
 
