@@ -83,6 +83,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -154,6 +155,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -193,6 +195,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -317,6 +320,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -362,6 +366,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -405,6 +410,7 @@ class ListController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,

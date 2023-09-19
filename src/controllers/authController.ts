@@ -47,9 +47,10 @@ class AuthController {
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          console.log(req.session.cookie);
+          console.log(req.hostname);
 
           res.cookie('user_token', encoded, {
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -158,6 +159,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -222,6 +224,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -319,6 +322,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -372,6 +376,7 @@ class AuthController {
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
         res.cookie('user_token', encoded, {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -440,6 +445,7 @@ class AuthController {
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -449,6 +455,7 @@ class AuthController {
 
       if (error instanceof jwt.JsonWebTokenError) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -675,6 +682,7 @@ class AuthController {
       });
 
       res.clearCookie('user_token', {
+        domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
@@ -687,6 +695,7 @@ class AuthController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
