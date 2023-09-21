@@ -9,13 +9,13 @@ class RedisCache {
     //     ? process.env.REDIS_URL
     //     : 'redis://127.0.0.1:6379',
     url: process.env.REDIS_URL,
-    username: 'default',
-    password: process.env.REDIS_PASSWORD,
-    socket: {
-      host: process.env.REDIS_HOST,
-      port: +process.env.REDIS_PORT!,
-      connectTimeout: 50000,
-    },
+    // username: 'default',
+    // password: process.env.REDIS_PASSWORD,
+    // socket: {
+    //   host: process.env.REDIS_HOST,
+    //   port: +process.env.REDIS_PORT!,
+    //   connectTimeout: 50000,
+    // },
     pingInterval: 1000,
   });
 
