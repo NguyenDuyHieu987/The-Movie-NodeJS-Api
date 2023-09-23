@@ -68,7 +68,7 @@ class PlanController extends RedisCache {
           vnp_CurrCode: 'VND',
           vnp_TxnRef: orderId,
           vnp_OrderInfo: `Register subscription ${plan.order}`,
-          vnp_OrderType: req.body.orderType || '190003',
+          // vnp_OrderType: req.body.orderType || '190003',
           vnp_Amount: (plan.price! * 100).toString(),
           vnp_ReturnUrl: process.env.APP_URL!,
           vnp_IpAddr: ipAddr!,
