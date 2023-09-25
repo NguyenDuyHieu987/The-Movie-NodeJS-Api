@@ -14,18 +14,20 @@ class SeasonController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const season = await Season.find({
+      const seasons = await Season.find({
         series_id: seriesId,
       });
 
-      if (season.length > 0) {
+      const response = { results: seasons };
+
+      if (seasons.length > 0) {
         await RedisCache.client.setEx(
           key,
           +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(season)
+          JSON.stringify(response)
         );
 
-        res.json(season);
+        res.json(response);
       } else {
         next(createHttpError.NotFound(`Seasons is not exist`));
       }

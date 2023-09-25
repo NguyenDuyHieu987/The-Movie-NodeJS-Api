@@ -11,12 +11,13 @@ class RedisCache {
     url: process.env.REDIS_URL,
     // username: 'default',
     // password: process.env.REDIS_PASSWORD,
-    // socket: {
-    //   host: process.env.REDIS_HOST,
-    //   port: +process.env.REDIS_PORT!,
-    //   connectTimeout: 50000,
-    // },
-    pingInterval: 1000,
+    socket: {
+      // host: process.env.REDIS_HOST,
+      // port: +process.env.REDIS_PORT!,
+      // connectTimeout: 50000,
+      reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
+    },
+    pingInterval: 10000,
   });
 
   constructor() {}

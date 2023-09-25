@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "start": "cls && nodemon src/index.ts",
+    "start": "set NODE_ENV=development && cls && nodemon src/index.ts",
     "start:prod": "export NODE_ENV=production && rimraf ./build && tsc && node build/index.js",
     "build": "rimraf ./build && tsc",
     "test": "jest"

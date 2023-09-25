@@ -8,6 +8,7 @@ import cryptoJs from 'crypto-js';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import type { user } from '@/types';
+import qs from 'qs';
 
 class PlanController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -57,8 +58,8 @@ class PlanController extends RedisCache {
         const ipAddr =
           req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-        const createDate = moment().format('YYYYMMDDHHmmss');
-        const orderId = moment().format('HHmmss');
+        const createDate: string = moment().format('YYYYMMDDHHmmss');
+        const orderId: string = moment().format('HHmmss');
 
         const queryParams = new URLSearchParams({
           vnp_Version: '2.1.0',
@@ -68,7 +69,7 @@ class PlanController extends RedisCache {
           vnp_CurrCode: 'VND',
           vnp_TxnRef: orderId,
           vnp_OrderInfo: `Register subscription ${plan.order}`,
-          vnp_OrderType: req.body.orderType || '190003',
+          // vnp_OrderType: req.body.orderType || '190003',
           vnp_Amount: (plan.price! * 100).toString(),
           vnp_ReturnUrl: process.env.APP_URL!,
           vnp_IpAddr: ipAddr!,
@@ -76,17 +77,37 @@ class PlanController extends RedisCache {
           // vnp_BankCode: req.body.bankCode || 'NCB',
         });
 
-        console.log(queryParams.toString());
+        let queryParams1: any = {
+          vnp_Version: '2.1.0',
+          vnp_Command: 'pay',
+          vnp_TmnCode: process.env.VNP_TMNCODE!,
+          vnp_Locale: req.body.language || 'vn',
+          vnp_CurrCode: 'VND',
+          vnp_TxnRef: orderId,
+          vnp_OrderInfo: `Register subscription ${plan.order}`,
+          // vnp_OrderType: req.body.orderType || '190003',
+          vnp_Amount: (plan.price! * 100).toString(),
+          vnp_ReturnUrl: process.env.APP_URL!,
+          vnp_IpAddr: ipAddr!,
+          vnp_CreateDate: createDate,
+          // vnp_BankCode: req.body.bankCode || 'NCB',
+        };
 
-        const signed = cryptoJs
+        const signed: string = cryptoJs
           .HmacSHA512(queryParams.toString(), process.env.VNP_HASHSECRET!)
           .toString(cryptoJs.enc.Hex);
 
         queryParams.set('vnp_SecureHash', signed);
 
-        // const VNPayOrderResponse: any = await fetch(
-        //   process.env.VNP_URL! + '?' + queryParams
-        // ).then((res) => res.json());
+        // const signData = qs.stringify(queryParams1, { encode: false });
+
+        // const signed1: string = cryptoJs
+        //   .HmacSHA512(signData, process.env.VNP_HASHSECRET!)
+        //   .toString(cryptoJs.enc.Hex);
+
+        // queryParams1['vnp_SecureHash'] = signed1;
+
+        // const vnpUrl = qs.stringify(queryParams1, { encode: false });
 
         console.log(process.env.VNP_URL! + '?' + queryParams.toString());
       } else {
