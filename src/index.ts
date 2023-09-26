@@ -66,8 +66,8 @@ MongoDB.connect();
 app.use(
   cors({
     origin: [
-      'http://localhost:3000',
-      'http://localhost:8080',
+      process.env.NODE_ENV != 'production' && 'http://localhost:3000',
+      process.env.NODE_ENV != 'production' && 'http://localhost:8080',
       'https://phimhay247z.org',
       'https://dash.phimhay247z.org',
       'https://dashboard.phimhay247z.org',

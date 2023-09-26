@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import type { user } from '@/types';
 import qs from 'qs';
+import Stripe from 'stripe';
 
 class PlanController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -54,62 +55,114 @@ class PlanController extends RedisCache {
       const planId: string = req.params.id;
       const plan = await Plan.findOne({ id: planId });
 
+      const method: 'VNPAY' | 'MOMO' | 'ZALOPAY' | 'STRIPE' = req.body.method;
+
       if (plan != null) {
-        const ipAddr =
-          req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        switch (method) {
+          case 'VNPAY':
+            const ipAddr =
+              req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-        const createDate: string = moment().format('YYYYMMDDHHmmss');
-        const orderId: string = moment().format('HHmmss');
+            const createDate: string = moment().format('YYYYMMDDHHmmss');
+            const orderId: string = moment().format('HHmmss');
 
-        const queryParams = new URLSearchParams({
-          vnp_Version: '2.1.0',
-          vnp_Command: 'pay',
-          vnp_TmnCode: process.env.VNP_TMNCODE!,
-          vnp_Locale: req.body.language || 'vn',
-          vnp_CurrCode: 'VND',
-          vnp_TxnRef: orderId,
-          vnp_OrderInfo: `Register subscription ${plan.order}`,
-          // vnp_OrderType: req.body.orderType || '190003',
-          vnp_Amount: (plan.price! * 100).toString(),
-          vnp_ReturnUrl: process.env.APP_URL!,
-          vnp_IpAddr: ipAddr!,
-          vnp_CreateDate: createDate,
-          // vnp_BankCode: req.body.bankCode || 'NCB',
-        });
+            const queryParams = new URLSearchParams({
+              vnp_Version: '2.1.0',
+              vnp_Command: 'pay',
+              vnp_TmnCode: process.env.VNP_TMNCODE!,
+              vnp_Locale: req.body.language || 'vn',
+              vnp_CurrCode: 'VND',
+              vnp_TxnRef: orderId,
+              vnp_OrderInfo: `Register subscription ${plan.order}`,
+              // vnp_OrderType: req.body.orderType || '190003',
+              vnp_Amount: (plan.price! * 100).toString(),
+              vnp_ReturnUrl:
+                process.env.NODE_ENV == 'production'
+                  ? process.env.APP_URL!
+                  : 'http://localhost:3000',
+              vnp_IpAddr: ipAddr!,
+              vnp_CreateDate: createDate,
+              // vnp_BankCode: req.body.bankCode || 'NCB',
+            });
 
-        let queryParams1: any = {
-          vnp_Version: '2.1.0',
-          vnp_Command: 'pay',
-          vnp_TmnCode: process.env.VNP_TMNCODE!,
-          vnp_Locale: req.body.language || 'vn',
-          vnp_CurrCode: 'VND',
-          vnp_TxnRef: orderId,
-          vnp_OrderInfo: `Register subscription ${plan.order}`,
-          // vnp_OrderType: req.body.orderType || '190003',
-          vnp_Amount: (plan.price! * 100).toString(),
-          vnp_ReturnUrl: process.env.APP_URL!,
-          vnp_IpAddr: ipAddr!,
-          vnp_CreateDate: createDate,
-          // vnp_BankCode: req.body.bankCode || 'NCB',
-        };
+            let queryParams1: any = {
+              vnp_Version: '2.1.0',
+              vnp_Command: 'pay',
+              vnp_TmnCode: process.env.VNP_TMNCODE!,
+              vnp_Locale: req.body.language || 'vn',
+              vnp_CurrCode: 'VND',
+              vnp_TxnRef: orderId,
+              vnp_OrderInfo: `Register subscription ${plan.order}`,
+              // vnp_OrderType: req.body.orderType || '190003',
+              vnp_Amount: (plan.price! * 100).toString(),
+              vnp_ReturnUrl:
+                process.env.NODE_ENV == 'production'
+                  ? process.env.APP_URL!
+                  : 'http://localhost:3000',
+              vnp_IpAddr: ipAddr!,
+              vnp_CreateDate: createDate,
+              // vnp_BankCode: req.body.bankCode || 'NCB',
+            };
 
-        const signed: string = cryptoJs
-          .HmacSHA512(queryParams.toString(), process.env.VNP_HASHSECRET!)
-          .toString(cryptoJs.enc.Hex);
+            const signed: string = cryptoJs
+              .HmacSHA512(queryParams.toString(), process.env.VNP_HASHSECRET!)
+              .toString(cryptoJs.enc.Hex);
 
-        queryParams.set('vnp_SecureHash', signed);
+            queryParams.set('vnp_SecureHash', signed);
 
-        // const signData = qs.stringify(queryParams1, { encode: false });
+            // const signData = qs.stringify(queryParams1, { encode: false });
 
-        // const signed1: string = cryptoJs
-        //   .HmacSHA512(signData, process.env.VNP_HASHSECRET!)
-        //   .toString(cryptoJs.enc.Hex);
+            // const signed1: string = cryptoJs
+            //   .HmacSHA512(signData, process.env.VNP_HASHSECRET!)
+            //   .toString(cryptoJs.enc.Hex);
 
-        // queryParams1['vnp_SecureHash'] = signed1;
+            // queryParams1['vnp_SecureHash'] = signed1;
 
-        // const vnpUrl = qs.stringify(queryParams1, { encode: false });
+            // const vnpUrl = qs.stringify(queryParams1, { encode: false });
 
-        console.log(process.env.VNP_URL! + '?' + queryParams.toString());
+            console.log(process.env.VNP_URL! + '?' + queryParams.toString());
+            break;
+          case 'STRIPE':
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+              apiVersion: '2023-08-16',
+            });
+
+            const session = await stripe.checkout.sessions.create({
+              payment_method_types: ['card'],
+              mode: 'payment',
+              line_items: [
+                {
+                  price_data: {
+                    currency: 'VND',
+                    product_data: {
+                      name: `Register subscription ${plan.order}`,
+                    },
+                    unit_amount: plan.price!,
+                  },
+                  quantity: 1,
+                },
+              ],
+              success_url:
+                (process.env.NODE_ENV == 'production'
+                  ? process.env.APP_URL!
+                  : 'http://localhost:3000') + '/stripe_success',
+
+              cancel_url:
+                (process.env.NODE_ENV == 'production'
+                  ? process.env.APP_URL!
+                  : 'http://localhost:3000') + '/stripe_cancel',
+            });
+
+            res.json({ url: session.url });
+            break;
+          default:
+            next(
+              createHttpError.NotFound(
+                `Register plan with method: ${method} is not support`
+              )
+            );
+            break;
+        }
       } else {
         next(createHttpError.NotFound(`Plan is not exist`));
       }

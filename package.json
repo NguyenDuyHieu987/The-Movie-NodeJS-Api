@@ -30,6 +30,7 @@
     "redis": "^4.6.7",
     "sib-api-v3-sdk": "^8.5.0",
     "std-env": "^3.4.3",
+    "stripe": "^13.7.0",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^9.0.0"
   },
