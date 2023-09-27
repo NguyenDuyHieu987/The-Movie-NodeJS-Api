@@ -55,10 +55,14 @@ class PlanController extends RedisCache {
       const planId: string = req.params.id;
       const plan = await Plan.findOne({ id: planId });
 
-      const method: 'VNPAY' | 'MOMO' | 'ZALOPAY' | 'STRIPE' = req.body.method;
+      const method: 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE' = req.body.method;
 
       if (plan != null) {
         switch (method) {
+          case 'MOMO':
+            break;
+          case 'ZALOPAY':
+            break;
           case 'VNPAY':
             const ipAddr =
               req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -73,8 +77,8 @@ class PlanController extends RedisCache {
               vnp_Locale: req.body.language || 'vn',
               vnp_CurrCode: 'VND',
               vnp_TxnRef: orderId,
-              vnp_OrderInfo: `Register subscription ${plan.order}`,
-              // vnp_OrderType: req.body.orderType || '190003',
+              vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
+              vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
               vnp_ReturnUrl:
                 process.env.NODE_ENV == 'production'
@@ -92,8 +96,8 @@ class PlanController extends RedisCache {
               vnp_Locale: req.body.language || 'vn',
               vnp_CurrCode: 'VND',
               vnp_TxnRef: orderId,
-              vnp_OrderInfo: `Register subscription ${plan.order}`,
-              // vnp_OrderType: req.body.orderType || '190003',
+              vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
+              vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
               vnp_ReturnUrl:
                 process.env.NODE_ENV == 'production'
@@ -110,17 +114,22 @@ class PlanController extends RedisCache {
 
             queryParams.set('vnp_SecureHash', signed);
 
-            // const signData = qs.stringify(queryParams1, { encode: false });
+            const signData = qs.stringify(queryParams1, { encode: false });
 
-            // const signed1: string = cryptoJs
-            //   .HmacSHA512(signData, process.env.VNP_HASHSECRET!)
-            //   .toString(cryptoJs.enc.Hex);
+            const signed1: string = cryptoJs
+              .HmacSHA512(signData, process.env.VNP_HASHSECRET!)
+              .toString(cryptoJs.enc.Hex);
 
-            // queryParams1['vnp_SecureHash'] = signed1;
+            queryParams1['vnp_SecureHash'] = signed1;
 
-            // const vnpUrl = qs.stringify(queryParams1, { encode: false });
+            const vnpParams = qs.stringify(queryParams1, { encode: false });
 
-            console.log(process.env.VNP_URL! + '?' + queryParams.toString());
+            // console.log(process.env.VNP_URL! + '?' + queryParams.toString());
+
+            res.json({
+              url: process.env.VNP_URL! + '?' + vnpParams,
+            });
+
             break;
           case 'STRIPE':
             const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -135,7 +144,8 @@ class PlanController extends RedisCache {
                   price_data: {
                     currency: 'VND',
                     product_data: {
-                      name: `Register subscription ${plan.order}`,
+                      name: `Upgrade your account`,
+                      description: `Nâng cấp tài khoản gói: ${plan.name}`,
                     },
                     unit_amount: plan.price!,
                   },
@@ -145,12 +155,14 @@ class PlanController extends RedisCache {
               success_url:
                 (process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
-                  : 'http://localhost:3000') + '/stripe_success',
+                  : 'http://localhost:3000') + '/upgrade/state/StripeSuccess',
 
               cancel_url:
                 (process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
-                  : 'http://localhost:3000') + '/stripe_cancel',
+                  : 'http://localhost:3000') +
+                '/upgrade/paymentpicker?planorder=' +
+                plan.order,
             });
 
             res.json({ url: session.url });
