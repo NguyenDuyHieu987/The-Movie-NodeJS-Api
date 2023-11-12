@@ -386,10 +386,7 @@ class AuthController {
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
         res.cookie('user_token', encoded, {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -430,7 +427,7 @@ class AuthController {
         algorithms: ['HS256'],
       }) as user;
 
-      console.log(req.headers['user-agent']);
+      // console.log(req.headers['user-agent']);
 
       const isAlive = await jwtRedis.verify(user_token);
 
@@ -458,10 +455,7 @@ class AuthController {
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -471,10 +465,7 @@ class AuthController {
 
       if (error instanceof jwt.JsonWebTokenError) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -644,7 +635,7 @@ class AuthController {
               const app_url =
                 process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
-                  : 'http://localhost:3000/';
+                  : 'http://localhost:3000';
 
               const resetPasswordLink = `${app_url}/ForgotPassword?/#reset&token=${encoded}`;
 
@@ -717,10 +708,7 @@ class AuthController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,

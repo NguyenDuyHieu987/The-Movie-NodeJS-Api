@@ -53,7 +53,7 @@ class SeasonController extends RedisCache {
           $match: {
             id: seasonId,
             movie_id: movieId,
-            // season_number: seasonNumber,}
+            // season_number: seasonNumber
           },
         },
         {

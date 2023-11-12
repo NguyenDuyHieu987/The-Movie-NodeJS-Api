@@ -36,7 +36,7 @@ const cookieConfig: CookieOptions = {
 
 const sessionConfig: SessionOptions = {
   secret: process.env.JWT_SIGNATURE_SECRET!,
-  name: process.env.APP_NAME!,
+  // name: process.env.APP_NAME!,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({

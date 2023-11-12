@@ -98,6 +98,8 @@ class MovieSlugController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
+      const sortBy: string = (req.query?.sort_by as string) || '';
+
       const primaryReleaseDateGte: string =
         (req.query?.primary_release_date_gte as string) || '';
 
@@ -157,20 +159,76 @@ class MovieSlugController extends RedisCache {
         page: number;
         results: any[];
         page_size: number;
+        total: number;
       } = {
         page: page + 1,
         results: [],
         page_size: limit,
+        total: 0,
       };
 
       switch (req.params.slug) {
         case 'all':
-          result.results = await Movie.find({
-            $and: [releaseDate, genres, originalLanguage],
-          })
-            .skip(page * limit)
-            .limit(limit);
+          switch (sortBy) {
+            case 'views_desc':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ views: -1 });
+              break;
+            case 'release_date_desc':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ release_date: -1 });
+              break;
+            case 'revenue_desc':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ revenue: -1 });
+              break;
+            case 'vote_average_desc':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ vote_average: -1 });
+              break;
+            case 'vote_count_desc':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ vote_count: -1 });
+              break;
+            case '':
+              result.results = await Movie.find({
+                $and: [releaseDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit);
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover movie with sort by: ${sortBy} is not found!`
+                )
+              );
+              break;
+          }
 
+          result.total = await Movie.countDocuments({
+            $and: [releaseDate, genres, originalLanguage],
+          });
           break;
         case 'nowplaying':
           result.results = await MovieSlug.NowPlaying.find({
@@ -179,6 +237,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await MovieSlug.NowPlaying.countDocuments({
+            $and: [releaseDate, genres, originalLanguage],
+          });
           break;
         case 'upcoming':
           result.results = await MovieSlug.UpComing.find({
@@ -187,6 +248,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await MovieSlug.UpComing.countDocuments({
+            $and: [releaseDate, genres, originalLanguage],
+          });
           break;
         case 'popular':
           result.results = await MovieSlug.Popular.find({
@@ -195,6 +259,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await MovieSlug.Popular.countDocuments({
+            $and: [releaseDate, genres, originalLanguage],
+          });
           break;
         case 'toprated':
           result.results = await MovieSlug.TopRated.find({
@@ -203,6 +270,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await MovieSlug.TopRated.countDocuments({
+            $and: [releaseDate, genres, originalLanguage],
+          });
           break;
         default:
           return next(
@@ -219,7 +289,7 @@ class MovieSlugController extends RedisCache {
         JSON.stringify(result)
       );
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       next(error);
     }

@@ -89,9 +89,11 @@ class MovieSlugController extends RedisCache {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
+
+      const sortBy: string = (req.query?.sort_by as string) || '';
 
       const primaryReleaseDateGte: string =
         (req.query?.primary_release_date_gte as string) || '';
@@ -152,20 +154,76 @@ class MovieSlugController extends RedisCache {
         page: number;
         results: any[];
         page_size: number;
+        total: number;
       } = {
         page: page + 1,
         results: [],
         page_size: limit,
+        total: 0,
       };
 
       switch (req.params.slug) {
         case 'all':
-          result.results = await TV.find({
-            $and: [firstAirDate, genres, originalLanguage],
-          })
-            .skip(page * limit)
-            .limit(limit);
+          switch (sortBy) {
+            case 'views_desc':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ views: -1 });
+              break;
+            case 'release_date_desc':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ first_air_date: -1 });
+              break;
+            case 'revenue_desc':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ revenue: -1 });
+              break;
+            case 'vote_average_desc':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ vote_average: -1 });
+              break;
+            case 'vote_count_desc':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit)
+                .sort({ vote_count: -1 });
+              break;
+            case '':
+              result.results = await TV.find({
+                $and: [firstAirDate, genres, originalLanguage],
+              })
+                .skip(page * limit)
+                .limit(limit);
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover with sort by: ${sortBy} is not found!`
+                )
+              );
+              break;
+          }
 
+          result.total = await TV.countDocuments({
+            $and: [firstAirDate, genres, originalLanguage],
+          });
           break;
         case 'airingtoday':
           result.results = await TvSlug.AiringToday.find({
@@ -174,6 +232,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await TvSlug.AiringToday.countDocuments({
+            $and: [firstAirDate, genres, originalLanguage],
+          });
           break;
         case 'ontheair':
           result.results = await TvSlug.OnTheAir.find({
@@ -182,6 +243,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await TvSlug.OnTheAir.countDocuments({
+            $and: [firstAirDate, genres, originalLanguage],
+          });
           break;
         case 'popular':
           result.results = await TvSlug.Popular.find({
@@ -190,6 +254,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await TvSlug.Popular.countDocuments({
+            $and: [firstAirDate, genres, originalLanguage],
+          });
           break;
         case 'toprated':
           result.results = await TvSlug.TopRated.find({
@@ -198,6 +265,9 @@ class MovieSlugController extends RedisCache {
             .skip(page * limit)
             .limit(limit);
 
+          result.total = await TvSlug.TopRated.countDocuments({
+            $and: [firstAirDate, genres, originalLanguage],
+          });
           break;
         default:
           return next(
@@ -214,7 +284,7 @@ class MovieSlugController extends RedisCache {
         JSON.stringify(result)
       );
 
-      res.json(result);
+      return res.json(result);
     } catch (error) {
       next(error);
     }

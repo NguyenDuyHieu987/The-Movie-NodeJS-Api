@@ -21,21 +21,17 @@ class PlanController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const data = await Plan.find().sort({ order: 1 });
+      const plans = await Plan.find().sort({ order: 1 });
 
-      if (data != null) {
-        const response = { results: data };
+      const response = { results: plans };
 
-        await RedisCache.client.setEx(
-          key,
-          +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(response)
-        );
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
 
-        res.json(response);
-      } else {
-        next(createHttpError.NotFound(`Plan is not exist`));
-      }
+      res.json(response);
     } catch (error) {
       next(error);
     }
@@ -126,9 +122,29 @@ class PlanController extends RedisCache {
 
             // console.log(process.env.VNP_URL! + '?' + queryParams.toString());
 
+            console.log(signed1);
+
             res.json({
               url: process.env.VNP_URL! + '?' + vnpParams,
             });
+
+            // var querystring = require('qs');
+            // var signData = querystring.stringify(queryParams, {
+            //   encode: false,
+            // });
+            // var crypto = require('crypto');
+            // var hmac = crypto.createHmac('sha512', process.env.VNP_HASHSECRET!);
+            // var signed = hmac
+            //   .update(new Buffer(signData, 'utf-8'))
+            //   .digest('hex');
+            // queryParams1['vnp_SecureHash'] = signed;
+
+            // res.json({
+            //   url:
+            //     process.env.VNP_URL! +
+            //     '?' +
+            //     querystring.stringify(queryParams1, { encode: false }),
+            // });
 
             break;
           case 'STRIPE':
@@ -138,16 +154,19 @@ class PlanController extends RedisCache {
 
             const session = await stripe.checkout.sessions.create({
               payment_method_types: ['card'],
-              mode: 'payment',
+              mode: 'subscription',
               line_items: [
                 {
                   price_data: {
                     currency: 'VND',
                     product_data: {
-                      name: `Upgrade your account`,
+                      name: `VIP Phimhay247 gói cao cấp`,
                       description: `Nâng cấp tài khoản gói: ${plan.name}`,
                     },
                     unit_amount: plan.price!,
+                    recurring: {
+                      interval: 'month',
+                    },
                   },
                   quantity: 1,
                 },
@@ -165,7 +184,11 @@ class PlanController extends RedisCache {
                 plan.order,
             });
 
-            res.json({ url: session.url });
+            console.log(session);
+
+            res.json({
+              url: session.url,
+            });
             break;
           default:
             next(
@@ -178,6 +201,20 @@ class PlanController extends RedisCache {
       } else {
         next(createHttpError.NotFound(`Plan is not exist`));
       }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async retrieve(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2023-08-16',
+      });
+
+      const idSession: string = req.params.id;
+
+      const session = await stripe.checkout.sessions.retrieve(idSession);
     } catch (error) {
       next(error);
     }

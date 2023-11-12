@@ -83,10 +83,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -159,10 +156,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -203,10 +197,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -415,10 +406,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -467,10 +455,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -515,10 +500,7 @@ class HistoryController {
         error instanceof jwt.JsonWebTokenError
       ) {
         res.clearCookie('user_token', {
-          domain:
-            process.env.NODE_ENV! == 'production'
-              ? 'phimhay247z.org'
-              : 'localhost',
+          domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,

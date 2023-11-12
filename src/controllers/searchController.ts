@@ -2,12 +2,37 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
+import RedisCache from '@/config/redis';
 
-class SearchController {
+class SearchController extends RedisCache {
   async search(req: Request, res: Response, next: NextFunction) {
     try {
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
       const query: string = (req.query.query as string) || '';
       const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 20;
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let result: {
+        page: number;
+        results: any[];
+        page_size: number;
+        total: number;
+        tv?: any[];
+        movie?: any[];
+        total_movie?: number;
+        total_tv?: number;
+      } = {
+        page: page + 1,
+        results: [],
+        page_size: limit,
+        total: 0,
+      };
 
       switch (req.params.type) {
         case 'all':
@@ -17,8 +42,8 @@ class SearchController {
               { original_name: { $regex: query, $options: 'i' } },
             ],
           })
-            .skip(page * 10)
-            .limit(10)
+            .skip(page * (limit / 2))
+            .limit(limit / 2)
             .sort({ views: -1 });
 
           const tv = await TV.find({
@@ -27,61 +52,67 @@ class SearchController {
               { original_name: { $regex: query, $options: 'i' } },
             ],
           })
-            .skip(page * 10)
-            .limit(10)
+            .skip(page * (limit / 2))
+            .limit(limit / 2)
             .sort({ views: -1 });
 
-          const result = movie.concat(tv);
+          result.results = movie.concat(tv);
 
-          res.json({
-            page: page + 1,
-            results: result,
-            movie: movie,
-            tv: tv,
-            total: result.length,
-            total_movie: movie.length,
-            total_tv: tv.length,
-            page_size: 20,
+          const totalMovie = await Movie.countDocuments({
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } },
+            ],
           });
 
+          const totalTv = await TV.countDocuments({
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } },
+            ],
+          });
+
+          result.total = totalMovie + totalTv;
+          result.movie = movie;
+          result.tv = tv;
+          result.total_movie = totalMovie;
+          result.total_tv = totalTv;
           break;
         case 'movie':
-          const movies = await Movie.find({
+          result.results = await Movie.find({
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } },
             ],
           })
-            .skip(page * 20)
-            .limit(20)
+            .skip(page * limit)
+            .limit(limit)
             .sort({ views: -1 });
 
-          res.json({
-            page: page + 1,
-            results: movies,
-            total: movies.length,
-            page_size: 20,
+          result.total = await Movie.countDocuments({
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } },
+            ],
           });
-
           break;
         case 'tv':
-          const tvs = await TV.find({
+          result.results = await TV.find({
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } },
             ],
           })
-            .skip(page * 20)
-            .limit(20)
+            .skip(page * limit)
+            .limit(limit)
             .sort({ views: -1 });
 
-          res.json({
-            page: page + 1,
-            results: tvs,
-            total: tvs.length,
-            page_size: 20,
+          result.total = await TV.countDocuments({
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } },
+            ],
           });
-
           break;
         default:
           return next(
@@ -91,6 +122,14 @@ class SearchController {
           );
           break;
       }
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(result)
+      );
+
+      return res.json(result);
     } catch (error) {
       next(error);
     }

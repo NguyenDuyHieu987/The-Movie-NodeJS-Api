@@ -12,7 +12,7 @@ const Trending = new mongoose.Schema(
     original_name: { type: String },
     overview: { type: String },
     poster_path: { type: String },
-    media_type: { type: String },
+    media_type: { type: String, enum: ['movie', 'tv'] },
     genres: { type: Array },
     runtime: { type: Number },
   },

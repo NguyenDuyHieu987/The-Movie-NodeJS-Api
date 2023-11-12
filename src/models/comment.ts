@@ -9,7 +9,7 @@ const Comment = new mongoose.Schema(
     content: { type: String },
     username: { type: String },
     user_avatar: { type: String },
-    movie_type: { type: String },
+    movie_type: { type: String, enum: ['movie', 'tv'] },
     parent_id: { type: String },
     type: { type: String, enum: ['children', 'parent'], default: 'parent' },
     childrens: { type: Number },

@@ -25,6 +25,7 @@ import accountRouter from './account';
 import recommendRouter from './recommend';
 import seasonRouter from './season';
 import episodeRouter from './episode';
+import notificationRouter from './notification';
 
 import ErrorHandler from '@/controllers/errorController';
 
@@ -54,6 +55,7 @@ export default function route(app: Application) {
   app.use('/comment', commentRouter);
   app.use('/ranking', rankingRouter);
   app.use('/update-view', updateViewRouter);
+  app.use('/notification', notificationRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
     return next(
       createHttpError(

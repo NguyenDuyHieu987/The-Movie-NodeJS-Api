@@ -14,7 +14,7 @@ const History = new mongoose.Schema(
     original_name: { type: String },
     original_language: { type: String },
     poster_path: { type: String },
-    media_type: { type: String },
+    media_type: { type: String, enum: ['movie', 'tv'] },
     genres: {
       type: [
         {
