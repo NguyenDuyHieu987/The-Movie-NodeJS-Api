@@ -122,7 +122,7 @@ class PlanController extends RedisCache {
 
             // console.log(process.env.VNP_URL! + '?' + queryParams.toString());
 
-            console.log(signed1);
+            // console.log(signed1);
 
             res.json({
               url: process.env.VNP_URL! + '?' + vnpParams,

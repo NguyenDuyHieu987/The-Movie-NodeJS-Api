@@ -6,7 +6,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": [
-      "es6"
+      "ES6"
     ],
     "sourceMap": true,
     "skipLibCheck": true,
