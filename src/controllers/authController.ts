@@ -48,10 +48,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            domain:
-              process.env.NODE_ENV! == 'production'
-                ? 'phimhay247z.org'
-                : 'localhost',
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -160,10 +157,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            domain:
-              process.env.NODE_ENV! == 'production'
-                ? 'phimhay247z.org'
-                : 'localhost',
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -228,10 +222,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            domain:
-              process.env.NODE_ENV! == 'production'
-                ? 'phimhay247z.org'
-                : 'localhost',
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -329,10 +320,7 @@ class AuthController {
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
           res.cookie('user_token', encoded, {
-            domain:
-              process.env.NODE_ENV! == 'production'
-                ? 'phimhay247z.org'
-                : 'localhost',
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -692,10 +680,7 @@ class AuthController {
       });
 
       res.clearCookie('user_token', {
-        domain:
-          process.env.NODE_ENV! == 'production'
-            ? 'phimhay247z.org'
-            : 'localhost',
+        domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,

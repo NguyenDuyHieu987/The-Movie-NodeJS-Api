@@ -64,6 +64,7 @@ class AccountController {
           });
 
           res.cookie('verify_your_email', encoded, {
+            domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -106,6 +107,7 @@ class AccountController {
             });
 
             res.cookie('verify_change_password_token', encoded, {
+              domain: req.hostname,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
@@ -284,6 +286,7 @@ class AccountController {
               res.set('Access-Control-Expose-Headers', 'Authorization');
 
               res.cookie('user_token', encoded, {
+                domain: req.hostname,
                 httpOnly: req.session.cookie.httpOnly,
                 sameSite: req.session.cookie.sameSite,
                 secure: true,
