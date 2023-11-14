@@ -180,7 +180,7 @@ class PlanController extends RedisCache {
                 (process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
                   : 'http://localhost:3000') +
-                '/upgrade/paymentpicker?planorder=' +
+                '/upgrade/PaymentPicker?planorder=' +
                 plan.order,
             });
 

@@ -18,7 +18,7 @@ class ListController {
         algorithms: ['HS256'],
       }) as user;
 
-      const skip: number = +req.query?.page! - 1 || 0;
+      const skip: number = +req.query?.skip! - 1 || 0;
       const limit: number = +req.query?.limit! || 20;
       let data: any[] = [];
       let total: number = 0;

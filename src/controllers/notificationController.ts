@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 class NotificationController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const skip: number = +req.query?.page! - 1 || 0;
+      const skip: number = +req.query?.skip! - 1 || 0;
       const limit: number = +req.query?.limit! || 20;
 
       const user_token =
