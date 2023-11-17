@@ -61,6 +61,19 @@ class SeasonController extends RedisCache {
             from: 'episodes',
             localField: 'id',
             foreignField: 'season_id',
+            let: { id: '$id', movieId: '$movie_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$season_id', '$$id'] },
+                      { $eq: ['$movie_id', '$$movieId'] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'episodes',
           },
         },

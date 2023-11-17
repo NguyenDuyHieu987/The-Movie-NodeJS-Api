@@ -16,20 +16,20 @@ class EpisodeController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const episode = await Episode.find({
+      const episodes = await Episode.find({
         movie_id: movieId,
         season_id: seasonId,
         // season_number: seasonNumber,
       });
 
-      if (episode.length > 0) {
+      if (episodes.length > 0) {
         await RedisCache.client.setEx(
           key,
           +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(episode)
+          JSON.stringify({ results: episodes })
         );
 
-        res.json(episode);
+        res.json({ results: episodes });
       } else {
         next(createHttpError.NotFound(`Episodes is not exist`));
       }

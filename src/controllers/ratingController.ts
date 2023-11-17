@@ -63,7 +63,7 @@ class RatingController {
 
       const mediaType = req.params.movieType;
       const movieId = req.params.movieId;
-      const rateValue: number = req.body.value;
+      const rateValue: number = +req.body.value;
 
       switch (mediaType) {
         case 'movie':
@@ -118,7 +118,7 @@ class RatingController {
               (tv.vote_count! * tv.vote_average! + rateValue) /
               (tv.vote_count! + 1);
 
-            const movieUpdated = await TV.findOneAndUpdate(
+            const tvUpdated = await TV.findOneAndUpdate(
               { id: movieId },
               {
                 $set: {
@@ -144,8 +144,8 @@ class RatingController {
             if (result != null) {
               res.json({
                 success: true,
-                vote_average: movieUpdated!.vote_average,
-                vote_count: movieUpdated!.vote_count,
+                vote_average: tvUpdated!.vote_average,
+                vote_count: tvUpdated!.vote_count,
               });
             } else {
               next(createHttpError.InternalServerError(`Rate movie failed`));

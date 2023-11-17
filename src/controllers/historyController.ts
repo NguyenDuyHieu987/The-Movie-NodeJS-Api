@@ -184,7 +184,14 @@ class HistoryController {
       });
 
       if (data != null) {
-        return res.json({ success: true, result: data });
+        return res.json({
+          success: true,
+          result: {
+            duration: data.duration,
+            percent: data.percent,
+            seconds: data.seconds,
+          },
+        });
       } else {
         return res.json({
           success: false,
