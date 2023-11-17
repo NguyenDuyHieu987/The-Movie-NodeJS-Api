@@ -186,7 +186,7 @@ class ListController {
       } else {
         return res.json({
           success: false,
-          result: 'Failed to get item in list',
+          result: 'This movie is not found in your list',
         });
       }
     } catch (error) {

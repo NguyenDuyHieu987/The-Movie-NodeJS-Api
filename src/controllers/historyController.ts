@@ -188,7 +188,7 @@ class HistoryController {
       } else {
         return res.json({
           success: false,
-          result: 'Failed to get item in History',
+          result: 'This movie is not found in your history',
         });
       }
     } catch (error) {

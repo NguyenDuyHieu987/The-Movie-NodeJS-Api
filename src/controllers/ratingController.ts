@@ -30,7 +30,10 @@ class RatingController {
       if (rate != null) {
         res.json({ success: true, result: rate });
       } else {
-        next(createHttpError.NotFound(`Rate is not exist`));
+        res.json({
+          success: false,
+          result: 'This movie is not rated',
+        });
       }
     } catch (error) {
       if (
