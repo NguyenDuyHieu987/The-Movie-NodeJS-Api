@@ -49,3 +49,5 @@ export declare type commentForm = {
   created_at?: string;
   updated_at?: string;
 };
+
+export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';

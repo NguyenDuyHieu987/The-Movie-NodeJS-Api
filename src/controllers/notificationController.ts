@@ -26,7 +26,7 @@ class NotificationController {
         .limit(limit)
         .sort({ created_at: -1 });
 
-      res.json(notifications);
+      return res.json(notifications);
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||

@@ -65,7 +65,7 @@ class ListController {
           });
           break;
         default:
-          next(
+          return  next(
             createHttpError.NotFound(
               `List with slug: ${req.params.slug} is not found!`
             )
@@ -137,7 +137,7 @@ class ListController {
           }).sort({ created_at: -1 });
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `List with slug: ${req.params.slug} is not found!`
             )
@@ -248,19 +248,19 @@ class ListController {
                 updated_at: new Date().toISOString(),
               });
 
-              res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to list suucessfully',
               });
             } else {
-              next(
+              return next(
                 createHttpError.InternalServerError(
                   'Movie is already exist in list'
                 )
               );
             }
           } else {
-            next(createHttpError.NotFound('Movie is not exists'));
+            return next(createHttpError.NotFound('Movie is not exists'));
           }
           break;
         case 'tv':
@@ -291,23 +291,23 @@ class ListController {
                 updated_at: new Date().toISOString(),
               });
 
-              res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to list suucessfully',
               });
             } else {
-              next(
+              return next(
                 createHttpError.InternalServerError(
                   'Movie is already exist in list'
                 )
               );
             }
           } else {
-            next(createHttpError.NotFound('Movie is not exists'));
+            return next(createHttpError.NotFound('Movie is not exists'));
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${mediaType} is not found`
             )
@@ -351,12 +351,12 @@ class ListController {
       });
 
       if (result.deletedCount == 1) {
-        res.json({
+        return res.json({
           success: true,
           results: 'Remove item from list suucessfully',
         });
       } else {
-        next(
+        return next(
           createHttpError.InternalServerError('Delete movie from list failed')
         );
       }
@@ -393,12 +393,12 @@ class ListController {
       if (result.deletedCount >= 1) {
         const list = await List.find({ user_id: user.id });
 
-        res.json({
+        return res.json({
           success: true,
           results: list,
         });
       } else {
-        next(
+        return next(
           createHttpError.InternalServerError(
             'Delete all movie from list failed'
           )

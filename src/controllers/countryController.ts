@@ -25,10 +25,10 @@ class CountryController extends RedisCache {
             JSON.stringify(response)
           );
 
-          res.json(response);
+          return res.json(response);
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Countries with slug: ${req.params.slug} is not found!`
             )

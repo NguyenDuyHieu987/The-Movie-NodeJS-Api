@@ -27,9 +27,9 @@ class SeasonController extends RedisCache {
           JSON.stringify(response)
         );
 
-        res.json(response);
+        return res.json(response);
       } else {
-        next(createHttpError.NotFound(`Seasons is not exist`));
+        return next(createHttpError.NotFound(`Seasons is not exist`));
       }
     } catch (error) {
       next(error);
@@ -86,9 +86,9 @@ class SeasonController extends RedisCache {
           JSON.stringify(season[0])
         );
 
-        res.json(season[0]);
+        return res.json(season[0]);
       } else {
-        next(createHttpError.NotFound(`Season is not exist`));
+        return next(createHttpError.NotFound(`Season is not exist`));
       }
     } catch (error) {
       next(error);

@@ -20,7 +20,7 @@ class ImageController extends RedisCache {
         JSON.stringify(data!.items)
       );
 
-      res.json(data!.items);
+      return  res.json(data!.items);
     } catch (error) {
       next(error);
     }

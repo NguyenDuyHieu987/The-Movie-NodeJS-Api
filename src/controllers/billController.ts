@@ -24,9 +24,9 @@ class PlanController extends RedisCache {
           JSON.stringify(response)
         );
 
-        res.json(response);
+        return res.json(response);
       } else {
-        next(createHttpError.NotFound(`Plan is not exist`));
+        return next(createHttpError.NotFound(`Plan is not exist`));
       }
     } catch (error) {
       next(error);

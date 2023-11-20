@@ -25,10 +25,10 @@ class GenreController extends RedisCache {
             JSON.stringify(response)
           );
 
-          res.json(response);
+          return res.json(response);
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Genres with slug: ${req.params.slug} is not found!`
             )

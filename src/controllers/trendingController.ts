@@ -133,7 +133,7 @@ class TrendingController extends RedisCache {
         JSON.stringify(response)
       );
 
-      res.json(response);
+      return  res.json(response);
     } catch (error) {
       // if (
       //   error instanceof jwt.TokenExpiredError ||

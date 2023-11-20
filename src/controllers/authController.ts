@@ -579,7 +579,7 @@ class AuthController {
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Verify sign up with method: ${req.params.type} is not support!`
             )
@@ -620,12 +620,12 @@ class AuthController {
                 }
               );
 
-              const app_url =
+              const clientUrl =
                 process.env.NODE_ENV == 'production'
-                  ? process.env.APP_URL!
-                  : 'http://localhost:3000';
+                  ? process.env.CLIENT_URL!
+                  : req.headers.origin;
 
-              const resetPasswordLink = `${app_url}/ForgotPassword?/#reset&token=${encoded}`;
+              const resetPasswordLink = `${req.headers.origin}/ForgotPassword?/#reset&token=${encoded}`;
 
               const emailResponse =
                 await SendinblueEmail.VerificationForgotPassword({
@@ -653,7 +653,7 @@ class AuthController {
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Forgot password with method: ${req.params.type} is not support!`
             )
@@ -699,7 +699,7 @@ class AuthController {
           secure: true,
         });
 
-        return res.json({ isLogout: true, result: 'Log out successfully' });
+        return res.json({ isLogout: false, result: 'Log out failed' });
       }
 
       next(error);

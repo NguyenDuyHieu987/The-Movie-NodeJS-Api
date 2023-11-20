@@ -65,7 +65,7 @@ class HistoryController {
           });
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `History with slug: ${req.params.slug} is not found!`
             )
@@ -138,7 +138,7 @@ class HistoryController {
           }).sort({ created_at: -1 });
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `History with slug: ${req.params.slug} is not found!`
             )
@@ -264,7 +264,7 @@ class HistoryController {
                 updated_at: new Date().toISOString(),
               });
 
-              res.json({
+              return  res.json({
                 success: true,
                 results: 'Add item to history suucessfully',
               });
@@ -307,13 +307,13 @@ class HistoryController {
                 );
               }
 
-              res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to history suucessfully',
               });
             }
           } else {
-            next(createHttpError.NotFound('Movie is not exists'));
+            return  next(createHttpError.NotFound('Movie is not exists'));
           }
           break;
         case 'tv':
@@ -347,7 +347,7 @@ class HistoryController {
                 updated_at: new Date().toISOString(),
               });
 
-              res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to history suucessfully',
               });
@@ -390,17 +390,17 @@ class HistoryController {
                 );
               }
 
-              res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to history suucessfully',
               });
             }
           } else {
-            next(createHttpError.NotFound('Movie is not exists'));
+            return next(createHttpError.NotFound('Movie is not exists'));
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${mediaType} is not found`
             )
@@ -445,12 +445,12 @@ class HistoryController {
       });
 
       if (result.deletedCount == 1) {
-        res.json({
+        return res.json({
           success: true,
           results: 'Remove item from history suucessfully',
         });
       } else {
-        next(
+        return next(
           createHttpError.InternalServerError(
             'Delete movie from history failed'
           )
@@ -490,12 +490,12 @@ class HistoryController {
       if (result.deletedCount >= 1) {
         const history = await History.find({ user_id: user.id });
 
-        res.json({
+        return res.json({
           success: true,
           results: history,
         });
       } else {
-        next(
+        return next(
           createHttpError.InternalServerError(
             'Delete all movie from history failed'
           )

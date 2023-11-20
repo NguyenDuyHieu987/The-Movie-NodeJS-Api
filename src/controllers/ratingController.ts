@@ -28,9 +28,9 @@ class RatingController {
       });
 
       if (rate != null) {
-        res.json({ success: true, result: rate });
+        return res.json({ success: true, result: rate });
       } else {
-        res.json({
+        return res.json({
           success: false,
           result: 'This movie is not rated',
         });
@@ -98,16 +98,18 @@ class RatingController {
             });
 
             if (result != null) {
-              res.json({
+              return res.json({
                 success: true,
                 vote_average: movieUpdated!.vote_average,
                 vote_count: movieUpdated!.vote_count,
               });
             } else {
-              next(createHttpError.InternalServerError(`Rate movie failed`));
+              return next(
+                createHttpError.InternalServerError(`Rate movie failed`)
+              );
             }
           } else {
-            next(createHttpError.NotFound(`Movie is not exist`));
+            return next(createHttpError.NotFound(`Movie is not exist`));
           }
           break;
         case 'tv':
@@ -142,20 +144,22 @@ class RatingController {
             });
 
             if (result != null) {
-              res.json({
+              return res.json({
                 success: true,
                 vote_average: tvUpdated!.vote_average,
                 vote_count: tvUpdated!.vote_count,
               });
             } else {
-              next(createHttpError.InternalServerError(`Rate movie failed`));
+              return next(
+                createHttpError.InternalServerError(`Rate movie failed`)
+              );
             }
           } else {
-            next(createHttpError.NotFound(`Movie is not exist`));
+            return next(createHttpError.NotFound(`Movie is not exist`));
           }
           break;
         default:
-          next(
+          return next(
             createHttpError.NotFound(
               `Movie with type: ${mediaType} is not found`
             )

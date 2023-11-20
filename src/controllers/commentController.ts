@@ -170,7 +170,7 @@ class CommentController {
         movie_type: movieType,
       });
 
-      res.json({ results: comment, total: total });
+      return res.json({ results: comment, total: total });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -333,7 +333,7 @@ class CommentController {
         ...likeDislike,
       ]);
 
-      res.json({ results: comment });
+      return res.json({ results: comment });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||

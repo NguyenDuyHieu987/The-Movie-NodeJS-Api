@@ -12,6 +12,7 @@ const Comment = new mongoose.Schema(
     movie_type: { type: String, enum: ['movie', 'tv'] },
     parent_id: { type: String },
     type: { type: String, enum: ['children', 'parent'], default: 'parent' },
+    reply_to: { type: String },
     childrens: { type: Number },
     updated: { type: Boolean },
     like: { type: Number },

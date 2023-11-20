@@ -406,7 +406,7 @@ class TVController {
   //       id: doc.seasons[0].id,
   //     })
   //       .then((seasonRes) => {
-  //         res.json(mongooseToObject(seasonRes));
+  //         return res.json(mongooseToObject(seasonRes));
   //       })
   //       .catch((error) => {
   //         res.status(400).json(errorMsg.errDefault);

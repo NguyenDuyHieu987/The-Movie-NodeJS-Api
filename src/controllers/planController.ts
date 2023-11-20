@@ -7,9 +7,10 @@ import moment from 'moment';
 import cryptoJs from 'crypto-js';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import type { user } from '@/types';
+import type { user, PaymentMethods } from '@/types';
 import qs from 'qs';
 import Stripe from 'stripe';
+import { hostname } from 'os';
 
 class PlanController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +32,7 @@ class PlanController extends RedisCache {
         JSON.stringify(response)
       );
 
-      res.json(response);
+      return res.json(response);
     } catch (error) {
       next(error);
     }
@@ -51,7 +52,7 @@ class PlanController extends RedisCache {
       const planId: string = req.params.id;
       const plan = await Plan.findOne({ id: planId });
 
-      const method: 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE' = req.body.method;
+      const method: PaymentMethods = req.body.method?.toUpperCase();
 
       if (plan != null) {
         switch (method) {
@@ -76,10 +77,7 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl:
-                process.env.NODE_ENV == 'production'
-                  ? process.env.APP_URL!
-                  : 'http://localhost:3000',
+              vnp_ReturnUrl: req.headers.origin!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -95,10 +93,7 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl:
-                process.env.NODE_ENV == 'production'
-                  ? process.env.APP_URL!
-                  : 'http://localhost:3000',
+              vnp_ReturnUrl: req.headers.origin,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -171,27 +166,33 @@ class PlanController extends RedisCache {
                   quantity: 1,
                 },
               ],
+              client_reference_id: user.id,
+              // success_url:
+              //   (process.env.NODE_ENV == 'production'
+              //     ? process.env.CLIENT_URL!
+              //     : 'http://localhost:3000') +
+              //   '/upgrade/state/StripeSuccess?session_id={CHECKOUT_SESSION_ID}',
               success_url:
                 (process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
-                  : 'http://localhost:3000') + '/upgrade/state/StripeSuccess',
-
+                  : `http://${req.headers.host}`) +
+                '/plan/stripe/retrieve?session_id={CHECKOUT_SESSION_ID}',
               cancel_url:
-                (process.env.NODE_ENV == 'production'
-                  ? process.env.APP_URL!
-                  : 'http://localhost:3000') +
+                req.headers.origin +
                 '/upgrade/PaymentPicker?planorder=' +
                 plan.order,
             });
 
-            console.log(session);
+            // console.log(req.headers.host);
+            // console.log(req.hostname);
+            // console.log(req.headers.origin);
 
             res.json({
               url: session.url,
             });
             break;
           default:
-            next(
+            return next(
               createHttpError.NotFound(
                 `Register plan with method: ${method} is not support`
               )
@@ -212,9 +213,38 @@ class PlanController extends RedisCache {
         apiVersion: '2023-08-16',
       });
 
-      const idSession: string = req.params.id;
+      const method: PaymentMethods | string = req.params.method?.toUpperCase();
+      const sessionId: string = req.params.id;
 
-      const session = await stripe.checkout.sessions.retrieve(idSession);
+      switch (method) {
+        case 'MOMO':
+          break;
+        case 'VNPAY':
+          break;
+        case 'STRIPE':
+          const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+          // console.log(session);
+
+          // return res.json(session);
+
+          const clientUrl =
+            process.env.NODE_ENV == 'production'
+              ? process.env.CLIENT_URL!
+              : req.headers.origin;
+
+          return res.redirect(301, req.headers.origin!);
+          break;
+        case 'ZALOPAY':
+          return next(
+            createHttpError.NotFound(
+              `Retrieve a checkout session with method: ${method} is not support`
+            )
+          );
+          break;
+        default:
+          break;
+      }
     } catch (error) {
       next(error);
     }

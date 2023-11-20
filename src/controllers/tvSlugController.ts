@@ -76,7 +76,7 @@ class MovieSlugController extends RedisCache {
         JSON.stringify(response)
       );
 
-      res.json(response);
+      return res.json(response);
     } catch (error) {
       next(error);
     }
