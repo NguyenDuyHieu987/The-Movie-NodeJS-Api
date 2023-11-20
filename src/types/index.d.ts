@@ -18,7 +18,9 @@ export declare type user = {
   avatar: string;
   auth_type: 'email' | 'facebook' | 'google';
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export declare type SigupForm = {
@@ -32,22 +34,29 @@ export declare type SigupForm = {
   auth_type: 'email' | 'facebook' | 'google';
   created_at: string;
   updated_at: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export declare type commentForm = {
-  id: String;
-  user_id: String;
-  movie_id: String;
-  content: String;
-  username: String;
-  user_avatar: String;
-  movie_type: String;
-  parent_id?: String = null;
+  id: string;
+  user_id: string;
+  movie_id: string;
+  content: string;
+  username: string;
+  user_avatar: string;
+  movie_type: string;
+  parent_id?: string = null;
+  reply_to?: string = null;
   type: 'children' | 'parent';
-  childrens?: Number;
-  updated: Boolean;
-  created_at?: string;
-  updated_at?: string;
+  like: number;
+  dislike: number;
+  childrens?: number;
+  updated: boolean = false;
+  created_at: string;
+  updated_at: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';

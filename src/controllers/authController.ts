@@ -623,9 +623,9 @@ class AuthController {
               const clientUrl =
                 process.env.NODE_ENV == 'production'
                   ? process.env.CLIENT_URL!
-                  : req.headers.origin;
+                  : process.env.CLIENT_DEV_URL!;
 
-              const resetPasswordLink = `${req.headers.origin}/ForgotPassword?/#reset&token=${encoded}`;
+              const resetPasswordLink = `${clientUrl}/ForgotPassword?/#reset&token=${encoded}`;
 
               const emailResponse =
                 await SendinblueEmail.VerificationForgotPassword({

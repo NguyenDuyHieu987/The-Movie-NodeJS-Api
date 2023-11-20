@@ -101,9 +101,6 @@ class CommentController {
           },
         },
         {
-          $sort: { created_at: -1 },
-        },
-        {
           $skip: skip * limit,
         },
         {
@@ -160,6 +157,13 @@ class CommentController {
         {
           $addFields: {
             dislike: { $size: '$dislike' },
+          },
+        },
+        {
+          $sort: {
+            created_at: -1,
+            // like: -1,
+            // dislike: -1,
           },
         },
         ...likeDislike,
@@ -408,6 +412,7 @@ class CommentController {
               movie_id: movieId,
               movie_type: movieType,
               parent_id: commentForm.parent_id,
+              reply_to: commentForm.reply_to,
               type: 'children',
               // childrens: 0,
               // like: 0,
@@ -431,7 +436,7 @@ class CommentController {
             // }
 
             if (result == null) {
-              createHttpError.InternalServerError('Post comment failed');
+              return createHttpError.InternalServerError('Post comment failed');
             }
           }
         } else {
@@ -458,14 +463,15 @@ class CommentController {
             success: true,
             result: {
               id: idComment,
-              content: commentForm.content,
+              content: result.content,
               user_id: user.id,
               username: user.username,
               user_avatar: user.avatar,
               movie_id: movieId,
               movie_type: movieType,
-              parent_id: commentForm?.parent_id || null,
-              type: commentForm?.type || 'parent',
+              type: result?.type || 'parent',
+              parent_id: result?.parent_id || null,
+              reply_to: result?.reply_to || null,
               childrens: 0,
               like: 0,
               dislike: 0,

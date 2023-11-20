@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import fetch from 'node-fetch';
 import Plan from '@/models/plan';
+import Bill from '@/models/bill';
 import RedisCache from '@/config/redis';
 import moment from 'moment';
 import cryptoJs from 'crypto-js';
@@ -77,7 +78,7 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl: req.headers.origin!,
+              vnp_ReturnUrl: process.env.CLIENT_DEV_URL!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -93,7 +94,7 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl: req.headers.origin,
+              vnp_ReturnUrl: process.env.CLIENT_DEV_URL!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -155,8 +156,9 @@ class PlanController extends RedisCache {
                   price_data: {
                     currency: 'VND',
                     product_data: {
-                      name: `VIP Phimhay247 gói cao cấp`,
+                      name: `VIP ${plan.order}: Phimhay247 gói cao cấp`,
                       description: `Nâng cấp tài khoản gói: ${plan.name}`,
+                      images: [],
                     },
                     unit_amount: plan.price!,
                     recurring: {
@@ -166,7 +168,24 @@ class PlanController extends RedisCache {
                   quantity: 1,
                 },
               ],
+              allow_promotion_codes: true,
+              discounts: [
+                {
+                  // coupon: '2023',
+                  // promotion_code: '2023',
+                },
+              ],
+              subscription_data: {
+                description: `Nâng cấp tài khoản gói: ${plan.name}`,
+                trial_period_days: 7,
+                trial_settings: {
+                  end_behavior: {
+                    missing_payment_method: 'pause',
+                  },
+                },
+              },
               client_reference_id: user.id,
+              customer_email: user.email,
               // success_url:
               //   (process.env.NODE_ENV == 'production'
               //     ? process.env.CLIENT_URL!
@@ -176,9 +195,9 @@ class PlanController extends RedisCache {
                 (process.env.NODE_ENV == 'production'
                   ? process.env.APP_URL!
                   : `http://${req.headers.host}`) +
-                '/plan/stripe/retrieve?session_id={CHECKOUT_SESSION_ID}',
+                '/plan/stripe/retrieve/{CHECKOUT_SESSION_ID}',
               cancel_url:
-                req.headers.origin +
+                process.env.CLIENT_DEV_URL! +
                 '/upgrade/PaymentPicker?planorder=' +
                 plan.order,
             });
@@ -219,30 +238,36 @@ class PlanController extends RedisCache {
       switch (method) {
         case 'MOMO':
           break;
+        case 'ZALOPAY':
+          break;
         case 'VNPAY':
           break;
         case 'STRIPE':
-          const session = await stripe.checkout.sessions.retrieve(sessionId);
+          const session = await stripe.checkout.sessions.retrieve(
+            sessionId,
+            {}
+          );
 
-          // console.log(session);
+          if (session.payment_status == 'paid') {
+            // const result = await Bill.create({});
+            return res.json(session);
+          } else {
+            res.json({ status: 'unpaid' });
+          }
 
-          // return res.json(session);
+          // const clientUrl =
+          //   process.env.NODE_ENV == 'production'
+          //     ? process.env.CLIENT_URL!
+          //     : process.env.CLIENT_DEV_URL!;
 
-          const clientUrl =
-            process.env.NODE_ENV == 'production'
-              ? process.env.CLIENT_URL!
-              : req.headers.origin;
-
-          return res.redirect(301, req.headers.origin!);
+          // return res.redirect(clientUrl);
           break;
-        case 'ZALOPAY':
+        default:
           return next(
             createHttpError.NotFound(
               `Retrieve a checkout session with method: ${method} is not support`
             )
           );
-          break;
-        default:
           break;
       }
     } catch (error) {

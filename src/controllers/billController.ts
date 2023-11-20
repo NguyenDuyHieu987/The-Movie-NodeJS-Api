@@ -3,7 +3,7 @@ import createHttpError from 'http-errors';
 import Plan from '@/models/plan';
 import RedisCache from '@/config/redis';
 
-class PlanController extends RedisCache {
+class BillController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
@@ -34,4 +34,4 @@ class PlanController extends RedisCache {
   }
 }
 
-export default new PlanController();
+export default new BillController();
