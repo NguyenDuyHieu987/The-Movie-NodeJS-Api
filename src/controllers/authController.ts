@@ -623,7 +623,7 @@ class AuthController {
               const clientUrl =
                 process.env.NODE_ENV == 'production'
                   ? process.env.CLIENT_URL!
-                  : process.env.CLIENT_DEV_URL!;
+                  : req.headers.origin;
 
               const resetPasswordLink = `${clientUrl}/ForgotPassword?/#reset&token=${encoded}`;
 

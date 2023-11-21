@@ -286,9 +286,6 @@ class CommentController {
           },
         },
         {
-          $sort: { created_at: -1 },
-        },
-        {
           $skip: skip * limit,
         },
         {
@@ -332,6 +329,13 @@ class CommentController {
         {
           $addFields: {
             dislike: { $size: '$dislike' },
+          },
+        },
+        {
+          $sort: {
+            created_at: 1,
+            // like: -1,
+            // dislike: -1,
           },
         },
         ...likeDislike,
@@ -448,8 +452,8 @@ class CommentController {
             user_avatar: user.avatar,
             movie_id: movieId,
             movie_type: movieType,
-            parent_id: null,
             type: commentForm?.type || 'parent',
+            // parent_id: null,
             // childrens: 0,
             // like: 0,
             // dislike: 0,

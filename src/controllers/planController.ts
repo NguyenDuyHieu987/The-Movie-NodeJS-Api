@@ -78,7 +78,10 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl: process.env.CLIENT_DEV_URL!,
+              vnp_ReturnUrl:
+                process.env.NODE_ENV == 'production'
+                  ? process.env.CLIENT_URL!
+                  : req.headers.origin!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -94,7 +97,10 @@ class PlanController extends RedisCache {
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
               vnp_OrderType: req.body.orderType || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
-              vnp_ReturnUrl: process.env.CLIENT_DEV_URL!,
+              vnp_ReturnUrl:
+                process.env.NODE_ENV == 'production'
+                  ? process.env.CLIENT_URL!
+                  : req.headers.origin!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
               // vnp_BankCode: req.body.bankCode || 'NCB',
@@ -156,7 +162,7 @@ class PlanController extends RedisCache {
                   price_data: {
                     currency: 'VND',
                     product_data: {
-                      name: `VIP ${plan.order}: Phimhay247 gói cao cấp`,
+                      name: `Nâng cấp VIP ${plan.order}: Phimhay247 gói cao cấp`,
                       description: `Nâng cấp tài khoản gói: ${plan.name}`,
                       images: [],
                     },
@@ -197,7 +203,9 @@ class PlanController extends RedisCache {
                   : `http://${req.headers.host}`) +
                 '/plan/stripe/retrieve/{CHECKOUT_SESSION_ID}',
               cancel_url:
-                process.env.CLIENT_DEV_URL! +
+                (process.env.NODE_ENV == 'production'
+                  ? process.env.CLIENT_URL!
+                  : req.headers.origin) +
                 '/upgrade/PaymentPicker?planorder=' +
                 plan.order,
             });
@@ -250,17 +258,19 @@ class PlanController extends RedisCache {
 
           if (session.payment_status == 'paid') {
             // const result = await Bill.create({});
+
             return res.json(session);
+
+            // const clientUrl =
+            //   process.env.NODE_ENV == 'production'
+            //     ? process.env.CLIENT_URL!
+            //     : req.headers.origin! || process.env.CLIENT_DEV_URL!;
+
+            // return res.redirect(clientUrl);
           } else {
             res.json({ status: 'unpaid' });
           }
 
-          // const clientUrl =
-          //   process.env.NODE_ENV == 'production'
-          //     ? process.env.CLIENT_URL!
-          //     : process.env.CLIENT_DEV_URL!;
-
-          // return res.redirect(clientUrl);
           break;
         default:
           return next(
