@@ -10,7 +10,7 @@
     "start": "set NODE_ENV=development && cls && nodemon src/index.ts",
     "start:prod": "export NODE_ENV=production && rimraf ./build && tsc && node build/index.js",
     "start:pm2": "export NODE_ENV=production && rimraf ./build && tsc && pm2 start ecosystem.config.cjs",
-    "build": "rimraf ./build && tsc",
+    "build": "export NODE_ENV=production && rimraf ./build && tsc",
     "test": "jest"
   },
   "dependencies": {
