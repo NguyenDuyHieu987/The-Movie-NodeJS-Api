@@ -41,6 +41,8 @@ jobs:
         run: |
           rsync -ru --ignore-existing ./build ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
+          rsync -ru --ignore-existing ./.env ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
+
           rsync -ru --ignore-existing ./ecosystem.config.cjs ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
       - name: Start app on Server
