@@ -25,9 +25,11 @@ jobs:
       - name: Install Dependencies and Build
         run: |
           npm install
-          npm run build
         env:
           NODE_ENV: production
+        run: |
+          npm run build
+
 
       - name: Install SSH key
         run: |
