@@ -36,4 +36,4 @@ jobs:
           -i ~/.ssh/id_rsa azure@${{ secrets.PHIMHAY247_IP }} \
           "sudo -s && cd /home/phimhay247z-api/htdocs/api.phimhay247z.org \
           && git pull && npm install && npm run build:pm2 \
-          && pm2 reload ecosystem.config.js"
+          && pm2 reload ecosystem.config.cjs"
