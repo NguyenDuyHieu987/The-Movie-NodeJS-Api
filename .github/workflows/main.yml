@@ -1,0 +1,39 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '19.9.0'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install PM2
+        run: |
+          sudo npm install pm2 -g
+
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "${{ secrets.PHIMHAY247_PK }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa ${{ secrets.PHIMHAY247_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+          -i ~/.ssh/id_rsa azure@${{ secrets.PHIMHAY247_IP }} \
+          "sudo -s && cd /home/phimhay247z/htdocs/phimhay247z.org \
+          && git pull && npm install && npm run build:pm2 \
+          && pm2 reload ecosystem.config.js"
