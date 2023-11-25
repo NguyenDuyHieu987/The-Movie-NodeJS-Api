@@ -41,8 +41,11 @@ jobs:
         run: |
           rsync -ru --ignore-existing ./build ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
-
           rsync -ru --ignore-existing ./node_modules ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
+
+
+          rsync -ru --ignore-existing ./package.json ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
+
 
           rsync -ru --ignore-existing ./ecosystem.config.cjs ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
