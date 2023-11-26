@@ -94,9 +94,9 @@ class MovieSlugController extends RedisCache {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
       const sortBy: string = (req.query?.sort_by as string) || '';
 
@@ -154,6 +154,8 @@ class MovieSlugController extends RedisCache {
       };
 
       const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+
+      console.log(releaseDate, genres, originalLanguage);
 
       let result: {
         page: number;
@@ -283,11 +285,11 @@ class MovieSlugController extends RedisCache {
           break;
       }
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(result)
-      );
+      // await RedisCache.client.setEx(
+      //   key,
+      //   +process.env.REDIS_CACHE_TIME!,
+      //   JSON.stringify(result)
+      // );
 
       return res.json(result);
     } catch (error) {
