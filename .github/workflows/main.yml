@@ -56,5 +56,6 @@ jobs:
           username: ${{ secrets.PHIMHAY247_USERNAME }}
           key: ${{ secrets.PHIMHAY247_PK }}
           script: |
+            npm install -g pm2
             cd /home/phimhay247z-api/htdocs/api.phimhay247z.org
             /home/azure/.nvm/versions/node/v19.9.0/bin/pm2 restart ecosystem.config.cjs
