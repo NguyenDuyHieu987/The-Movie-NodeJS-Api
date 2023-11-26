@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "start": "cross-env NODE_ENV=development && cls && nodemon src/index.ts",
+    "start": "set NODE_ENV=development && cls && nodemon src/index.ts",
     "start:prod": "cross-env NODE_ENV=production && rimraf ./build && tsc && node build/index.js",
     "start:pm2": "cross-env NODE_ENV=production && rimraf ./build && tsc && pm2 start ecosystem.config.cjs",
     "build": "cross-env NODE_ENV=production && rimraf ./build && tsc",
@@ -60,7 +60,7 @@
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "engines": {
     "node": ">=18.x"

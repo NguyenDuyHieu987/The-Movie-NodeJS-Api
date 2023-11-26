@@ -151,7 +151,7 @@ class PlanController extends RedisCache {
             break;
           case 'STRIPE':
             const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-              apiVersion: '2023-08-16',
+              apiVersion: '2023-10-16',
             });
 
             const session = await stripe.checkout.sessions.create({
@@ -237,7 +237,7 @@ class PlanController extends RedisCache {
   async retrieve(req: Request, res: Response, next: NextFunction) {
     try {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: '2023-08-16',
+        apiVersion: '2023-10-16',
       });
 
       const method: PaymentMethods | string = req.params.method?.toUpperCase();
