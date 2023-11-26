@@ -39,7 +39,7 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          rsync -r --update --delete-after ./build/* ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org/build
+          rsync -r --update --delete-after ./build ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
           rsync -r --update --delete-after ./.env ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
