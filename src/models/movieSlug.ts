@@ -12,7 +12,14 @@ const MovieSlug = new mongoose.Schema(
     overview: { type: String },
     poster_path: { type: String },
     media_type: { type: String },
-    genres: { type: Array },
+    genres: {
+      type: [
+        {
+          id: Number,
+          name: String,
+        },
+      ],
+    },
     runtime: { type: Number },
   },
   { timestamps: true, versionKey: false }
