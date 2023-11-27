@@ -167,6 +167,8 @@ class MovieSlugController extends RedisCache {
         total: 0,
       };
 
+      console.log(releaseDate, genres, originalLanguage);
+
       switch (req.params.slug) {
         case 'all':
           switch (sortBy) {
@@ -232,7 +234,7 @@ class MovieSlugController extends RedisCache {
           break;
         case 'nowplaying':
           result.results = await MovieSlug.NowPlaying.find({
-            $and: [releaseDate, genres, originalLanguage],
+            // $and: [releaseDate, genres, originalLanguage],
           })
             .skip(page * limit)
             .limit(limit);
