@@ -1,4 +1,4 @@
-// import CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 import * as argon2 from 'argon2';
 
 export function encryptPasswordOld(password: string) {
