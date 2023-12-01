@@ -6,11 +6,10 @@ import jwtRedis from '@/utils/jwtRedis';
 import type { user } from '@/types';
 import GenerateOTP from '@/utils/generateOTP';
 import sendinblueEmail from '@/utils/sendinblueEmail';
+import * as argon2 from 'argon2';
 
 class AccountController {
-  constructor() {
-    jwtRedis.setPrefix('user_logout');
-  }
+  constructor() {}
 
   async confirm(req: Request, res: Response, next: NextFunction) {
     try {
@@ -24,7 +23,9 @@ class AccountController {
 
       const formUser = req.body;
 
-      const isAlive = await jwtRedis.verify(user_token);
+      const isAlive = await jwtRedis
+        .setPrefix('user_logout')
+        .verify(user_token);
 
       if (!isAlive) {
         return res.json({
@@ -75,49 +76,60 @@ class AccountController {
           const account = await Account.findOne({
             email: user.email,
             auth_type: 'email',
-            password: formUser.old_password,
           });
 
           if (account != null) {
-            encoded = jwt.sign(
+            const isValidPassword = await argon2.verify(
+              account.password!,
+              formUser.old_password,
               {
-                id: user.id,
-                email: user.email,
-                auth_type: 'email',
-                old_password: formUser.old_password,
-                new_password: formUser.new_password,
-                logout_all_device: formUser.logout_all_device,
-                description: 'Change your password',
-                exp:
-                  Math.floor(Date.now() / 1000) +
-                  +process.env.OTP_EXP_OFFSET! * 60,
-              },
-              OTP,
-              {
-                algorithm: 'HS256',
-                // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
+                secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
               }
             );
 
-            emailResponse = await sendinblueEmail.VerificationOTP({
-              to: user.email,
-              otp: OTP,
-              title: 'Xác nhận thay đổi mật khẩu của bạn',
-              noteExp: +process.env.OTP_EXP_OFFSET!,
-            });
+            if (isValidPassword) {
+              encoded = jwt.sign(
+                {
+                  id: user.id,
+                  email: user.email,
+                  auth_type: 'email',
+                  old_password: formUser.old_password,
+                  new_password: formUser.new_password,
+                  logout_all_device: formUser.logout_all_device,
+                  description: 'Change your password',
+                  exp:
+                    Math.floor(Date.now() / 1000) +
+                    +process.env.OTP_EXP_OFFSET! * 60,
+                },
+                OTP,
+                {
+                  algorithm: 'HS256',
+                  // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
+                }
+              );
 
-            res.cookie('verify_change_password_token', encoded, {
-              domain: req.hostname,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000,
-            });
+              emailResponse = await sendinblueEmail.VerificationOTP({
+                to: user.email,
+                otp: OTP,
+                title: 'Xác nhận thay đổi mật khẩu của bạn',
+                noteExp: +process.env.OTP_EXP_OFFSET!,
+              });
+
+              res.cookie('verify_change_password_token', encoded, {
+                domain: req.hostname,
+                httpOnly: req.session.cookie.httpOnly,
+                sameSite: req.session.cookie.sameSite,
+                secure: true,
+                maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000,
+              });
+            } else {
+              return res.json({
+                isWrongPassword: true,
+                result: 'Wrong password',
+              });
+            }
           } else {
-            return res.json({
-              isWrongPassword: true,
-              result: 'Wrong password',
-            });
+            createHttpError.NotFound(`Account is not found`);
           }
           break;
         case 'change-email':
@@ -203,6 +215,14 @@ class AccountController {
         return res.json({ isOTPExpired: true, result: 'OTP is expired' });
       }
 
+      const isAlive = await jwtRedis
+        .setPrefix('verify_change_password_token')
+        .verify(verify_token);
+
+      if (!isAlive) {
+        res.json({ success: false, result: 'Token is no longer active' });
+      }
+
       // const decodeChangePassword = jwt.verify(verify_token, req.body.otp, {
       //   algorithms: ['HS256'],
       // }) as {
@@ -257,8 +277,16 @@ class AccountController {
               decodeChangePassword.logout_all_device == 'true';
 
             if (logOutAllDevice) {
+              jwtRedis.setPrefix('user_logout');
+
               await jwtRedis.sign(user_token, {
                 exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,
+              });
+
+              jwtRedis.setPrefix('verify_change_password_token');
+
+              await jwtRedis.sign(verify_token, {
+                exp: +process.env.OTP_EXP_OFFSET! * 60,
               });
 
               const encoded = jwt.sign(

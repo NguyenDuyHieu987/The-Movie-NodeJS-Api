@@ -8,11 +8,11 @@ import SendinblueEmail from '@/utils/sendinblueEmail';
 import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
 import ValidateEmail from '@/utils/emailValidation';
+import * as argon2 from 'argon2';
+import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 
 class AuthController {
-  constructor() {
-    jwtRedis.setPrefix('user_logout');
-  }
+  constructor() {}
 
   async logIn(req: Request, res: Response, next: NextFunction) {
     try {
@@ -22,57 +22,133 @@ class AuthController {
       });
 
       if (account != null) {
-        if (account.password == req.body.password) {
-          const encoded = jwt.sign(
+        // Migrate to Argon2
+        if (account.password!.startsWith('$argon2id$')) {
+          const isValidPassword = await argon2.verify(
+            account.password!,
+            req.body.password,
             {
-              id: account.id,
-              username: account.username,
-              password: account.password,
-              email: account.email,
-              full_name: account.full_name,
-              avatar: account.avatar,
-              role: account.role,
-              auth_type: account.auth_type,
-              created_at: account.created_at,
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.JWT_EXP_OFFSET! * 3600,
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256',
-              // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+              secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
             }
           );
 
-          res.set('Access-Control-Expose-Headers', 'Authorization');
+          if (isValidPassword) {
+            const encoded = jwt.sign(
+              {
+                id: account.id,
+                username: account.username,
+                password: account.password,
+                email: account.email,
+                full_name: account.full_name,
+                avatar: account.avatar,
+                role: account.role,
+                auth_type: account.auth_type,
+                created_at: account.created_at,
+                exp:
+                  Math.floor(Date.now() / 1000) +
+                  +process.env.JWT_EXP_OFFSET! * 3600,
+              },
+              process.env.JWT_SIGNATURE_SECRET!,
+              {
+                algorithm: 'HS256',
+                // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+              }
+            );
 
-          res.cookie('user_token', encoded, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
-          });
+            res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          res.header('Authorization', encoded);
+            res.cookie('user_token', encoded, {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true,
+              maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+            });
 
-          return res.json({
-            isLogin: true,
-            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-            result: {
-              id: account.id,
-              username: account.username,
-              full_name: account.full_name,
-              avatar: account.avatar,
-              email: account.email,
-              auth_type: account.auth_type,
-              role: account.role,
-              created_at: account.created_at,
-            },
-          });
+            res.header('Authorization', encoded);
+
+            return res.json({
+              isLogin: true,
+              exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+              result: {
+                id: account.id,
+                username: account.username,
+                full_name: account.full_name,
+                avatar: account.avatar,
+                email: account.email,
+                auth_type: account.auth_type,
+                role: account.role,
+                created_at: account.created_at,
+              },
+            });
+          } else {
+            return res.json({
+              isWrongPassword: true,
+              result: 'Wrong Password',
+            });
+          }
         } else {
-          return res.json({ isWrongPassword: true, result: 'Wrong Password' });
+          const passwordHashedOld = encryptPasswordOld(req.body.password);
+
+          if (account.password == passwordHashedOld) {
+            // Migrate to Argon2
+            account.password = await encryptPassword(req.body.password);
+            await account.save();
+
+            const encoded = jwt.sign(
+              {
+                id: account.id,
+                username: account.username,
+                password: account.password,
+                email: account.email,
+                full_name: account.full_name,
+                avatar: account.avatar,
+                role: account.role,
+                auth_type: account.auth_type,
+                created_at: account.created_at,
+                exp:
+                  Math.floor(Date.now() / 1000) +
+                  +process.env.JWT_EXP_OFFSET! * 3600,
+              },
+              process.env.JWT_SIGNATURE_SECRET!,
+              {
+                algorithm: 'HS256',
+                // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+              }
+            );
+
+            res.set('Access-Control-Expose-Headers', 'Authorization');
+
+            res.cookie('user_token', encoded, {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true,
+              maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+            });
+
+            res.header('Authorization', encoded);
+
+            return res.json({
+              isLogin: true,
+              exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+              result: {
+                id: account.id,
+                username: account.username,
+                full_name: account.full_name,
+                avatar: account.avatar,
+                email: account.email,
+                auth_type: account.auth_type,
+                role: account.role,
+                created_at: account.created_at,
+              },
+            });
+          } else {
+            return res.json({
+              isWrongPassword: true,
+              result: 'Wrong Password',
+            });
+          }
         }
       } else {
         return res.json({
@@ -417,7 +493,9 @@ class AuthController {
 
       // console.log(req.headers['user-agent']);
 
-      const isAlive = await jwtRedis.verify(user_token);
+      const isAlive = await jwtRedis
+        .setPrefix('user_logout')
+        .verify(user_token);
 
       if (isAlive) {
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -473,16 +551,26 @@ class AuthController {
         algorithms: ['HS256'],
       }) as SigupForm;
 
+      const isAlive = await jwtRedis
+        .setPrefix('verify_signup')
+        .verify(signup_token);
+
+      if (!isAlive) {
+        res.json({ success: false, result: 'Token is no longer active' });
+      }
+
       const account = await Account.findOne({
         id: user.id,
         auth_type: 'email',
       });
 
       if (account == null) {
+        const passwordEncrypted = await encryptPassword(user.password);
+
         await Account.create({
           id: user.id,
           username: user.username,
-          password: user.password,
+          password: passwordEncrypted,
           full_name: user.full_name,
           avatar: user.avatar,
           email: user.email,
@@ -490,6 +578,12 @@ class AuthController {
           role: user.role,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+        });
+
+        jwtRedis.setPrefix('verify_signup');
+
+        await jwtRedis.sign(signup_token, {
+          exp: +process.env.OTP_EXP_OFFSET! * 60,
         });
 
         res.json({
@@ -674,6 +768,8 @@ class AuthController {
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
       });
+
+      jwtRedis.setPrefix('user_logout');
 
       await jwtRedis.sign(user_token, {
         exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,

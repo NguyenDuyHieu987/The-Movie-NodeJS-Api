@@ -1,32 +1,34 @@
 import RedisCache from '@/config/redis';
 
 class JwtRedis extends RedisCache {
-  private static redisPrefix: string = '';
+  private redisPrefix: string = '';
 
   constructor(prefix: string = '') {
     super();
-    JwtRedis.redisPrefix = prefix;
+    this.redisPrefix = prefix;
   }
 
-  private static initKey(key: string): string {
-    const my_key = `${JwtRedis.redisPrefix}_${key}`;
+  private initKey(key: string): string {
+    const my_key = `${this.redisPrefix}_${key}`;
 
     return my_key;
   }
 
-  async setPrefix(prefix: string) {
-    JwtRedis.redisPrefix = prefix;
+  public setPrefix(prefix: string) {
+    this.redisPrefix = prefix;
+
+    return this;
   }
 
   async sign(jwt: string, option: { exp: number } = { exp: 180 }) {
-    const key = JwtRedis.initKey(jwt);
+    const key = this.initKey(jwt);
 
     await RedisCache.client.setEx(key, option.exp!, 'True');
     // await RedisCache.client.set(key, 'True', { EX: option.exp, NX: true });
   }
 
   async verify(jwt: string): Promise<boolean> {
-    const key = JwtRedis.initKey(jwt);
+    const key = this.initKey(jwt);
 
     if (await RedisCache.client.exists(key)) {
       return false;
