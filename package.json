@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@sendinblue/client": "^3.3.1",
+    "argon2": "^0.31.2",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
     "connect-mongo": "^5.0.0",
