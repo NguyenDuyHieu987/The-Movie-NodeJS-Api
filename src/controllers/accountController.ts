@@ -7,6 +7,7 @@ import type { user } from '@/types';
 import GenerateOTP from '@/utils/generateOTP';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 import * as argon2 from 'argon2';
+import { encryptPassword } from '@/utils/encryptPassword';
 
 class AccountController {
   constructor() {}
@@ -79,7 +80,7 @@ class AccountController {
           });
 
           if (account != null) {
-            const isValidPassword = await argon2.verify(
+            const isCorrectPassword = await argon2.verify(
               account.password!,
               formUser.old_password,
               {
@@ -87,14 +88,17 @@ class AccountController {
               }
             );
 
-            if (isValidPassword) {
+            if (isCorrectPassword) {
+              const newPasswordEncrypted = await encryptPassword(
+                formUser.new_password
+              );
+
               encoded = jwt.sign(
                 {
                   id: user.id,
                   email: user.email,
                   auth_type: 'email',
-                  old_password: formUser.old_password,
-                  new_password: formUser.new_password,
+                  new_password: newPasswordEncrypted,
                   logout_all_device: formUser.logout_all_device,
                   description: 'Change your password',
                   exp:
@@ -220,7 +224,7 @@ class AccountController {
         .verify(verify_token);
 
       if (!isAlive) {
-        res.json({ success: false, result: 'Token is no longer active' });
+        return  res.json({ success: false, result: 'Token is no longer active' });
       }
 
       // const decodeChangePassword = jwt.verify(verify_token, req.body.otp, {
@@ -257,7 +261,6 @@ class AccountController {
               id: user.id,
               email: user.email,
               auth_type: 'email',
-              password: decodeChangePassword.old_password,
             },
             {
               $set: {
@@ -293,7 +296,6 @@ class AccountController {
                 {
                   id: user.id,
                   username: user.username,
-                  password: decodeChangePassword.new_password,
                   email: user.email,
                   full_name: user.full_name,
                   avatar: user.avatar,

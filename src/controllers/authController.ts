@@ -24,7 +24,7 @@ class AuthController {
       if (account != null) {
         // Migrate to Argon2
         if (account.password!.startsWith('$argon2id$')) {
-          const isValidPassword = await argon2.verify(
+          const isCorrectPassword = await argon2.verify(
             account.password!,
             req.body.password,
             {
@@ -32,12 +32,11 @@ class AuthController {
             }
           );
 
-          if (isValidPassword) {
+          if (isCorrectPassword) {
             const encoded = jwt.sign(
               {
                 id: account.id,
                 username: account.username,
-                password: account.password,
                 email: account.email,
                 full_name: account.full_name,
                 avatar: account.avatar,
@@ -99,7 +98,6 @@ class AuthController {
               {
                 id: account.id,
                 username: account.username,
-                password: account.password,
                 email: account.email,
                 full_name: account.full_name,
                 avatar: account.avatar,
@@ -556,7 +554,10 @@ class AuthController {
         .verify(signup_token);
 
       if (!isAlive) {
-        res.json({ success: false, result: 'Token is no longer active' });
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
       }
 
       const account = await Account.findOne({
@@ -565,12 +566,10 @@ class AuthController {
       });
 
       if (account == null) {
-        const passwordEncrypted = await encryptPassword(user.password);
-
         await Account.create({
           id: user.id,
           username: user.username,
-          password: passwordEncrypted,
+          password: user.password,
           full_name: user.full_name,
           avatar: user.avatar,
           email: user.email,
@@ -622,11 +621,15 @@ class AuthController {
               // if (true) {
               const OTP = GenerateOTP({ length: 6 });
 
+              const passwordEncrypted = await encryptPassword(
+                formUser.password
+              );
+
               const encoded = jwt.sign(
                 {
                   id: formUser.id,
                   username: formUser.username,
-                  password: formUser.password,
+                  password: passwordEncrypted,
                   email: formUser.email,
                   full_name: formUser.full_name,
                   avatar: formUser.avatar,
