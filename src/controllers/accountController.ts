@@ -224,7 +224,10 @@ class AccountController {
         .verify(verify_token);
 
       if (!isAlive) {
-        return  res.json({ success: false, result: 'Token is no longer active' });
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
       }
 
       // const decodeChangePassword = jwt.verify(verify_token, req.body.otp, {
