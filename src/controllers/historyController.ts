@@ -264,7 +264,7 @@ class HistoryController {
                 updated_at: new Date().toISOString(),
               });
 
-              return  res.json({
+              return res.json({
                 success: true,
                 results: 'Add item to history suucessfully',
               });
@@ -274,37 +274,47 @@ class HistoryController {
               const oldPercent: number = itemHistory.percent!;
 
               if (seconds > oldSeconds && percent > oldPercent) {
-                await History.updateOne(
-                  {
-                    user_id: user.id,
-                    movie_id: movieId,
-                    media_type: 'movie',
-                  },
-                  {
-                    $set: {
-                      duration: duration,
-                      percent: percent,
-                      seconds: seconds,
-                      updated_at: new Date().toISOString(),
-                    },
-                  }
-                );
+                // await History.updateOne(
+                //   {
+                //     user_id: user.id,
+                //     movie_id: movieId,
+                //     media_type: 'movie',
+                //   },
+                //   {
+                //     $set: {
+                //       percent: percent,
+                //       seconds: seconds,
+                //       updated_at: new Date().toISOString(),
+                //     },
+                //   }
+                // );
+
+                itemHistory.percent = percent;
+                itemHistory.seconds = seconds;
+                itemHistory.updated_at = new Date();
+
+                await itemHistory.save();
               } else {
-                await History.updateOne(
-                  {
-                    user_id: user.id,
-                    movie_id: movieId,
-                    media_type: 'movie',
-                  },
-                  {
-                    $set: {
-                      duration: duration,
-                      percent: percent,
-                      seconds: seconds,
-                      updated_at: new Date().toISOString(),
-                    },
-                  }
-                );
+                // await History.updateOne(
+                //   {
+                //     user_id: user.id,
+                //     movie_id: movieId,
+                //     media_type: 'movie',
+                //   },
+                //   {
+                //     $set: {
+                //       percent: percent,
+                //       seconds: seconds,
+                //       updated_at: new Date().toISOString(),
+                //     },
+                //   }
+                // );
+
+                itemHistory.percent = percent;
+                itemHistory.seconds = seconds;
+                itemHistory.updated_at = new Date();
+
+                await itemHistory.save();
               }
 
               return res.json({
@@ -313,7 +323,7 @@ class HistoryController {
               });
             }
           } else {
-            return  next(createHttpError.NotFound('Movie is not exists'));
+            return next(createHttpError.NotFound('Movie is not exists'));
           }
           break;
         case 'tv':
@@ -357,37 +367,47 @@ class HistoryController {
               const oldPercent: number = itemHistory.percent!;
 
               if (seconds > oldSeconds && percent > oldPercent) {
-                await History.updateOne(
-                  {
-                    user_id: user.id,
-                    movie_id: movieId,
-                    media_type: 'tv',
-                  },
-                  {
-                    $set: {
-                      duration: duration,
-                      percent: percent,
-                      seconds: seconds,
-                      updated_at: new Date().toISOString(),
-                    },
-                  }
-                );
+                // await History.updateOne(
+                //   {
+                //     user_id: user.id,
+                //     movie_id: movieId,
+                //     media_type: 'tv',
+                //   },
+                //   {
+                //     $set: {
+                //       percent: percent,
+                //       seconds: seconds,
+                //       updated_at: new Date().toISOString(),
+                //     },
+                //   }
+                // );
+
+                itemHistory.percent = percent;
+                itemHistory.seconds = seconds;
+                itemHistory.updated_at = new Date();
+
+                await itemHistory.save();
               } else {
-                await History.updateOne(
-                  {
-                    user_id: user.id,
-                    movie_id: movieId,
-                    media_type: 'tv',
-                  },
-                  {
-                    $set: {
-                      duration: duration,
-                      percent: percent,
-                      seconds: seconds,
-                      updated_at: new Date().toISOString(),
-                    },
-                  }
-                );
+                // await History.updateOne(
+                //   {
+                //     user_id: user.id,
+                //     movie_id: movieId,
+                //     media_type: 'tv',
+                //   },
+                //   {
+                //     $set: {
+                //       percent: percent,
+                //       seconds: seconds,
+                //       updated_at: new Date().toISOString(),
+                //     },
+                //   }
+                // );
+
+                itemHistory.percent = percent;
+                itemHistory.seconds = seconds;
+                itemHistory.updated_at = new Date();
+
+                await itemHistory.save();
               }
 
               return res.json({
