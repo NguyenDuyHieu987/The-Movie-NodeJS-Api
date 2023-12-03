@@ -20,93 +20,11 @@ class TrendingController extends RedisCache {
       let data: any[] = [];
       let total: number = 0;
 
-      // let listHistory: any[] = [];
-
-      // if (req.headers?.authorization) {
-      //   const user_token =
-      //     req.cookies?.user_token ||
-      //     req.headers.authorization!.replace('Bearer ', '');
-
-      //   const user = jwt.verify(
-      //     user_token,
-      //     process.env.JWT_SIGNATURE_SECRET!
-      //   ) as user;
-
-      //   listHistory = [
-      //     {
-      //       $lookup: {
-      //         from: 'lists',
-      //         localField: 'id',
-      //         foreignField: 'movie_id',
-      //         let: {
-      //           media_type: '$$this.media_type',
-      //         },
-      //         pipeline: [
-      //           {
-      //             $match: {
-      //               $and: [
-      //                 // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
-      //                 { $expr: { $eq: ['$user_id', user.id] } },
-      //               ],
-      //             },
-      //           },
-      //         ],
-      //         as: 'in_list',
-      //       },
-      //     },
-      //     {
-      //       $addFields: {
-      //         in_list: {
-      //           $eq: [{ $size: '$in_list' }, 1],
-      //         },
-      //       },
-      //     },
-      //     {
-      //       $lookup: {
-      //         from: 'histories',
-      //         localField: 'id',
-      //         foreignField: 'movie_id',
-      //         pipeline: [
-      //           {
-      //             $match: {
-      //               $and: [
-      //                 // { $expr: { $eq: ['$media_type', '$$this.media_type'] } },
-      //                 { $expr: { $eq: ['$user_id', user.id] } },
-      //               ],
-      //             },
-      //           },
-      //         ],
-      //         as: 'history_progress',
-      //       },
-      //     },
-      //     { $unwind: '$history_progress' },
-      //     {
-      //       $addFields: {
-      //         history_progress: {
-      //           duration: '$history_progress.duration',
-      //           percent: '$history_progress.percent',
-      //           seconds: '$history_progress.seconds',
-      //         },
-      //       },
-      //     },
-      //   ];
-      // }
-
       switch (req.params.slug) {
         case 'all':
           data = await Trending.find()
             .skip(page * limit)
             .limit(limit);
-
-          // data = await Trending.aggregate([
-          //   {
-          //     $skip: page * limit,
-          //   },
-          //   {
-          //     $limit: limit,
-          //   },
-          //   ...listHistory,
-          // ]);
 
           total = await Trending.countDocuments({});
 
@@ -133,26 +51,139 @@ class TrendingController extends RedisCache {
         JSON.stringify(response)
       );
 
-      return  res.json(response);
+      return res.json(response);
     } catch (error) {
-      // if (
-      //   error instanceof jwt.TokenExpiredError ||
-      //   error instanceof jwt.JsonWebTokenError
-      // ) {
-      //   res.clearCookie('user_token', {
-      //     domain:
-      // process.env.NODE_ENV! == 'production'
-      //   ? 'phimhay247z.org'
-      //   : 'localhost',
-      //     httpOnly: req.session.cookie.httpOnly,
-      //     sameSite: req.session.cookie.sameSite,
-      //     secure: true,
-      //   });
-      // }
-
       next(error);
     } finally {
     }
+  }
+
+  async test(req: Request, res: Response, next: NextFunction) {
+    const page: number = +req.query?.page! - 1 || 0;
+    const limit: number = +req.query?.limit! || 20;
+
+    let listHistory: any[] = [];
+
+    if (!req.headers?.authorization) {
+      // const user_token =
+      //   req.cookies?.user_token ||
+      //   req.headers.authorization!.replace('Bearer ', '');
+
+      // const user = jwt.verify(
+      //   user_token,
+      //   process.env.JWT_SIGNATURE_SECRET!
+      // ) as user;
+
+      listHistory = [
+        {
+          $lookup: {
+            from: 'lists',
+            localField: 'id',
+            foreignField: 'movie_id',
+            let: {
+              media_type: '$media_type',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $and: [
+                    { $expr: { $eq: ['$media_type', '$$media_type'] } },
+                    { $expr: { $eq: ['$user_id', '1680242193086'] } },
+                  ],
+                },
+              },
+            ],
+            as: 'in_list',
+          },
+        },
+        {
+          $addFields: {
+            in_list: {
+              $eq: [{ $size: '$in_list' }, 1],
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'histories',
+            localField: 'id',
+            foreignField: 'movie_id',
+            let: {
+              media_type: '$media_type',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $and: [
+                    { $expr: { $eq: ['$media_type', '$$media_type'] } },
+                    { $expr: { $eq: ['$user_id', '1680242193086'] } },
+                  ],
+                },
+              },
+            ],
+            as: 'history_progress',
+          },
+        },
+        {
+          $addFields: {
+            history_progress: {
+              $cond: [
+                {
+                  $eq: [{ $size: '$history_progress' }, 1],
+                },
+                {
+                  duration: '$history_progress.duration',
+                  percent: '$history_progress.percent',
+                  seconds: '$history_progress.seconds',
+                },
+                '$$REMOVE',
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    const data = await Trending.aggregate([
+      {
+        $lookup: {
+          from: 'movies',
+          localField: 'id',
+          foreignField: 'id',
+          as: 'detail',
+        },
+      },
+      // Get some fields
+      // {
+      //   $project: {
+      //     id: 1,
+      //     name: 1,
+      //     // Add other fields from localCollection as needed
+
+      //     // Add fields from foreignCollection
+      //     foreignField1: '$detail.genres',
+      //     foreignField2: '$detail.views',
+      //     // Add other fields from foreignCollection as needed
+      //   },
+      // },
+      // Get all field
+      { $unwind: '$detail' },
+      {
+        $replaceRoot: { newRoot: { $mergeObjects: ['$detail', '$$ROOT'] } },
+      },
+      {
+        $project: { detail: 0 }, // Remove detail field
+      },
+      // ...listHistory,
+      {
+        $skip: page * limit,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    return res.json(data);
   }
 }
 

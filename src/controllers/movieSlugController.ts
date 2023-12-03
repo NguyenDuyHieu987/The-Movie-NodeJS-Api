@@ -8,6 +8,7 @@ class MovieSlugController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 20;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
@@ -21,40 +22,40 @@ class MovieSlugController extends RedisCache {
       switch (req.params.slug) {
         case 'all':
           data = await Movie.find()
-            .skip(page * 20)
-            .limit(20);
+            .skip(page * limit)
+            .limit(limit);
 
           total = await Movie.countDocuments({});
 
           break;
         case 'nowplaying':
           data = await MovieSlug.NowPlaying.find()
-            .skip(page * 20)
-            .limit(20);
+            .skip(page * limit)
+            .limit(limit);
 
           total = await MovieSlug.NowPlaying.countDocuments({});
 
           break;
         case 'upcoming':
           data = await MovieSlug.UpComing.find()
-            .skip(page * 20)
-            .limit(20);
+            .skip(page * limit)
+            .limit(limit);
 
           total = await MovieSlug.UpComing.countDocuments({});
 
           break;
         case 'popular':
           data = await MovieSlug.Popular.find()
-            .skip(page * 20)
-            .limit(20);
+            .skip(page * limit)
+            .limit(limit);
 
           total = await MovieSlug.Popular.countDocuments({});
 
           break;
         case 'toprated':
           data = await MovieSlug.TopRated.find()
-            .skip(page * 20)
-            .limit(20);
+            .skip(page * limit)
+            .limit(limit);
 
           total = await MovieSlug.TopRated.countDocuments({});
 
