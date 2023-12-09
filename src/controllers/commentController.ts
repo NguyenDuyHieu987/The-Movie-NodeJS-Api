@@ -28,7 +28,7 @@ class CommentController {
 
       let likeDislike: any[] = [];
 
-      if (req.headers?.authorization) {
+      if (req.headers?.authorization || req.cookies?.user_token) {
         const user_token =
           req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');
@@ -212,7 +212,7 @@ class CommentController {
 
       let likeDislike: any[] = [];
 
-      if (req.headers?.authorization) {
+      if (req.headers?.authorization || req.cookies?.user_token) {
         const user_token =
           req.cookies.user_token ||
           req.headers.authorization!.replace('Bearer ', '');

@@ -84,7 +84,7 @@ class AccountController {
               account.password!,
               formUser.old_password,
               {
-                secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+                // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
               }
             );
 

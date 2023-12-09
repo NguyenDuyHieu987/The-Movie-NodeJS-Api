@@ -28,7 +28,7 @@ class AuthController {
             account.password!,
             req.body.password,
             {
-              secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+              // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
             }
           );
 

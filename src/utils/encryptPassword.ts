@@ -14,7 +14,7 @@ export async function encryptPassword(password: string) {
     type: argon2.argon2id,
     memoryCost: 2 ** 16,
     hashLength: 50,
-    secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+    // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
   });
 
   return encryptedHex;
