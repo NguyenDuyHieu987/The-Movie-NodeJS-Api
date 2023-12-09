@@ -7,6 +7,7 @@ import List from '@/models/list';
 import History from '@/models/history';
 import RedisCache from '@/config/redis';
 import { user } from '@/types';
+import { HTML5_FMT } from 'moment';
 
 class RecommendController extends RedisCache {
   constructor() {
@@ -24,13 +25,13 @@ class RecommendController extends RedisCache {
       }) as user;
 
       const page: number = +req.query?.page! - 1 || 0;
-      const limit: number = +req.query?.limit! || 12;
-      const key: string = req.originalUrl;
+      const limit: number = +req.query?.limit! || 20;
+      const key: string = `__recommend__${user_token}__` + req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
       const list = await List.find({
         user_id: user.id,
@@ -39,7 +40,7 @@ class RecommendController extends RedisCache {
         .limit(20)
         .sort({ created_at: -1 });
 
-      const history = await List.find({
+      const history = await History.find({
         user_id: user.id,
       })
         .skip(0)
@@ -57,10 +58,26 @@ class RecommendController extends RedisCache {
 
       list.forEach((item) => {
         item.genres.forEach((genre) => {
-          genres = [...genres, { id: genre.id }];
+          if (!genres.some((item1) => genre.id == item1.id)) {
+            genres = [...genres, { id: genre.id }];
+          }
         });
 
-        countries = [...countries, item.original_language];
+        if (!countries.includes(item.original_language)) {
+          countries = [...countries, item.original_language];
+        }
+      });
+
+      history.forEach((item) => {
+        item.genres.forEach((genre) => {
+          if (!genres.some((item1) => genre.id == item1.id)) {
+            genres = [...genres, { id: genre.id }];
+          }
+        });
+
+        if (!countries.includes(item.original_language)) {
+          countries = [...countries, item.original_language];
+        }
       });
 
       const movie = await Movie.find({
@@ -79,8 +96,8 @@ class RecommendController extends RedisCache {
           },
         ],
       })
-        .skip(page * limit)
-        .limit(limit)
+        .skip(page * (limit / 2))
+        .limit(limit / 2)
         .sort({ views: -1 });
 
       const tv = await TV.find({
@@ -93,14 +110,14 @@ class RecommendController extends RedisCache {
           {
             genres: {
               $elemMatch: {
-                $or: [...genres],
+                $or: genres,
               },
             },
           },
         ],
       })
-        .skip(page * limit)
-        .limit(limit)
+        .skip(page * (limit / 2))
+        .limit(limit / 2)
         .sort({ views: -1 });
 
       const result = movie.concat(tv);
@@ -113,11 +130,11 @@ class RecommendController extends RedisCache {
         page_size: limit,
       };
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(response)
-      );
+      // await RedisCache.client.setEx(
+      //   key,
+      //   +process.env.REDIS_CACHE_TIME!,
+      //   JSON.stringify(response)
+      // );
 
       return res.json(response);
     } catch (error) {
