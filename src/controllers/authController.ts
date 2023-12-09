@@ -32,9 +32,6 @@ class AuthController {
             }
           );
 
-          account.password = await encryptPassword(req.body.password);
-          await account.save();
-
           if (isCorrectPassword) {
             const encoded = jwt.sign(
               {
