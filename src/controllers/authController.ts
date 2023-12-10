@@ -593,7 +593,7 @@ class AuthController {
           secure: true,
         });
 
-        res.json({
+        return res.json({
           isSignUp: true,
           result: 'Sign up account successfully',
         });
