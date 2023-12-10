@@ -40,6 +40,8 @@ class AccountController {
       let encoded: string = '';
       let emailResponse: any = null;
 
+      console.log(OTP);
+
       switch (req.params.type) {
         case 'email':
           encoded = jwt.sign(
@@ -138,30 +140,77 @@ class AccountController {
           }
           break;
         case 'change-email':
-          encoded = jwt.sign(
-            {
-              id: user.id,
-              email: user.email,
-              auth_type: 'email',
-              description: 'Change your Email',
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.OTP_EXP_OFFSET! * 60,
-            },
-            OTP,
-            {
-              algorithm: 'HS256',
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
-            }
-          );
-
-          emailResponse = await sendinblueEmail.VerificationOTP({
-            to: user.email,
-            otp: OTP,
-            title: 'Xác nhận thay đổi Email của bạn',
-            noteExp: +process.env.OTP_EXP_OFFSET!,
+          const account1 = await Account.findOne({
+            email: formUser.new_email,
+            auth_type: 'email',
           });
 
+          if (account1 == null) {
+            // if (await ValidateEmail(formUser.email)) {
+            if (true) {
+              const encoded = jwt.sign(
+                {
+                  id: user.id,
+                  email: user.email,
+                  auth_type: 'email',
+                  new_email: formUser.new_email,
+                  description: 'Change your email',
+                  exp:
+                    Math.floor(Date.now() / 1000) +
+                    +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
+                },
+                process.env.JWT_SIGNATURE_SECRET!,
+                {
+                  algorithm: 'HS256',
+                  // expiresIn: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
+                }
+              );
+
+              const clientUrl =
+                process.env.NODE_ENV == 'production'
+                  ? process.env.CLIENT_URL!
+                  : req.headers.origin;
+
+              const changeEmailLink = `${clientUrl}/ChangeEmail/?token=${encoded}`;
+
+              console.log(changeEmailLink);
+
+              const emailResponse = await sendinblueEmail.VerificationLink({
+                to: formUser.new_email,
+                title: 'Thay đổi email của bạn',
+                subject: 'Hoàn thành yêu cầu đặt thay đổi email',
+                nameLink: 'Thay đổi email',
+                linkVerify: changeEmailLink,
+                note1:
+                  'Truy cập dường liên kết sau đây để đặt lại email của bạn:',
+                noteExp: +process.env.CHANGE_EMAIL_EXP_OFFSET!,
+              });
+
+              res.cookie('chg_email_token', encoded, {
+                domain: req.hostname,
+                httpOnly: req.session.cookie.httpOnly,
+                sameSite: req.session.cookie.sameSite,
+                secure: true,
+                maxAge: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60 * 1000,
+              });
+
+              return res.json({
+                isSended: true,
+                exp_offset: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
+                result: 'Send email successfully',
+              });
+            } else {
+              return res.json({
+                isInValidEmail: true,
+                result: 'Email is Invalid',
+              });
+            }
+          } else {
+            return res.json({
+              isEmailExist: true,
+              result: 'Email is already exists',
+            });
+          }
           break;
         default:
           return next(
@@ -361,44 +410,103 @@ class AccountController {
 
   async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
-      const verify_token = req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
-      const formUser = req.body;
-
-      const user = jwt.verify(verify_token, formUser.otp, {
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256'],
-      }) as user & {
-        old_password: string;
-        new_password: string;
-      };
+      }) as user;
 
-      const result = await Account.updateOne(
+      const verify_token = req.cookies?.vrf_email_token || req.body.token;
+
+      jwt.verify(
+        verify_token,
+        req.body.otp,
         {
-          id: user.id,
-          email: user.email,
-          auth_type: 'email',
+          algorithms: ['HS256'],
         },
+        async (err, decoded) => {
+          if (err instanceof jwt.TokenExpiredError) {
+            return res.json({ isOTPExpired: true, result: 'OTP is expired' });
+          }
+
+          if (err instanceof jwt.JsonWebTokenError) {
+            return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
+          }
+
+          return res.json({ success: true });
+        }
+      );
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      next(error);
+    }
+  }
+
+  async changeEmailRetrieveToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const token: string = req.query?.token || req.cookies.chg_email_token;
+
+      if (!token) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      const isAlive = await jwtRedis.setPrefix('chg_email_token').verify(token);
+
+      if (!isAlive) {
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
+      }
+
+      const changeEmailInfo: any = jwt.verify(
+        token,
+        process.env.JWT_SIGNATURE_SECRET!,
         {
-          $set: {
-            email: formUser.new_email,
-          },
+          algorithms: ['HS256'],
         }
       );
 
-      if (result.modifiedCount == 1) {
-        return res.json({ success: true });
+      const account = await Account.findOne({
+        id: changeEmailInfo.id,
+        email: changeEmailInfo.email,
+        auth_type: changeEmailInfo.auth_type,
+      });
+
+      if (account != null) {
+        return res.json({
+          success: true,
+          result: {
+            old_email: changeEmailInfo.email,
+            new_email: changeEmailInfo.new_email,
+          },
+        });
       } else {
         return res.json({
           success: false,
+          result: 'Cant not find information',
         });
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return res.json({ isOTPExpired: true, result: 'OTP is expired' });
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
       next(error);
@@ -407,44 +515,67 @@ class AccountController {
 
   async changeEmail(req: Request, res: Response, next: NextFunction) {
     try {
-      const verify_token = req.headers.authorization!.replace('Bearer ', '');
+      const token: string = req.body?.token || req.cookies.chg_email_token;
 
-      const formUser = req.body;
+      if (!token) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
 
-      const user = jwt.verify(verify_token, formUser.otp, {
-        algorithms: ['HS256'],
-      }) as user & {
-        old_password: string;
-        new_password: string;
-      };
+      const isAlive = await jwtRedis.setPrefix('chg_email_token').verify(token);
 
-      const result = await Account.updateOne(
+      if (!isAlive) {
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
+      }
+
+      const changeEmailInfo: any = jwt.verify(
+        token,
+        process.env.JWT_SIGNATURE_SECRET!,
         {
-          id: user.id,
-          email: user.email,
-          auth_type: 'email',
-        },
-        {
-          $set: {
-            email: formUser.new_email,
-          },
+          algorithms: ['HS256'],
         }
       );
 
-      if (result.modifiedCount == 1) {
-        return res.json({ success: true });
+      const account = await Account.findOneAndUpdate(
+        {
+          id: changeEmailInfo.id,
+          email: changeEmailInfo.email,
+          auth_type: changeEmailInfo.auth_type,
+        },
+        {
+          $set: {
+            email: changeEmailInfo.new_email,
+          },
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (account != null) {
+        jwtRedis.setPrefix('chg_email_token');
+
+        await jwtRedis.sign(token, {
+          exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
+        });
+
+        return res.json({
+          success: true,
+          result: 'Change email successfully',
+        });
       } else {
         return res.json({
           success: false,
+          result: 'Cant not find information',
         });
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return res.json({ isOTPExpired: true, result: 'OTP is expired' });
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
       next(error);
@@ -463,7 +594,7 @@ class AccountController {
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
-      const isAlive = await jwtRedis.setPrefix('reset_password').verify(token);
+      const isAlive = await jwtRedis.setPrefix('rst_pwd_token').verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -523,7 +654,7 @@ class AccountController {
         return res.json({ isInvalidToken: true, result: 'Token is invalid' });
       }
 
-      const isAlive = await jwtRedis.setPrefix('reset_password').verify(token);
+      const isAlive = await jwtRedis.setPrefix('rst_pwd_token').verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -557,7 +688,7 @@ class AccountController {
       );
 
       if (account != null) {
-        jwtRedis.setPrefix('reset_password');
+        jwtRedis.setPrefix('rst_pwd_token');
 
         await jwtRedis.sign(token, {
           exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,

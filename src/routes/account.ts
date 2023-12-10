@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.post('/confirm/:type', Account.confirm);
 router.post('/change-password', Account.changePassword);
+router.get('/change-email', Account.changeEmailRetrieveToken);
 router.post('/change-email', Account.changeEmail);
 router.post('/verify-email', Account.verifyEmail);
 router.get('/reset-password', Account.resetPasswordRetrieveToken);

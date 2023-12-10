@@ -707,8 +707,8 @@ class AuthController {
           });
 
           if (account != null) {
-            // if (await ValidateEmail(req.body.email)) {
-            if (true) {
+            if (await ValidateEmail(req.body.email)) {
+              // if (true) {
               const encoded = jwt.sign(
                 {
                   id: account.id,
@@ -733,14 +733,16 @@ class AuthController {
 
               const resetPasswordLink = `${clientUrl}/ResetPassword?token=${encoded}`;
 
-              console.log(resetPasswordLink);
-
-              // const emailResponse =
-              //   await sendinblueEmail.VerificationForgotPassword({
-              //     to: req.body.email,
-              //     resetPasswordLink: resetPasswordLink,
-              //     noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!,
-              //   });
+              const emailResponse = await sendinblueEmail.VerificationLink({
+                to: req.body.email,
+                title: 'Đặt lại mật khẩu của bạn',
+                subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
+                nameLink: 'Đặt lại mật khẩu',
+                linkVerify: resetPasswordLink,
+                note1:
+                  'Truy cập dường liên kết sau đây để đặt lại mật khẩu của bạn:',
+                noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!,
+              });
 
               res.cookie('rst_pwd_token', encoded, {
                 domain: req.hostname,
@@ -763,8 +765,8 @@ class AuthController {
             }
           } else {
             return res.json({
-              isEmailExist: true,
-              result: 'Email is already exists',
+              isEmailExist: false,
+              result: 'Email is not registered',
             });
           }
           break;

@@ -70,19 +70,25 @@ class SendiblueEmail {
       });
   }
 
-  async VerificationForgotPassword({
+  async VerificationLink({
     to,
-    resetPasswordLink,
-    title = 'Đặt lại mật khẩu của bạn',
+    title,
+    subject,
+    nameLink,
+    linkVerify,
+    note1,
     noteExp = 10,
   }: {
     to: string;
-    resetPasswordLink: string;
-    title?: string;
+    title: string;
+    subject: string;
+    nameLink: string;
+    linkVerify: string;
+    note1: string;
     noteExp?: number;
   }) {
     this.sendSmtpEmail = {
-      subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
+      subject: subject,
       sender: { name: 'Phimhay247', email: 'account@phimhay247z.org' },
       to: [
         {
@@ -92,7 +98,9 @@ class SendiblueEmail {
       templateId: 5,
       params: {
         title: title,
-        resetPasswordLink: resetPasswordLink,
+        nameLink: nameLink,
+        linkVerify: linkVerify,
+        note1: note1,
         noteExp: `Yêu cầu này của bạn sẽ hết hiệu lực sau ${noteExp} phút.`,
       },
       headers: {
