@@ -146,8 +146,8 @@ class AccountController {
           });
 
           if (account1 == null) {
-            // if (await ValidateEmail(formUser.email)) {
-            if (true) {
+            if (await ValidateEmail(formUser.email)) {
+              // if (true) {
               const encoded = jwt.sign(
                 {
                   id: user.id,

@@ -629,6 +629,8 @@ class AuthController {
               // if (true) {
               const OTP = GenerateOTP({ length: 6 });
 
+              console.log(OTP);
+
               const passwordEncrypted = await encryptPassword(
                 formUser.password
               );
