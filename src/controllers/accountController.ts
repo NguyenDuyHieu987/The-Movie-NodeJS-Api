@@ -182,7 +182,7 @@ class AccountController {
                 nameLink: 'Thay đổi email',
                 linkVerify: changeEmailLink,
                 note1:
-                  'Truy cập dường liên kết sau đây để đặt lại email của bạn:',
+                  'Truy cập dường liên kết sau đây để thay đổi email của bạn:',
                 noteExp: +process.env.CHANGE_EMAIL_EXP_OFFSET!,
               });
 
@@ -559,6 +559,46 @@ class AccountController {
           exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
         });
 
+        const encoded = jwt.sign(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600,
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256',
+            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+        });
+
+        res.clearCookie('chg_email_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+        });
+
+        res.header('Authorization', encoded);
+
         return res.json({
           success: true,
           result: 'Change email successfully',
@@ -692,6 +732,13 @@ class AccountController {
 
         await jwtRedis.sign(token, {
           exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+        });
+
+        res.clearCookie('rst_pwd_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
         });
 
         return res.json({
