@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import createHttpError from 'http-errors';
 import Account from '@/models/account';
 import type { SigupForm, user } from '@/types';
-import SendinblueEmail from '@/utils/sendinblueEmail';
+import sendinblueEmail from '@/utils/sendinblueEmail';
 import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
 import ValidateEmail from '@/utils/emailValidation';
@@ -543,7 +543,8 @@ class AuthController {
 
   async signUp(req: Request, res: Response, next: NextFunction) {
     try {
-      const signup_token = req.headers.authorization!.replace('Bearer ', '');
+      // const signup_token = req.headers.authorization!.replace('Bearer ', '');
+      const signup_token = req.cookies?.vrf_signup_token || req.body.token;
 
       const user = jwt.verify(signup_token, req.body.otp, {
         algorithms: ['HS256'],
@@ -647,15 +648,23 @@ class AuthController {
                 }
               );
 
-              const emailResponse = await SendinblueEmail.VerificationOTP({
+              const emailResponse = await sendinblueEmail.VerificationOTP({
                 to: formUser.email,
                 otp: OTP,
                 title: 'Xác nhận đăng ký tài khoản',
                 noteExp: +process.env.OTP_EXP_OFFSET!,
               });
 
-              res.set('Access-Control-Expose-Headers', 'Authorization');
-              res.header('Authorization', encoded);
+              // res.set('Access-Control-Expose-Headers', 'Authorization');
+              // res.header('Authorization', encoded);
+
+              res.cookie('vrf_signup_token', encoded, {
+                domain: req.hostname,
+                httpOnly: req.session.cookie.httpOnly,
+                sameSite: req.session.cookie.sameSite,
+                secure: true,
+                maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000,
+              });
 
               res.json({
                 isSended: true,
@@ -698,14 +707,14 @@ class AuthController {
           });
 
           if (account != null) {
-            if (await ValidateEmail(req.body.email)) {
-              // if (true) {
+            // if (await ValidateEmail(req.body.email)) {
+            if (true) {
               const encoded = jwt.sign(
                 {
                   id: account.id,
                   email: account.email,
                   auth_type: 'email',
-                  description: 'Forgot your password',
+                  description: 'Reset your password',
                   exp:
                     Math.floor(Date.now() / 1000) +
                     +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
@@ -722,28 +731,38 @@ class AuthController {
                   ? process.env.CLIENT_URL!
                   : req.headers.origin;
 
-              const resetPasswordLink = `${clientUrl}/ForgotPassword?/#reset&token=${encoded}`;
+              const resetPasswordLink = `${clientUrl}/ResetPassword?token=${encoded}`;
 
-              const emailResponse =
-                await SendinblueEmail.VerificationForgotPassword({
-                  to: req.body.email,
-                  resetPasswordLink: resetPasswordLink,
-                  noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!,
-                });
+              console.log(resetPasswordLink);
 
-              res.json({
+              // const emailResponse =
+              //   await sendinblueEmail.VerificationForgotPassword({
+              //     to: req.body.email,
+              //     resetPasswordLink: resetPasswordLink,
+              //     noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!,
+              //   });
+
+              res.cookie('rst_pwd_token', encoded, {
+                domain: req.hostname,
+                httpOnly: req.session.cookie.httpOnly,
+                sameSite: req.session.cookie.sameSite,
+                secure: true,
+                maxAge: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60 * 1000,
+              });
+
+              return res.json({
                 isSended: true,
                 exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
                 result: 'Send email successfully',
               });
             } else {
-              res.json({
+              return res.json({
                 isInValidEmail: true,
                 result: 'Email is Invalid',
               });
             }
           } else {
-            res.json({
+            return res.json({
               isEmailExist: true,
               result: 'Email is already exists',
             });

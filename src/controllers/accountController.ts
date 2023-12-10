@@ -8,6 +8,7 @@ import GenerateOTP from '@/utils/generateOTP';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 import * as argon2 from 'argon2';
 import { encryptPassword } from '@/utils/encryptPassword';
+import ValidateEmail from '@/utils/emailValidation';
 
 class AccountController {
   constructor() {}
@@ -65,7 +66,7 @@ class AccountController {
             noteExp: +process.env.OTP_EXP_OFFSET!,
           });
 
-          res.cookie('verify_your_email', encoded, {
+          res.cookie('vrf_email_token', encoded, {
             domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
@@ -119,7 +120,7 @@ class AccountController {
                 noteExp: +process.env.OTP_EXP_OFFSET!,
               });
 
-              res.cookie('verify_change_password_token', encoded, {
+              res.cookie('chg_pwd_token', encoded, {
                 domain: req.hostname,
                 httpOnly: req.session.cookie.httpOnly,
                 sameSite: req.session.cookie.sameSite,
@@ -212,15 +213,14 @@ class AccountController {
         algorithms: ['HS256'],
       }) as user;
 
-      // const verify_token = req.headers.authorization!.replace('Bearer ', '');
-      const verify_token = req.cookies.verify_change_password_token;
+      const verify_token = req.cookies?.chg_pwd_token || req.body.token;
 
       if (verify_token == undefined) {
         return res.json({ isOTPExpired: true, result: 'OTP is expired' });
       }
 
       const isAlive = await jwtRedis
-        .setPrefix('verify_change_password_token')
+        .setPrefix('chg_pwd_token')
         .verify(verify_token);
 
       if (!isAlive) {
@@ -273,7 +273,7 @@ class AccountController {
           );
 
           if (result.modifiedCount == 1) {
-            res.clearCookie('verify_change_password_token', {
+            res.clearCookie('chg_pwd_token', {
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
@@ -289,7 +289,7 @@ class AccountController {
                 exp: +process.env.JWT_EXP_OFFSET! * 60 * 60,
               });
 
-              jwtRedis.setPrefix('verify_change_password_token');
+              jwtRedis.setPrefix('chg_pwd_token');
 
               await jwtRedis.sign(verify_token, {
                 exp: +process.env.OTP_EXP_OFFSET! * 60,
@@ -447,6 +447,140 @@ class AccountController {
         return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
       }
 
+      next(error);
+    }
+  }
+
+  async resetPasswordRetrieveToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const token: string = req.query?.token || req.cookies.rst_pwd_token;
+
+      if (!token) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      const isAlive = await jwtRedis.setPrefix('reset_password').verify(token);
+
+      if (!isAlive) {
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
+      }
+
+      const resetPasswordInfo: any = jwt.verify(
+        token,
+        process.env.JWT_SIGNATURE_SECRET!,
+        {
+          algorithms: ['HS256'],
+        }
+      );
+
+      const account = await Account.findOne({
+        id: resetPasswordInfo.id,
+        email: resetPasswordInfo.email,
+        auth_type: resetPasswordInfo.auth_type,
+      });
+
+      if (account != null) {
+        return res.json({
+          success: true,
+          result: {
+            username: account.username,
+            email: resetPasswordInfo.email,
+            auth_type: resetPasswordInfo.auth_type,
+            created_at: account.created_at,
+          },
+        });
+      } else {
+        return res.json({
+          success: false,
+          result: 'Cant not find information',
+        });
+      }
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      next(error);
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token: string = req.cookies?.rst_pwd_token || req.body.token;
+
+      if (!token) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      const isAlive = await jwtRedis.setPrefix('reset_password').verify(token);
+
+      if (!isAlive) {
+        return res.json({
+          success: false,
+          result: 'Token is no longer active',
+        });
+      }
+
+      const resetPasswordInfo: any = jwt.verify(
+        token,
+        process.env.JWT_SIGNATURE_SECRET!,
+        {
+          algorithms: ['HS256'],
+        }
+      );
+
+      const newPasswordEncrypted = await encryptPassword(req.body.new_assword);
+
+      const account = await Account.findOneAndUpdate(
+        {
+          id: resetPasswordInfo.id,
+          email: resetPasswordInfo.email,
+          auth_type: resetPasswordInfo.auth_type,
+        },
+        {
+          $set: {
+            password: newPasswordEncrypted,
+          },
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (account != null) {
+        jwtRedis.setPrefix('reset_password');
+
+        await jwtRedis.sign(token, {
+          exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+        });
+
+        return res.json({
+          success: true,
+          result: 'Reset password successfully',
+        });
+      } else {
+        return res.json({
+          success: false,
+          result: 'Cant not find information',
+        });
+      }
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
       next(error);
     }
   }
