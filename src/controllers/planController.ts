@@ -75,7 +75,7 @@ class PlanController extends RedisCache {
               vnp_CurrCode: 'VND',
               vnp_TxnRef: orderId,
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
-              vnp_OrderType: req.body.orderType || '190003',
+              vnp_OrderType: req.body.order_type || '190003',
               vnp_Amount: (plan.price! * 100).toString(),
               vnp_ReturnUrl:
                 process.env.NODE_ENV == 'production'
@@ -83,7 +83,7 @@ class PlanController extends RedisCache {
                   : req.headers.origin!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
-              // vnp_BankCode: req.body.bankCode || 'NCB',
+              // vnp_BankCode: req.body.bank_code || 'NCB',
             });
 
             let queryParams1: any = {
@@ -94,15 +94,15 @@ class PlanController extends RedisCache {
               vnp_CurrCode: 'VND',
               vnp_TxnRef: orderId,
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
-              vnp_OrderType: req.body.orderType || '190003',
-              vnp_Amount: (plan.price! * 100).toString(),
+              vnp_OrderType: req.body.order_type || '190003',
+              vnp_Amount: plan.price! * 100,
               vnp_ReturnUrl:
                 process.env.NODE_ENV == 'production'
                   ? process.env.CLIENT_URL!
                   : req.headers.origin!,
               vnp_IpAddr: ipAddr!,
               vnp_CreateDate: createDate,
-              // vnp_BankCode: req.body.bankCode || 'NCB',
+              // vnp_BankCode: req.body.bank_code || 'NCB',
             };
 
             const signed: string = cryptoJs
