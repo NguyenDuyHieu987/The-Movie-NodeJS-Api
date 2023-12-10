@@ -733,6 +733,8 @@ class AuthController {
 
               const resetPasswordLink = `${clientUrl}/ResetPassword?token=${encoded}`;
 
+              console.log(resetPasswordLink);
+
               const emailResponse = await sendinblueEmail.VerificationLink({
                 to: req.body.email,
                 title: 'Đặt lại mật khẩu của bạn',

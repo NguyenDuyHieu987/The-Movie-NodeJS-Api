@@ -171,7 +171,7 @@ class AccountController {
                   ? process.env.CLIENT_URL!
                   : req.headers.origin;
 
-              const changeEmailLink = `${clientUrl}/ChangeEmail/?token=${encoded}`;
+              const changeEmailLink = `${clientUrl}/ChangeEmail?token=${encoded}`;
 
               console.log(changeEmailLink);
 
