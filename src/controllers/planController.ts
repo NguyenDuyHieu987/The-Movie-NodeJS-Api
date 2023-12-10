@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from 'uuid';
 import type { user, PaymentMethods } from '@/types';
 import qs from 'qs';
 import Stripe from 'stripe';
-import { hostname } from 'os';
 
 class PlanController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
