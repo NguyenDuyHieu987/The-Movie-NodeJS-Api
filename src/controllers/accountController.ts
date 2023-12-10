@@ -323,6 +323,7 @@ class AccountController {
 
           if (result.modifiedCount == 1) {
             res.clearCookie('chg_pwd_token', {
+              domain: req.hostname,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
@@ -434,6 +435,13 @@ class AccountController {
           if (err instanceof jwt.JsonWebTokenError) {
             return res.json({ isInvalidOTP: true, result: 'OTP is invalid' });
           }
+
+          res.clearCookie('vrf_email_token', {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+          });
 
           return res.json({ success: true });
         }

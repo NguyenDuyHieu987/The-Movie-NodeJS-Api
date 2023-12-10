@@ -551,7 +551,7 @@ class AuthController {
       }) as SigupForm;
 
       const isAlive = await jwtRedis
-        .setPrefix('verify_signup')
+        .setPrefix('vrf_signup_token')
         .verify(signup_token);
 
       if (!isAlive) {
@@ -580,10 +580,17 @@ class AuthController {
           updated_at: new Date().toISOString(),
         });
 
-        jwtRedis.setPrefix('verify_signup');
+        jwtRedis.setPrefix('vrf_signup_token');
 
         await jwtRedis.sign(signup_token, {
           exp: +process.env.OTP_EXP_OFFSET! * 60,
+        });
+
+        res.clearCookie('vrf_signup_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
         });
 
         res.json({
