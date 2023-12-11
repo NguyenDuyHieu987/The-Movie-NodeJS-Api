@@ -409,6 +409,96 @@ class AccountController {
     }
   }
 
+  async changeFullName(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
+      if (!req.body?.new_full_name || req.body?.new_full_name.length == 0) {
+        return res.json({
+          success: false,
+          result: 'Full name is required',
+        });
+      }
+
+      const account = await Account.findOneAndUpdate(
+        {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          full_name: user.full_name,
+          auth_type: user.auth_type,
+        },
+        {
+          $set: {
+            full_name: req.body.new_full_name,
+          },
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (account != null) {
+        const encoded = jwt.sign(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600,
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256',
+            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000,
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          success: true,
+          result: 'Change full name successfully',
+        });
+      } else {
+        return res.json({
+          success: false,
+          result: 'Cant not find information of account',
+        });
+      }
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
+      next(error);
+    }
+  }
+
   async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
@@ -505,7 +595,7 @@ class AccountController {
       } else {
         return res.json({
           success: false,
-          result: 'Cant not find information',
+          result: 'Cant not find information of account',
         });
       }
     } catch (error) {
@@ -614,7 +704,7 @@ class AccountController {
       } else {
         return res.json({
           success: false,
-          result: 'Cant not find information',
+          result: 'Cant not find information of account',
         });
       }
     } catch (error) {
@@ -678,7 +768,7 @@ class AccountController {
       } else {
         return res.json({
           success: false,
-          result: 'Cant not find information',
+          result: 'Cant not find information of account',
         });
       }
     } catch (error) {
@@ -756,7 +846,7 @@ class AccountController {
       } else {
         return res.json({
           success: false,
-          result: 'Cant not find information',
+          result: 'Cant not find information of account',
         });
       }
     } catch (error) {
