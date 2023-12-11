@@ -1,13 +1,19 @@
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
-const Trending = new mongoose.Schema(
+const Search = new mongoose.Schema(
   {
+    id: { type: String, default: uuidv4() },
+    movie_id: { type: String },
+    user_id: { type: String },
+    type: { type: String, enum: ['search', 'history'] },
+    query: { type: String },
+    search_times: { type: Number },
     adult: { type: Boolean },
     backdrop_path: { type: String },
     first_air_date: { type: String },
     last_air_date: { type: String },
     release_date: { type: String },
-    id: { type: String },
     name: { type: String },
     original_name: { type: String },
     overview: { type: String },
@@ -22,4 +28,4 @@ const Trending = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-export default mongoose.model('trendings', Trending);
+export default mongoose.model('searchs', Search);

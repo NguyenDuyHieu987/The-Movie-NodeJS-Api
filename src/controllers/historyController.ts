@@ -8,7 +8,7 @@ import TV from '@/models/tv';
 import type { user } from '@/types';
 
 class HistoryController {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -167,7 +167,7 @@ class HistoryController {
     }
   }
 
-  async getItem(req: Request, res: Response, next: NextFunction) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -215,7 +215,7 @@ class HistoryController {
     }
   }
 
-  async addItem(req: Request, res: Response, next: NextFunction) {
+  async add(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -444,7 +444,7 @@ class HistoryController {
     }
   }
 
-  async removeItem(req: Request, res: Response, next: NextFunction) {
+  async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -493,7 +493,7 @@ class HistoryController {
     }
   }
 
-  async removeAllItem(req: Request, res: Response, next: NextFunction) {
+  async clear(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||

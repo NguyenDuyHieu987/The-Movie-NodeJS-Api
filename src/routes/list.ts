@@ -2,11 +2,11 @@ import express from 'express';
 import List from '@/controllers/listController';
 const router = express.Router();
 
-router.get('/get/:slug', List.get);
+router.get('/get-all/:slug', List.getAll);
 router.get('/search/:slug', List.search);
-router.get('/getitem/:type/:movieId', List.getItem);
-router.post('/additem', List.addItem);
-router.delete('/removeitem', List.removeItem);
-router.delete('/removeallitem', List.removeAllItem);
+router.get('/get/:type/:movieId', List.get);
+router.post('/add', List.add);
+router.delete('/remove', List.remove);
+router.delete('/clear', List.clear);
 
 export default router;

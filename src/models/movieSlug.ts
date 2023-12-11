@@ -21,6 +21,8 @@ const MovieSlug = new mongoose.Schema(
       ],
     },
     runtime: { type: Number },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
   },
   { timestamps: true, versionKey: false }
 );

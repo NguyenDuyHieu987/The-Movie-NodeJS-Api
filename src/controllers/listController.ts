@@ -8,7 +8,7 @@ import TV from '@/models/tv';
 import type { user } from '@/types';
 
 class ListController {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -65,7 +65,7 @@ class ListController {
           });
           break;
         default:
-          return  next(
+          return next(
             createHttpError.NotFound(
               `List with slug: ${req.params.slug} is not found!`
             )
@@ -165,7 +165,7 @@ class ListController {
     }
   }
 
-  async getItem(req: Request, res: Response, next: NextFunction) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -205,7 +205,7 @@ class ListController {
     }
   }
 
-  async addItem(req: Request, res: Response, next: NextFunction) {
+  async add(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -330,7 +330,7 @@ class ListController {
     }
   }
 
-  async removeItem(req: Request, res: Response, next: NextFunction) {
+  async remove(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
@@ -376,7 +376,7 @@ class ListController {
     }
   }
 
-  async removeAllItem(req: Request, res: Response, next: NextFunction) {
+  async clear(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||
