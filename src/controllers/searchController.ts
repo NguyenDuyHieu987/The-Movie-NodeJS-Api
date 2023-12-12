@@ -270,6 +270,14 @@ class SearchController extends RedisCache {
         total: total,
       });
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
       next(error);
     }
   }
@@ -310,6 +318,14 @@ class SearchController extends RedisCache {
         total: total,
       });
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
       next(error);
     }
   }
@@ -320,9 +336,9 @@ class SearchController extends RedisCache {
       const movieType: string = req.body.movieType;
       const searchQuery: string = req.body.query;
 
-      let movie: any = null;
-
       if (movieId && movieType) {
+        let movie: any = null;
+
         switch (movieType) {
           case 'movie':
             movie = await Movie.findOne({ id: movieId });
@@ -348,14 +364,14 @@ class SearchController extends RedisCache {
           });
 
           if (itemSearch != null) {
-            itemSearch.updated_at = new Date();
             itemSearch.search_times! += 1;
+            itemSearch.updated_at = new Date();
 
             await itemSearch.save();
 
             return res.json({
               updated: true,
-              result: itemSearch,
+              result: 'Update search successfully',
             });
           } else {
             const idSearch: string = uuidv4();
@@ -427,8 +443,8 @@ class SearchController extends RedisCache {
         });
 
         if (itemSearch != null) {
-          itemSearch.updated_at = new Date();
           itemSearch.search_times! += 1;
+          itemSearch.updated_at = new Date();
 
           await itemSearch.save();
 
@@ -469,14 +485,14 @@ class SearchController extends RedisCache {
             });
 
             if (itemSearch != null) {
-              itemSearch.updated_at = new Date();
               itemSearch.search_times! += 1;
+              itemSearch.updated_at = new Date();
 
               await itemSearch.save();
 
               return res.json({
                 updated: true,
-                result: itemSearch,
+                result: 'Update search successfully',
               });
             } else {
               const idSearch: string = uuidv4();
@@ -598,7 +614,7 @@ class SearchController extends RedisCache {
         if (resultInserted != null) {
           return res.json({
             added: true,
-            result: resultInserted,
+            result: 'Update search history successfully',
           });
         } else {
           return res.json({
