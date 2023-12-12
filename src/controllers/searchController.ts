@@ -450,7 +450,7 @@ class SearchController extends RedisCache {
 
           return res.json({
             updated: true,
-            result: itemSearch,
+            result: 'Update search successfully',
           });
         } else {
           let movie1: any = null;
@@ -596,7 +596,7 @@ class SearchController extends RedisCache {
 
         return res.json({
           updated: true,
-          result: itemSearchHistory,
+          result: 'Update search history failed',
         });
       } else {
         const idSearch: string = uuidv4();
@@ -614,7 +614,7 @@ class SearchController extends RedisCache {
         if (resultInserted != null) {
           return res.json({
             added: true,
-            result: 'Update search history successfully',
+            result: resultInserted,
           });
         } else {
           return res.json({
