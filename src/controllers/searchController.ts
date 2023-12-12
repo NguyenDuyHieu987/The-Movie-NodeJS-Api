@@ -149,7 +149,7 @@ class SearchController extends RedisCache {
       const dataCache: any = await RedisCache.client.get(key);
 
       const page: number = +req.query?.page! - 1 || 0;
-      const limit: number = +req.query?.limit! || 20;
+      const limit: number = +req.query?.limit! || 10;
 
       if (dataCache != null) {
         return res.json(JSON.parse(dataCache));
@@ -160,7 +160,7 @@ class SearchController extends RedisCache {
       })
         .skip(page * limit)
         .limit(limit)
-        .sort({ search_times: -1 });
+        .sort({ updated_at: -1, search_times: -1 });
 
       const total = await Search.countDocuments({
         type: 'search',
@@ -201,13 +201,14 @@ class SearchController extends RedisCache {
       const topSearch = await Search.find({
         type: 'search',
         $or: [
+          { query: { $regex: query, $options: 'i' } },
           { name: { $regex: query, $options: 'i' } },
           { original_name: { $regex: query, $options: 'i' } },
         ],
       })
         .skip(page * limit)
         .limit(limit)
-        .sort({ search_times: -1 });
+        .sort({ updated_at: -1, search_times: -1 });
 
       const total = await Search.countDocuments({
         type: 'search',
@@ -321,26 +322,106 @@ class SearchController extends RedisCache {
 
       let movie: any = null;
 
-      switch (movieType) {
-        case 'movie':
-          movie = await Movie.findOne({ id: movieId });
-          break;
-        case 'tv':
-          movie = await TV.findOne({ id: movieId });
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-          break;
-      }
+      if (movieId && movieType) {
+        switch (movieType) {
+          case 'movie':
+            movie = await Movie.findOne({ id: movieId });
+            break;
+          case 'tv':
+            movie = await TV.findOne({ id: movieId });
+            break;
+          default:
+            return next(
+              createHttpError.NotFound(
+                `Movie with type: ${movieType} is not found`
+              )
+            );
+            break;
+        }
 
-      if (movie != null) {
+        if (movie != null) {
+          const itemSearch = await Search.findOne({
+            movie_id: movieId,
+            media_type: movieType,
+            type: 'search',
+            // query: searchQuery,
+          });
+
+          if (itemSearch != null) {
+            itemSearch.updated_at = new Date();
+            itemSearch.search_times! += 1;
+
+            await itemSearch.save();
+
+            return res.json({
+              updated: true,
+              result: itemSearch,
+            });
+          } else {
+            const idSearch: string = uuidv4();
+
+            let resultInserted = null;
+
+            if (movie.media_type == 'movie') {
+              resultInserted = await Search.create({
+                id: idSearch,
+                type: 'search',
+                query: movie.name,
+                search_times: 0,
+                movie_id: movie.id,
+                media_type: movie.media_type,
+                adult: movie.adult,
+                backdrop_path: movie.backdrop_path,
+                release_date: movie?.release_date,
+                name: movie.name,
+                original_name: movie.original_name,
+                overview: movie.overview,
+                poster_path: movie.poster_path,
+                genres: movie.genres,
+                runtime: movie.runtime,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
+            } else if (movie.media_type == 'tv') {
+              resultInserted = await Search.create({
+                id: idSearch,
+                type: 'search',
+                query: movie.name,
+                search_times: 0,
+                movie_id: movie.id,
+                media_type: movie.media_type,
+                adult: movie.adult,
+                backdrop_path: movie.backdrop_path,
+                first_air_date: movie?.first_air_date,
+                last_air_date: movie?.last_air_date,
+                name: movie.name,
+                original_name: movie.original_name,
+                overview: movie.overview,
+                poster_path: movie.poster_path,
+                genres: movie.genres,
+                episode_run_time: movie.episode_run_time,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
+            }
+
+            if (resultInserted != null) {
+              return res.json({
+                added: true,
+                result: resultInserted,
+              });
+            } else {
+              return res.json({
+                success: false,
+                result: 'Add search failed',
+              });
+            }
+          }
+        } else {
+          return next(createHttpError.NotFound('Movie is not exists'));
+        }
+      } else {
         const itemSearch = await Search.findOne({
-          movie_id: movieId,
-          media_type: movieType,
           type: 'search',
           query: searchQuery,
         });
@@ -356,67 +437,109 @@ class SearchController extends RedisCache {
             result: itemSearch,
           });
         } else {
-          const idSearch: string = uuidv4();
+          let movie1: any = null;
 
-          let resultInserted = null;
+          movie1 = await Movie.findOne({
+            $or: [
+              { name: { $regex: searchQuery, $options: 'i' } },
+              { original_name: { $regex: searchQuery, $options: 'i' } },
+            ],
+          })
+            .skip(0)
+            .limit(1)
+            .sort({ views: -1 });
 
-          if (movie.media_type == 'movie') {
-            resultInserted = await Search.create({
-              id: idSearch,
-              type: 'search',
-              query: searchQuery,
-              search_times: 0,
-              movie_id: movie.id,
-              media_type: movie.media_type,
-              adult: movie.adult,
-              backdrop_path: movie.backdrop_path,
-              release_date: movie?.release_date,
-              name: movie.name,
-              original_name: movie.original_name,
-              overview: movie.overview,
-              poster_path: movie.poster_path,
-              genres: movie.genres,
-              runtime: movie.runtime,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-          } else if (movie.media_type == 'tv') {
-            resultInserted = await Search.create({
-              id: idSearch,
-              type: 'search',
-              query: searchQuery,
-              search_times: 0,
-              movie_id: movie.id,
-              media_type: movie.media_type,
-              adult: movie.adult,
-              backdrop_path: movie.backdrop_path,
-              first_air_date: movie?.first_air_date,
-              last_air_date: movie?.last_air_date,
-              name: movie.name,
-              original_name: movie.original_name,
-              overview: movie.overview,
-              poster_path: movie.poster_path,
-              genres: movie.genres,
-              episode_run_time: movie.episode_run_time,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
+          if (movie1 == null) {
+            movie1 = await TV.findOne({
+              $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { original_name: { $regex: searchQuery, $options: 'i' } },
+              ],
+            })
+              .skip(0)
+              .limit(1)
+              .sort({ views: -1 });
           }
 
-          if (resultInserted != null) {
-            return res.json({
-              added: true,
-              result: resultInserted,
+          if (movie1 != null) {
+            const itemSearch = await Search.findOne({
+              movie_id: movie1.id,
+              media_type: movie1.media_type,
+              type: 'search',
             });
-          } else {
-            return res.json({
-              success: false,
-              result: 'Add search failed',
-            });
+
+            if (itemSearch != null) {
+              itemSearch.updated_at = new Date();
+              itemSearch.search_times! += 1;
+
+              await itemSearch.save();
+
+              return res.json({
+                updated: true,
+                result: itemSearch,
+              });
+            } else {
+              const idSearch: string = uuidv4();
+
+              let resultInserted = null;
+
+              if (movie1.media_type == 'movie') {
+                resultInserted = await Search.create({
+                  id: idSearch,
+                  type: 'search',
+                  query: movie1.name,
+                  search_times: 0,
+                  movie_id: movie1.id,
+                  media_type: movie1.media_type,
+                  adult: movie1.adult,
+                  backdrop_path: movie1.backdrop_path,
+                  release_date: movie1?.release_date,
+                  name: movie1.name,
+                  original_name: movie1.original_name,
+                  overview: movie1.overview,
+                  poster_path: movie1.poster_path,
+                  genres: movie1.genres,
+                  runtime: movie1.runtime,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                });
+              } else if (movie1.media_type == 'tv') {
+                resultInserted = await Search.create({
+                  id: idSearch,
+                  type: 'search',
+                  query: movie1.name,
+                  search_times: 0,
+                  movie_id: movie1.id,
+                  media_type: movie1.media_type,
+                  adult: movie1.adult,
+                  backdrop_path: movie1.backdrop_path,
+                  first_air_date: movie1?.first_air_date,
+                  last_air_date: movie1?.last_air_date,
+                  name: movie1.name,
+                  original_name: movie1.original_name,
+                  overview: movie1.overview,
+                  poster_path: movie1.poster_path,
+                  genres: movie1.genres,
+                  episode_run_time: movie1.episode_run_time,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                });
+              }
+
+              if (resultInserted != null) {
+                return res.json({
+                  added: true,
+                  result: resultInserted,
+                });
+              } else {
+                return res.json({
+                  success: false,
+                  result: 'Add search failed',
+                });
+              }
+            }
           }
         }
-      } else {
-        return next(createHttpError.NotFound('Movie is not exists'));
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
