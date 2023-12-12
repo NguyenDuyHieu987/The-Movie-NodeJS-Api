@@ -228,9 +228,9 @@ class HistoryController {
       const movieId: string = req.body.movie_id;
       const mediaType: string = req.body.media_type;
       const idItemHistory: string = uuidv4();
-      const duration: number = req.body.duration;
-      const percent: number = req.body.percent;
-      const seconds: number = req.body.seconds;
+      const duration: number = Number(req.body.duration);
+      const percent: number = Number(req.body.percent);
+      const seconds: number = Number(req.body.seconds);
 
       switch (mediaType) {
         case 'movie':

@@ -185,6 +185,57 @@ class SearchController extends RedisCache {
     }
   }
 
+  async searchInTopSearch(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query: string = (req.query.query as string) || '';
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 10;
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const topSearch = await Search.find({
+        type: 'search',
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { original_name: { $regex: query, $options: 'i' } },
+        ],
+      })
+        .skip(page * limit)
+        .limit(limit)
+        .sort({ search_times: -1 });
+
+      const total = await Search.countDocuments({
+        type: 'search',
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { original_name: { $regex: query, $options: 'i' } },
+        ],
+      });
+
+      const result = {
+        page: page,
+        results: topSearch,
+        page_size: limit,
+        total: total,
+      };
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(result)
+      );
+
+      return res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async searchHistory(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
@@ -204,7 +255,7 @@ class SearchController extends RedisCache {
       })
         .skip(page * limit)
         .limit(limit)
-        .sort({ updated_at: -1 });
+        .sort({ updated_at: -1, search_times: -1 });
 
       const total = await Search.countDocuments({
         user_id: user.id,
@@ -222,12 +273,51 @@ class SearchController extends RedisCache {
     }
   }
 
+  async searchInHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+        algorithms: ['HS256'],
+      }) as user;
+
+      const query: string = (req.query.query as string) || '';
+      const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 10;
+
+      const searchHistory = await Search.find({
+        user_id: user.id,
+        type: 'history',
+        query: { $regex: query, $options: 'i' },
+      })
+        .skip(page * limit)
+        .limit(limit)
+        .sort({ updated_at: -1, search_times: -1 });
+
+      const total = await Search.countDocuments({
+        user_id: user.id,
+        type: 'history',
+        query: { $regex: query, $options: 'i' },
+      });
+
+      return res.json({
+        page: page,
+        results: searchHistory,
+        page_size: limit,
+        total: total,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async addSearch(req: Request, res: Response, next: NextFunction) {
     try {
-      const movieId: string = req.params.movieId;
-      const movieType: string = req.params.movieType;
-
-      const idSearch: string = uuidv4();
+      const movieId: string = req.body.movieId;
+      const movieType: string = req.body.movieType;
+      const searchQuery: string = req.body.query;
 
       let movie: any = null;
 
@@ -248,43 +338,82 @@ class SearchController extends RedisCache {
       }
 
       if (movie != null) {
-        if (movie.media_type == 'movie') {
-          await Search.create({
-            id: idSearch,
-            type: 'search',
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            release_date: movie?.release_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            runtime: movie.runtime,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+        const itemSearch = await Search.findOne({
+          movie_id: movieId,
+          media_type: movieType,
+          type: 'search',
+          query: searchQuery,
+        });
+
+        if (itemSearch != null) {
+          itemSearch.updated_at = new Date();
+          itemSearch.search_times! += 1;
+
+          await itemSearch.save();
+
+          return res.json({
+            updated: true,
+            result: itemSearch,
           });
-        } else if (movie.media_type == 'tv') {
-          await Search.create({
-            id: idSearch,
-            type: 'search',
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            first_air_date: movie?.first_air_date,
-            last_air_date: movie?.last_air_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            episode_run_time: movie.episode_run_time,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+        } else {
+          const idSearch: string = uuidv4();
+
+          let resultInserted = null;
+
+          if (movie.media_type == 'movie') {
+            resultInserted = await Search.create({
+              id: idSearch,
+              type: 'search',
+              query: searchQuery,
+              search_times: 0,
+              movie_id: movie.id,
+              media_type: movie.media_type,
+              adult: movie.adult,
+              backdrop_path: movie.backdrop_path,
+              release_date: movie?.release_date,
+              name: movie.name,
+              original_name: movie.original_name,
+              overview: movie.overview,
+              poster_path: movie.poster_path,
+              genres: movie.genres,
+              runtime: movie.runtime,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+          } else if (movie.media_type == 'tv') {
+            resultInserted = await Search.create({
+              id: idSearch,
+              type: 'search',
+              query: searchQuery,
+              search_times: 0,
+              movie_id: movie.id,
+              media_type: movie.media_type,
+              adult: movie.adult,
+              backdrop_path: movie.backdrop_path,
+              first_air_date: movie?.first_air_date,
+              last_air_date: movie?.last_air_date,
+              name: movie.name,
+              original_name: movie.original_name,
+              overview: movie.overview,
+              poster_path: movie.poster_path,
+              genres: movie.genres,
+              episode_run_time: movie.episode_run_time,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+          }
+
+          if (resultInserted != null) {
+            return res.json({
+              added: true,
+              result: resultInserted,
+            });
+          } else {
+            return res.json({
+              success: false,
+              result: 'Add search failed',
+            });
+          }
         }
       } else {
         return next(createHttpError.NotFound('Movie is not exists'));
@@ -322,6 +451,8 @@ class SearchController extends RedisCache {
 
       if (itemSearchHistory != null) {
         itemSearchHistory.updated_at = new Date();
+        itemSearchHistory.search_times! += 1;
+
         await itemSearchHistory.save();
 
         return res.json({
@@ -336,14 +467,22 @@ class SearchController extends RedisCache {
           user_id: user.id,
           type: 'history',
           query: searchQuery,
+          search_times: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
 
-        return res.json({
-          added: true,
-          result: resultInserted,
-        });
+        if (resultInserted != null) {
+          return res.json({
+            added: true,
+            result: resultInserted,
+          });
+        } else {
+          return res.json({
+            success: false,
+            result: 'Add search history failed',
+          });
+        }
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
