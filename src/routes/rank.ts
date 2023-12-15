@@ -1,8 +1,8 @@
 import express from 'express';
-import Ranking from '@/controllers/rankingController';
+import Rank from '@/controllers/ranksController';
 
 const router = express.Router();
 
-router.get('/:slug', Ranking.get);
+router.get('/:slug', Rank.get);
 
 export default router;

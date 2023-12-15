@@ -4,7 +4,7 @@ import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import RedisCache from '@/config/redis';
 
-class RankingController extends RedisCache {
+class RankController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query?.page! - 1 || 0;
@@ -107,6 +107,14 @@ class RankingController extends RedisCache {
     } finally {
     }
   }
+
+  hotSearch(req: Request, res: Response, next: NextFunction) {
+    try {
+    } catch (error) {
+      next(error);
+    } finally {
+    }
+  }
 }
 
-export default new RankingController();
+export default new RankController();
