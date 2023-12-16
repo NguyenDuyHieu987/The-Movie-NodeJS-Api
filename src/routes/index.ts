@@ -19,7 +19,7 @@ import similarRouter from './similar';
 import planRouter from './plan';
 import ratingRouter from './rating';
 import commentRouter from './comment';
-import rankingRouter from './rank';
+import ranRouter from './rank';
 import updateViewRouter from './updateView';
 import accountRouter from './account';
 import recommendRouter from './recommend';
@@ -53,7 +53,7 @@ export default function route(app: Application) {
   app.use('/plan', planRouter);
   app.use('/rating', ratingRouter);
   app.use('/comment', commentRouter);
-  app.use('/ranks', rankingRouter);
+  app.use('/ranks', ranRouter);
   app.use('/update-view', updateViewRouter);
   app.use('/notification', notificationRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
