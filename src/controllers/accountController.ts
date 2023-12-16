@@ -809,7 +809,7 @@ class AccountController {
         }
       );
 
-      const newPasswordEncrypted = await encryptPassword(req.body.new_assword);
+      const newPasswordEncrypted = await encryptPassword(req.body.new_password);
 
       const account = await Account.findOneAndUpdate(
         {
