@@ -117,13 +117,13 @@ class MovieSlugController extends RedisCache {
           return {
             release_date: {
               $gte: date_gte,
-              $lt: data_lte,
+              $lte: data_lte,
             },
           };
         } else if (date_gte == '' && data_lte != '') {
           return {
             release_date: {
-              $lt: data_lte,
+              $lte: data_lte,
             },
           };
         } else return {};

@@ -43,13 +43,13 @@ class UpdateViewController {
 
       if (isUpdate) {
         return res.json({
-          success: false,
-          result: 'Update views movie failed',
+          success: true,
+          result: 'Update views movie successfully',
         });
       } else {
         return res.json({
-          success: true,
-          result: 'Update views movie successfully',
+          success: false,
+          result: 'Update views movie failed',
         });
       }
     } catch (error) {

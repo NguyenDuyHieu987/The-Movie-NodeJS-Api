@@ -118,16 +118,41 @@ class RankController extends RedisCache {
       const page: number = +req.query?.page! - 1 || 0;
       const limit: number = +req.query?.limit! || 10;
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
-      const topRankPlay = await Rank.find({
-        type: 'play',
-      })
-        .skip(page * limit)
-        .limit(limit)
-        .sort({ updated_at: -1 });
+      let dateStart = new Date();
+      let dateEnd = new Date();
+      dateStart.setUTCHours(0, 0, 0, 0);
+      dateEnd.setUTCHours(23, 59, 59, 999);
+
+      const topRankPlay = await Rank.aggregate([
+        {
+          $match: {
+            type: 'play',
+            created_at: { $gte: dateStart, $lte: dateEnd },
+          },
+        },
+        {
+          $group: {
+            _id: '$movie_id',
+            id: { $first: '$id' },
+            movie_id: { $first: '$movie_id' },
+            media_type: { $first: '$media_type' },
+            name: { $first: '$name' },
+            original_name: { $first: '$original_name' },
+            count: { $sum: 1 },
+          },
+        },
+        { $skip: page * limit },
+        { $limit: limit },
+        {
+          $sort: {
+            count: -1,
+          },
+        },
+      ]);
 
       const total = await Rank.countDocuments({
         type: 'play',
@@ -165,12 +190,36 @@ class RankController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const topRankSearch = await Rank.find({
-        type: 'search',
-      })
-        .skip(page * limit)
-        .limit(limit)
-        .sort({ updated_at: -1 });
+      let dateStart = new Date();
+      let dateEnd = new Date();
+      dateStart.setUTCHours(0, 0, 0, 0);
+      dateEnd.setUTCHours(23, 59, 59, 999);
+
+      const topRankSearch = await Rank.aggregate([
+        {
+          $match: {
+            type: 'search',
+            created_at: { $gte: dateStart, $lte: dateEnd },
+          },
+        },
+        {
+          $group: {
+            _id: '$movie_id',
+            id: { $first: '$id' },
+            movie_id: { $first: '$movie_id' },
+            name: { $first: '$name' },
+            original_name: { $first: '$original_name' },
+            count: { $sum: 1 },
+          },
+        },
+        { $skip: page * limit },
+        { $limit: limit },
+        {
+          $sort: {
+            count: -1,
+          },
+        },
+      ]);
 
       const total = await Rank.countDocuments({
         type: 'search',
