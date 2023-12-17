@@ -5,10 +5,8 @@ const Rank = new mongoose.Schema(
   {
     id: { type: String, default: uuidv4() },
     movie_id: { type: String },
-    user_id: { type: String },
-    type: { type: String, enum: ['search', 'history'] },
+    type: { type: String, enum: ['play', 'search'] },
     query: { type: String },
-    search_times: { type: Number, default: 0 },
     adult: { type: Boolean },
     backdrop_path: { type: String },
     first_air_date: { type: String },

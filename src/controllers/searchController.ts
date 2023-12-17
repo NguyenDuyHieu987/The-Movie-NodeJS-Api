@@ -1,7 +1,7 @@
 import createHttpError from 'http-errors';
+import Search from '@/models/search';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
-import Search from '@/models/search';
 import RedisCache from '@/config/redis';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
@@ -332,8 +332,8 @@ class SearchController extends RedisCache {
 
   async addSearch(req: Request, res: Response, next: NextFunction) {
     try {
-      const movieId: string = req.body.movieId;
-      const movieType: string = req.body.movieType;
+      const movieId: string = req.body.movie_id;
+      const movieType: string = req.body.media_type;
       const searchQuery: string = req.body.query;
 
       if (movieId && movieType) {
