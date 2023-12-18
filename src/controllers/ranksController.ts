@@ -9,7 +9,7 @@ import type { user } from '@/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class RankController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async filter(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -17,9 +17,9 @@ class RankController extends RedisCache {
       const page: number = +req.query?.page! - 1 || 0;
       const limit: number = +req.query?.limit! || 10;
 
-      // if (dataCache != null) {
-      //   return res.json(JSON.parse(dataCache));
-      // }
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
 
       const withMediaType: string | 'all' | 'movie' | 'tv' =
         (req.query?.media_type as string) || 'all';

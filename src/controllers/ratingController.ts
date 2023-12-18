@@ -102,11 +102,13 @@ class RatingController {
                 success: true,
                 vote_average: movieUpdated!.vote_average,
                 vote_count: movieUpdated!.vote_count,
+                result: 'Rate movie successfully',
               });
             } else {
-              return next(
-                createHttpError.InternalServerError(`Rate movie failed`)
-              );
+              return res.json({
+                success: false,
+                result: 'Rate movie failed',
+              });
             }
           } else {
             return next(createHttpError.NotFound(`Movie is not exist`));
@@ -148,14 +150,16 @@ class RatingController {
                 success: true,
                 vote_average: tvUpdated!.vote_average,
                 vote_count: tvUpdated!.vote_count,
+                result: 'Rate tv successfully',
               });
             } else {
-              return next(
-                createHttpError.InternalServerError(`Rate movie failed`)
-              );
+              return res.json({
+                success: false,
+                result: 'Rate tv failed',
+              });
             }
           } else {
-            return next(createHttpError.NotFound(`Movie is not exist`));
+            return next(createHttpError.NotFound(`TV is not exist`));
           }
           break;
         default:
