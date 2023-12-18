@@ -17,9 +17,9 @@ class RankController extends RedisCache {
       const page: number = +req.query?.page! - 1 || 0;
       const limit: number = +req.query?.limit! || 10;
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
       const withMediaType: string | 'all' | 'movie' | 'tv' =
         (req.query?.media_type as string) || 'all';
@@ -99,6 +99,8 @@ class RankController extends RedisCache {
         media_type: { $first: '$media_type' },
         name: { $first: '$name' },
         original_name: { $first: '$original_name' },
+        poster_path: { $first: '$poster_path' },
+        backdrop_path: { $first: '$backdrop_path' },
         count: { $sum: 1 },
       };
 
@@ -445,6 +447,8 @@ class RankController extends RedisCache {
         media_type: { $first: '$media_type' },
         name: { $first: '$name' },
         original_name: { $first: '$original_name' },
+        poster_path: { $first: '$poster_path' },
+        backdrop_path: { $first: '$backdrop_path' },
         count: { $sum: 1 },
       };
 
@@ -770,6 +774,8 @@ class RankController extends RedisCache {
         media_type: { $first: '$media_type' },
         name: { $first: '$name' },
         original_name: { $first: '$original_name' },
+        poster_path: { $first: '$poster_path' },
+        backdrop_path: { $first: '$backdrop_path' },
         count: { $sum: 1 },
       };
 
@@ -1095,6 +1101,8 @@ class RankController extends RedisCache {
         media_type: { $first: '$media_type' },
         name: { $first: '$name' },
         original_name: { $first: '$original_name' },
+        poster_path: { $first: '$poster_path' },
+        backdrop_path: { $first: '$backdrop_path' },
         count: { $sum: 1 },
         rate_average: { $avg: '$rate_value' },
       };
@@ -1371,6 +1379,7 @@ class RankController extends RedisCache {
             release_date: movie?.release_date,
             name: movie.name,
             original_name: movie.original_name,
+            original_language: movie.original_language,
             overview: movie.overview,
             poster_path: movie.poster_path,
             genres: movie.genres,
@@ -1390,6 +1399,7 @@ class RankController extends RedisCache {
             last_air_date: movie?.last_air_date,
             name: movie.name,
             original_name: movie.original_name,
+            original_language: movie.original_language,
             overview: movie.overview,
             poster_path: movie.poster_path,
             genres: movie.genres,
@@ -1461,6 +1471,7 @@ class RankController extends RedisCache {
               release_date: movie?.release_date,
               name: movie.name,
               original_name: movie.original_name,
+              original_language: movie.original_language,
               overview: movie.overview,
               poster_path: movie.poster_path,
               genres: movie.genres,
@@ -1481,6 +1492,7 @@ class RankController extends RedisCache {
               last_air_date: movie?.last_air_date,
               name: movie.name,
               original_name: movie.original_name,
+              original_language: movie.original_language,
               overview: movie.overview,
               poster_path: movie.poster_path,
               genres: movie.genres,
@@ -1546,6 +1558,7 @@ class RankController extends RedisCache {
               release_date: movie1?.release_date,
               name: movie1.name,
               original_name: movie1.original_name,
+              original_language: movie1.original_language,
               overview: movie1.overview,
               poster_path: movie1.poster_path,
               genres: movie1.genres,
@@ -1566,6 +1579,7 @@ class RankController extends RedisCache {
               last_air_date: movie1?.last_air_date,
               name: movie1.name,
               original_name: movie1.original_name,
+              original_language: movie1.original_language,
               overview: movie1.overview,
               poster_path: movie1.poster_path,
               genres: movie1.genres,
@@ -1644,6 +1658,7 @@ class RankController extends RedisCache {
             release_date: movie?.release_date,
             name: movie.name,
             original_name: movie.original_name,
+            original_language: movie.original_language,
             overview: movie.overview,
             poster_path: movie.poster_path,
             genres: movie.genres,
@@ -1665,6 +1680,7 @@ class RankController extends RedisCache {
             last_air_date: movie?.last_air_date,
             name: movie.name,
             original_name: movie.original_name,
+            original_language: movie.original_language,
             overview: movie.overview,
             poster_path: movie.poster_path,
             genres: movie.genres,

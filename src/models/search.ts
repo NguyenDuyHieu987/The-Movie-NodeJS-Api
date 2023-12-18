@@ -16,6 +16,7 @@ const Search = new mongoose.Schema(
     release_date: { type: String },
     name: { type: String },
     original_name: { type: String },
+    original_language: { type: String },
     overview: { type: String },
     poster_path: { type: String },
     media_type: { type: String, enum: ['movie', 'tv'] },
