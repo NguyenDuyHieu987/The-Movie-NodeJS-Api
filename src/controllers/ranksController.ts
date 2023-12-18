@@ -9,7 +9,7 @@ import type { user } from '@/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class RankController extends RedisCache {
-  async hotPlay(req: Request, res: Response, next: NextFunction) {
+  async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -17,51 +17,154 @@ class RankController extends RedisCache {
       const page: number = +req.query?.page! - 1 || 0;
       const limit: number = +req.query?.limit! || 10;
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
+
+      const withMediaType: string | 'all' | 'movie' | 'tv' =
+        (req.query?.media_type as string) || 'all';
+
+      if (!['all', 'movie', 'tv'].includes(withMediaType)) {
+        return next(
+          createHttpError.NotFound(
+            `Rank with media_type: ${withMediaType} is not found !`
+          )
+        );
       }
 
-      let result = {
+      const withGenres: string = (req.query?.with_genres as string) || '';
+
+      const withOriginalLanguage: string =
+        (req.query?.with_original_language as string) || '';
+
+      const convertGenres = (genre: string) => {
+        if (genre != '') {
+          return {
+            genres: {
+              $elemMatch: {
+                id: +withGenres,
+              },
+            },
+          };
+        } else return {};
+      };
+
+      const genres = convertGenres(withGenres);
+
+      const convertOriginalLanguage = (language: string) => {
+        if (language != '') {
+          return { original_language: { $regex: withOriginalLanguage } };
+        } else return {};
+      };
+
+      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+
+      const result: {
+        page: number;
+        results: any[];
+        prev_results: any[];
+        page_size: number;
+      } = {
         page: page,
         results: [],
+        prev_results: [],
         page_size: limit,
       };
 
-      let dateStart = new Date();
-      let dateEnd = new Date();
+      const dateStart = new Date();
+      const dateEnd = new Date();
+
+      const prevDateStart = new Date();
+      const prevDateEnd = new Date();
 
       dateStart.setUTCHours(0, 0, 0, 0);
       dateEnd.setUTCHours(23, 59, 59, 999);
 
-      switch (req.params.type) {
-        case 'day':
-          dateStart.setUTCHours(0, 0, 0, 0);
-          dateEnd.setUTCHours(23, 59, 59, 999);
+      prevDateStart.setUTCHours(0, 0, 0, 0);
+      prevDateEnd.setUTCHours(23, 59, 59, 999);
 
+      const matchGroupRank: any = {
+        type: 'play',
+        $and: [genres, originalLanguage],
+      };
+
+      if (withMediaType != 'all') {
+        matchGroupRank['media_type'] = withMediaType;
+      }
+
+      const filterGroupRank: any = {
+        _id: '$movie_id',
+        id: { $first: '$id' },
+        movie_id: { $first: '$movie_id' },
+        media_type: { $first: '$media_type' },
+        name: { $first: '$name' },
+        original_name: { $first: '$original_name' },
+        count: { $sum: 1 },
+      };
+
+      const filterSortRank: any = {
+        count: -1,
+      };
+
+      switch (req.params.type) {
+        case 'hot-play':
+          matchGroupRank.type = 'play';
+          break;
+        case 'hot-search':
+          matchGroupRank.type = 'search';
+          break;
+        case 'high-rate':
+          matchGroupRank.type = 'rate';
+          filterGroupRank['rate_average'] = { $avg: '$rate_value' };
+          filterSortRank['rate_average'] = -1;
+          break;
+        default:
+          return next(
+            createHttpError.NotFound(
+              `Rank with type: ${req.params.type} is not found !`
+            )
+          );
+          break;
+      }
+
+      switch (req.params.sortBy) {
+        case 'day':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'play',
+                ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupRank,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortRank,
+            },
+          ]);
+
+          const prevDay: number = dateStart.getDate() - 1;
+
+          prevDateStart.setUTCDate(prevDay);
+          prevDateEnd.setUTCDate(prevDay);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRank,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRank,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRank,
             },
           ]);
 
@@ -72,33 +175,42 @@ class RankController extends RedisCache {
             (dateStart.getDay() == 0 ? 7 : dateStart.getDay());
 
           dateStart.setUTCDate(startWeek + 1);
-
           dateEnd.setUTCDate(startWeek + 7);
 
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'play',
+                ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupRank,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortRank,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(startWeek + 1 - 7);
+          prevDateEnd.setUTCDate(startWeek);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRank,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRank,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRank,
             },
           ]);
 
@@ -113,27 +225,42 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'play',
+                ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupRank,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortRank,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevMonth: number = dateStart.getMonth() - 1;
+
+          prevDateStart.setUTCMonth(prevMonth);
+          prevDateEnd.setUTCMonth(prevMonth + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRank,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRank,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRank,
             },
           ]);
 
@@ -149,61 +276,392 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'play',
+                ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupRank,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
-              },
+              $sort: filterSortRank,
             },
           ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevYear: number = dateStart.getFullYear() - 1;
+
+          prevDateStart.setUTCFullYear(prevYear);
+          prevDateEnd.setUTCFullYear(prevYear + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRank,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupRank,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRank,
+            },
+          ]);
+
           break;
         case 'all':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'play',
+                ...matchGroupRank,
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupRank,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
-              },
+              $sort: filterSortRank,
             },
           ]);
           break;
         default:
           return next(
             createHttpError.NotFound(
-              `Rank with type: ${req.params.slug} is not found !`
+              `Rank with sort by: ${req.params.sortBy} is not found !`
+            )
+          );
+          break;
+      }
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(result)
+      );
+
+      return res.json(result);
+    } catch (error) {
+      next(error);
+    } finally {
+    }
+  }
+
+  async hotPlay(req: Request, res: Response, next: NextFunction) {
+    try {
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      const page: number = +req.query?.page! - 1 || 0;
+      const limit: number = +req.query?.limit! || 10;
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const withMediaType: string | 'all' | 'movie' | 'tv' =
+        (req.query?.media_type as string) || 'all';
+
+      if (!['all', 'movie', 'tv'].includes(withMediaType)) {
+        return next(
+          createHttpError.NotFound(
+            `Rank with media_type: ${withMediaType} is not found !`
+          )
+        );
+      }
+
+      const withGenres: string = (req.query?.with_genres as string) || '';
+
+      const withOriginalLanguage: string =
+        (req.query?.with_original_language as string) || '';
+
+      const convertGenres = (genre: string) => {
+        if (genre != '') {
+          return {
+            genres: {
+              $elemMatch: {
+                id: +withGenres,
+              },
+            },
+          };
+        } else return {};
+      };
+
+      const genres = convertGenres(withGenres);
+
+      const convertOriginalLanguage = (language: string) => {
+        if (language != '') {
+          return { original_language: { $regex: withOriginalLanguage } };
+        } else return {};
+      };
+
+      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+
+      const result: {
+        page: number;
+        results: any[];
+        prev_results: any[];
+        page_size: number;
+      } = {
+        page: page,
+        results: [],
+        prev_results: [],
+        page_size: limit,
+      };
+
+      const dateStart = new Date();
+      const dateEnd = new Date();
+
+      const prevDateStart = new Date();
+      const prevDateEnd = new Date();
+
+      dateStart.setUTCHours(0, 0, 0, 0);
+      dateEnd.setUTCHours(23, 59, 59, 999);
+
+      prevDateStart.setUTCHours(0, 0, 0, 0);
+      prevDateEnd.setUTCHours(23, 59, 59, 999);
+
+      const matchGroupPlay: any = {
+        type: 'play',
+        $and: [genres, originalLanguage],
+      };
+
+      if (withMediaType != 'all') {
+        matchGroupPlay['media_type'] = withMediaType;
+      }
+
+      const filterGroupPlay = {
+        _id: '$movie_id',
+        id: { $first: '$id' },
+        movie_id: { $first: '$movie_id' },
+        media_type: { $first: '$media_type' },
+        name: { $first: '$name' },
+        original_name: { $first: '$original_name' },
+        count: { $sum: 1 },
+      };
+
+      const filterSortPlay: any = {
+        count: -1,
+      };
+
+      switch (req.params.sortBy) {
+        case 'day':
+          result.results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: dateStart, $lte: dateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          const prevDay: number = dateStart.getDate() - 1;
+
+          prevDateStart.setUTCDate(prevDay);
+          prevDateEnd.setUTCDate(prevDay);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          break;
+        case 'week':
+          const startWeek: number =
+            dateStart.getDate() -
+            (dateStart.getDay() == 0 ? 7 : dateStart.getDay());
+
+          dateStart.setUTCDate(startWeek + 1);
+          dateEnd.setUTCDate(startWeek + 7);
+
+          result.results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: dateStart, $lte: dateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(startWeek + 1 - 7);
+          prevDateEnd.setUTCDate(startWeek);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          break;
+        case 'month':
+          dateStart.setUTCDate(1);
+          dateEnd.setUTCDate(1);
+          dateEnd.setUTCHours(0, 0, 0, 0);
+
+          dateEnd.setUTCMonth(dateStart.getMonth() + 1);
+
+          result.results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: dateStart, $lte: dateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevMonth: number = dateStart.getMonth() - 1;
+
+          prevDateStart.setUTCMonth(prevMonth);
+          prevDateEnd.setUTCMonth(prevMonth + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          break;
+        case 'year':
+          dateStart.setUTCDate(1);
+          dateStart.setUTCMonth(0);
+          dateEnd.setUTCDate(1);
+          dateEnd.setUTCHours(0, 0, 0, 0);
+
+          dateEnd.setUTCFullYear(dateStart.getFullYear() + 1);
+
+          result.results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: dateStart, $lte: dateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevYear: number = dateStart.getFullYear() - 1;
+
+          prevDateStart.setUTCFullYear(prevYear);
+          prevDateEnd.setUTCFullYear(prevYear + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+
+          break;
+        case 'all':
+          result.results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupPlay,
+              },
+            },
+            {
+              $group: filterGroupPlay,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortPlay,
+            },
+          ]);
+          break;
+        default:
+          return next(
+            createHttpError.NotFound(
+              `Rank with sort by: ${req.params.sortBy} is not found !`
             )
           );
           break;
@@ -234,47 +692,129 @@ class RankController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      let result = {
+      const withMediaType: string | 'all' | 'movie' | 'tv' =
+        (req.query?.media_type as string) || 'all';
+
+      if (!['all', 'movie', 'tv'].includes(withMediaType)) {
+        return next(
+          createHttpError.NotFound(
+            `Rank with media_type: ${withMediaType} is not found !`
+          )
+        );
+      }
+
+      const withGenres: string = (req.query?.with_genres as string) || '';
+
+      const withOriginalLanguage: string =
+        (req.query?.with_original_language as string) || '';
+
+      const convertGenres = (genre: string) => {
+        if (genre != '') {
+          return {
+            genres: {
+              $elemMatch: {
+                id: +withGenres,
+              },
+            },
+          };
+        } else return {};
+      };
+
+      const genres = convertGenres(withGenres);
+
+      const convertOriginalLanguage = (language: string) => {
+        if (language != '') {
+          return { original_language: { $regex: withOriginalLanguage } };
+        } else return {};
+      };
+
+      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+
+      const result: {
+        page: number;
+        results: any[];
+        prev_results: any[];
+        page_size: number;
+      } = {
         page: page,
         results: [],
+        prev_results: [],
         page_size: limit,
       };
 
-      let dateStart = new Date();
-      let dateEnd = new Date();
+      const dateStart = new Date();
+      const dateEnd = new Date();
+
+      const prevDateStart = new Date();
+      const prevDateEnd = new Date();
 
       dateStart.setUTCHours(0, 0, 0, 0);
       dateEnd.setUTCHours(23, 59, 59, 999);
 
-      switch (req.params.type) {
-        case 'day':
-          dateStart.setUTCHours(0, 0, 0, 0);
-          dateEnd.setUTCHours(23, 59, 59, 999);
+      prevDateStart.setUTCHours(0, 0, 0, 0);
+      prevDateEnd.setUTCHours(23, 59, 59, 999);
 
+      const matchGroupSearch: any = {
+        type: 'search',
+        $and: [genres, originalLanguage],
+      };
+
+      if (withMediaType != 'all') {
+        matchGroupSearch['media_type'] = withMediaType;
+      }
+
+      const filterGroupSearch = {
+        _id: '$movie_id',
+        id: { $first: '$id' },
+        movie_id: { $first: '$movie_id' },
+        media_type: { $first: '$media_type' },
+        name: { $first: '$name' },
+        original_name: { $first: '$original_name' },
+        count: { $sum: 1 },
+      };
+
+      const filterSortSearch: any = {
+        count: -1,
+      };
+
+      switch (req.params.sortBy) {
+        case 'day':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'search',
+                ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupSearch,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortSearch,
+            },
+          ]);
+
+          const prevDay: number = dateStart.getDate() - 1;
+
+          prevDateStart.setUTCDate(prevDay);
+          prevDateEnd.setUTCDate(prevDay);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupSearch,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupSearch,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortSearch,
             },
           ]);
 
@@ -285,33 +825,42 @@ class RankController extends RedisCache {
             (dateStart.getDay() == 0 ? 7 : dateStart.getDay());
 
           dateStart.setUTCDate(startWeek + 1);
-
           dateEnd.setUTCDate(startWeek + 7);
 
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'search',
+                ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupSearch,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortSearch,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(startWeek + 1 - 7);
+          prevDateEnd.setUTCDate(startWeek);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupSearch,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupSearch,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortSearch,
             },
           ]);
 
@@ -326,27 +875,42 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'search',
+                ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupSearch,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
+              $sort: filterSortSearch,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevMonth: number = dateStart.getMonth() - 1;
+
+          prevDateStart.setUTCMonth(prevMonth);
+          prevDateEnd.setUTCMonth(prevMonth + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupSearch,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupSearch,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortSearch,
             },
           ]);
 
@@ -362,61 +926,67 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'search',
+                ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupSearch,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
-              },
+              $sort: filterSortSearch,
             },
           ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevYear: number = dateStart.getFullYear() - 1;
+
+          prevDateStart.setUTCFullYear(prevYear);
+          prevDateEnd.setUTCFullYear(prevYear + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupSearch,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupSearch,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortSearch,
+            },
+          ]);
+
           break;
         case 'all':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'search',
+                ...matchGroupSearch,
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                count: { $sum: 1 },
-              },
+              $group: filterGroupSearch,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                count: -1,
-              },
+              $sort: filterSortSearch,
             },
           ]);
           break;
         default:
           return next(
             createHttpError.NotFound(
-              `Rank with type: ${req.params.slug} is not found !`
+              `Rank with sort by: ${req.params.sortBy} is not found !`
             )
           );
           break;
@@ -447,47 +1017,131 @@ class RankController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      let result = {
+      const withMediaType: string | 'all' | 'movie' | 'tv' =
+        (req.query?.media_type as string) || 'all';
+
+      if (!['all', 'movie', 'tv'].includes(withMediaType)) {
+        return next(
+          createHttpError.NotFound(
+            `Rank with media_type: ${withMediaType} is not found !`
+          )
+        );
+      }
+
+      const withGenres: string = (req.query?.with_genres as string) || '';
+
+      const withOriginalLanguage: string =
+        (req.query?.with_original_language as string) || '';
+
+      const convertGenres = (genre: string) => {
+        if (genre != '') {
+          return {
+            genres: {
+              $elemMatch: {
+                id: +withGenres,
+              },
+            },
+          };
+        } else return {};
+      };
+
+      const genres = convertGenres(withGenres);
+
+      const convertOriginalLanguage = (language: string) => {
+        if (language != '') {
+          return { original_language: { $regex: withOriginalLanguage } };
+        } else return {};
+      };
+
+      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+
+      const result: {
+        page: number;
+        results: any[];
+        prev_results: any[];
+        page_size: number;
+      } = {
         page: page,
         results: [],
+        prev_results: [],
         page_size: limit,
       };
 
-      let dateStart = new Date();
-      let dateEnd = new Date();
+      const dateStart = new Date();
+      const dateEnd = new Date();
+
+      const prevDateStart = new Date();
+      const prevDateEnd = new Date();
 
       dateStart.setUTCHours(0, 0, 0, 0);
       dateEnd.setUTCHours(23, 59, 59, 999);
 
-      switch (req.params.type) {
-        case 'day':
-          dateStart.setUTCHours(0, 0, 0, 0);
-          dateEnd.setUTCHours(23, 59, 59, 999);
+      prevDateStart.setUTCHours(0, 0, 0, 0);
+      prevDateEnd.setUTCHours(23, 59, 59, 999);
 
+      const matchGroupRate: any = {
+        type: 'rate',
+        $and: [genres, originalLanguage],
+      };
+
+      if (withMediaType != 'all') {
+        matchGroupRate['media_type'] = withMediaType;
+      }
+
+      const filterGroupRate = {
+        _id: '$movie_id',
+        id: { $first: '$id' },
+        movie_id: { $first: '$movie_id' },
+        media_type: { $first: '$media_type' },
+        name: { $first: '$name' },
+        original_name: { $first: '$original_name' },
+        count: { $sum: 1 },
+        rate_average: { $avg: '$rate_value' },
+      };
+
+      const filterSortRate: any = {
+        count: -1,
+        rate_average: -1,
+      };
+
+      switch (req.params.sortBy) {
+        case 'day':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'rate',
+                ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                rate_average: { $avg: '$rate_value' },
-              },
+              $group: filterGroupRate,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                rate_average: -1,
+              $sort: filterSortRate,
+            },
+          ]);
+
+          const prevDay: number = dateStart.getDate() - 1;
+
+          prevDateStart.setUTCDate(prevDay);
+          prevDateEnd.setUTCDate(prevDay);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRate,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRate,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRate,
             },
           ]);
 
@@ -498,33 +1152,42 @@ class RankController extends RedisCache {
             (dateStart.getDay() == 0 ? 7 : dateStart.getDay());
 
           dateStart.setUTCDate(startWeek + 1);
-
           dateEnd.setUTCDate(startWeek + 7);
 
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'rate',
+                ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                rate_average: { $avg: '$rate_value' },
-              },
+              $group: filterGroupRate,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                rate_average: -1,
+              $sort: filterSortRate,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(startWeek + 1 - 7);
+          prevDateEnd.setUTCDate(startWeek);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRate,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRate,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRate,
             },
           ]);
 
@@ -539,27 +1202,42 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'rate',
+                ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                rate_average: { $avg: '$rate_value' },
-              },
+              $group: filterGroupRate,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                rate_average: -1,
+              $sort: filterSortRate,
+            },
+          ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevMonth: number = dateStart.getMonth() - 1;
+
+          prevDateStart.setUTCMonth(prevMonth);
+          prevDateEnd.setUTCMonth(prevMonth + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRate,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
               },
+            },
+            {
+              $group: filterGroupRate,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRate,
             },
           ]);
 
@@ -575,61 +1253,67 @@ class RankController extends RedisCache {
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'rate',
+                ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd },
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                rate_average: { $avg: '$rate_value' },
-              },
+              $group: filterGroupRate,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                rate_average: -1,
-              },
+              $sort: filterSortRate,
             },
           ]);
+
+          prevDateStart.setUTCDate(1);
+          prevDateEnd.setUTCDate(1);
+
+          const prevYear: number = dateStart.getFullYear() - 1;
+
+          prevDateStart.setUTCFullYear(prevYear);
+          prevDateEnd.setUTCFullYear(prevYear + 1);
+
+          result.prev_results = await Rank.aggregate([
+            {
+              $match: {
+                ...matchGroupRate,
+                created_at: { $gte: prevDateStart, $lte: prevDateEnd },
+              },
+            },
+            {
+              $group: filterGroupRate,
+            },
+            { $skip: page * limit },
+            { $limit: limit },
+            {
+              $sort: filterSortRate,
+            },
+          ]);
+
           break;
         case 'all':
           result.results = await Rank.aggregate([
             {
               $match: {
-                type: 'rate',
+                ...matchGroupRate,
               },
             },
             {
-              $group: {
-                _id: '$movie_id',
-                id: { $first: '$id' },
-                movie_id: { $first: '$movie_id' },
-                media_type: { $first: '$media_type' },
-                name: { $first: '$name' },
-                original_name: { $first: '$original_name' },
-                rate_average: { $avg: '$rate_value' },
-              },
+              $group: filterGroupRate,
             },
             { $skip: page * limit },
             { $limit: limit },
             {
-              $sort: {
-                rate_average: -1,
-              },
+              $sort: filterSortRate,
             },
           ]);
           break;
         default:
           return next(
             createHttpError.NotFound(
-              `Rank with type: ${req.params.slug} is not found !`
+              `Rank with sort by: ${req.params.sortBy} is not found !`
             )
           );
           break;
