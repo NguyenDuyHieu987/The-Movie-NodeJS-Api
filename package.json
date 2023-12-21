@@ -23,7 +23,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "crypto": "^1.0.1",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "http-errors": "^2.0.0",
@@ -34,7 +34,7 @@
     "redis": "^4.6.11",
     "sib-api-v3-sdk": "^8.5.0",
     "std-env": "^3.6.0",
-    "stripe": "^14.5.0",
+    "stripe": "^14.9.0",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^9.0.1"
   },
