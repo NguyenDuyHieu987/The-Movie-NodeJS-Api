@@ -362,8 +362,10 @@ class TVController {
       ]);
 
       if (data.length == 0) {
-        return createHttpError.NotFound(
-          `Movie with id: ${req.params.id} is not found`
+        return next(
+          createHttpError.NotFound(
+            `Movie with id: ${req.params.id} is not found`
+          )
         );
       }
 
