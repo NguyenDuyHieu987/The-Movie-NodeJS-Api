@@ -1,0 +1,15 @@
+node_modules
+
+.eslintcache
+
+# TSC Build outputs
+build
+
+# Compress files
+*.rar
+*.zip
+
+# Local env files
+.env
+.env.local
+.env.*.local
