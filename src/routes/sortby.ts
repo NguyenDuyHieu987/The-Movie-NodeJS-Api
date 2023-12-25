@@ -1,5 +1,6 @@
-import SortOption from '@/controllers/sortbyController';
 import express from 'express';
+
+import SortOption from '@/controllers/sortbyController';
 
 const router = express.Router();
 

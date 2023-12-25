@@ -1,6 +1,7 @@
+import type { NextFunction, Request, Response } from 'express';
+
 import RedisCache from '@/config/redis';
 import Video from '@/models/video';
-import type { NextFunction, Request, Response } from 'express';
 
 class VideoController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

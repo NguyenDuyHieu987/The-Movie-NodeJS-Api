@@ -1,9 +1,10 @@
-import RedisCache from '@/config/redis';
-import Trending from '@/models/trending';
-import { user } from '@/types';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
+
+import RedisCache from '@/config/redis';
+import Trending from '@/models/trending';
+import { user } from '@/types';
 
 class TrendingController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

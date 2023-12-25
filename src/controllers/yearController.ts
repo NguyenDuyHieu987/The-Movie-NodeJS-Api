@@ -1,7 +1,8 @@
-import RedisCache from '@/config/redis';
-import Year from '@/models/year';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+
+import RedisCache from '@/config/redis';
+import Year from '@/models/year';
 
 class YearController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

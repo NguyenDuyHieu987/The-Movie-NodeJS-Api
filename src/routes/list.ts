@@ -1,5 +1,6 @@
-import List from '@/controllers/listController';
 import express from 'express';
+
+import List from '@/controllers/listController';
 const router = express.Router();
 
 router.get('/get-all/:slug', List.getAll);

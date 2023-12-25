@@ -1,13 +1,14 @@
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { HTML5_FMT } from 'moment';
+
 import RedisCache from '@/config/redis';
 import History from '@/models/history';
 import List from '@/models/list';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import { user } from '@/types';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
-import { HTML5_FMT } from 'moment';
 
 class RecommendController extends RedisCache {
   constructor() {

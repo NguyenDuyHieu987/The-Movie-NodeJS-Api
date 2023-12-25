@@ -1,8 +1,8 @@
 import 'module-alias/register';
-import MongoDB from './config/db';
-import RedisCache from './config/redis';
-import route from './routes';
-
+import { addAliases } from 'module-alias';
+addAliases({
+  '@': `${__dirname}`
+});
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import MongoStore from 'connect-mongo';
@@ -12,12 +12,10 @@ import dotenv from 'dotenv';
 import express from 'express';
 import session, { CookieOptions, SessionOptions } from 'express-session';
 import http from 'http';
-import { addAliases } from 'module-alias';
 import multer from 'multer';
-
-addAliases({
-  '@': `${__dirname}`
-});
+import MongoDB from './config/db';
+import RedisCache from './config/redis';
+import route from './routes';
 
 dotenv.config();
 

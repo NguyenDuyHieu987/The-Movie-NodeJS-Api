@@ -1,5 +1,6 @@
-import Comment from '@/controllers/commentController';
 import express from 'express';
+
+import Comment from '@/controllers/commentController';
 const router = express.Router();
 
 router.get('/get-all/:movieType/:movieId', Comment.getParent);

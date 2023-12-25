@@ -1,7 +1,8 @@
-import RedisCache from '@/config/redis';
-import Genre from '@/models/genre';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+
+import RedisCache from '@/config/redis';
+import Genre from '@/models/genre';
 
 class GenreController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

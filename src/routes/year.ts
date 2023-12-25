@@ -1,5 +1,6 @@
-import Year from '@/controllers/yearController';
 import express from 'express';
+
+import Year from '@/controllers/yearController';
 
 const router = express.Router();
 

@@ -1,7 +1,8 @@
-import RedisCache from '@/config/redis';
-import Country from '@/models/country';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+
+import RedisCache from '@/config/redis';
+import Country from '@/models/country';
 
 class CountryController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

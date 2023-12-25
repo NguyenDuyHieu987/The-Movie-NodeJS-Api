@@ -1,5 +1,6 @@
-import Season from '@/controllers/seasonController';
 import express from 'express';
+
+import Season from '@/controllers/seasonController';
 
 const router = express.Router();
 

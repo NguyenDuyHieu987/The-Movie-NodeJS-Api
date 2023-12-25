@@ -1,5 +1,6 @@
-import Plan from '@/controllers/planController';
 import express from 'express';
+
+import Plan from '@/controllers/planController';
 const router = express.Router();
 
 router.get('/get', Plan.get);

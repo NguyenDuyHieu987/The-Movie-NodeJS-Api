@@ -1,5 +1,5 @@
 module.exports = {
-  'src/**/*.{ts,js,cjs}': [
+  'src/**/*.{ts,cts,js,cjs}': [
     'prettier --write',
     'eslint --fix --cache',
     'git add'

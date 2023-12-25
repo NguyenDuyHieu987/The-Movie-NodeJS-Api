@@ -1,6 +1,7 @@
+import type { NextFunction, Request, Response } from 'express';
+
 import RedisCache from '@/config/redis';
 import Image from '@/models/image';
-import type { NextFunction, Request, Response } from 'express';
 
 class ImageController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

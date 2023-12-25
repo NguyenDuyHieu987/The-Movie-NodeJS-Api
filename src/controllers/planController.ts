@@ -1,7 +1,3 @@
-import RedisCache from '@/config/redis';
-import Bill from '@/models/bill';
-import Plan from '@/models/plan';
-import type { PaymentMethods,user } from '@/types';
 import cryptoJs from 'crypto-js';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
@@ -11,6 +7,11 @@ import fetch from 'node-fetch';
 import qs from 'qs';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
+
+import RedisCache from '@/config/redis';
+import Bill from '@/models/bill';
+import Plan from '@/models/plan';
+import type { PaymentMethods, user } from '@/types';
 
 class PlanController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

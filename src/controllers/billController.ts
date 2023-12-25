@@ -1,7 +1,8 @@
-import RedisCache from '@/config/redis';
-import Plan from '@/models/plan';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+
+import RedisCache from '@/config/redis';
+import Plan from '@/models/plan';
 
 class BillController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

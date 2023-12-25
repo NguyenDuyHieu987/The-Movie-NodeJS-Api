@@ -1,3 +1,9 @@
+import * as argon2 from 'argon2';
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import fetch from 'node-fetch';
+
 import Account from '@/models/account';
 import type { SigupForm, user } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
@@ -5,11 +11,6 @@ import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
-import * as argon2 from 'argon2';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
-import fetch from 'node-fetch';
 
 class AuthController {
   constructor() {}

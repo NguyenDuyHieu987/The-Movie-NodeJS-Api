@@ -91,6 +91,8 @@
           [
             // Side effect imports.
             "^\\u0000",
+            // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
+            "^@?\\w",
             // Internal packages.
             "^(src|config|models|controllers|routes|types|utils)(/.*|$)",
             // Parent imports. Put `..` last.

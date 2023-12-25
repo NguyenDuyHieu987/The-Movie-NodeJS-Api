@@ -1,11 +1,12 @@
-import History from '@/models/history';
-import Movie from '@/models/movie';
-import TV from '@/models/tv';
-import type { user } from '@/types';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+
+import History from '@/models/history';
+import Movie from '@/models/movie';
+import TV from '@/models/tv';
+import type { user } from '@/types';
 
 class HistoryController {
   async getAll(req: Request, res: Response, next: NextFunction) {

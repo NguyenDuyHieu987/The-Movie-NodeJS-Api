@@ -1,5 +1,6 @@
-import Video from '@/controllers/videoController';
 import express from 'express';
+
+import Video from '@/controllers/videoController';
 const router = express.Router();
 
 router.get('/:id', Video.get);

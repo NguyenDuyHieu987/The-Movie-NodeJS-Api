@@ -1,8 +1,9 @@
-import Notification from '@/models/notification';
-import type { user } from '@/types';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
+
+import Notification from '@/models/notification';
+import type { user } from '@/types';
 
 class NotificationController {
   async get(req: Request, res: Response, next: NextFunction) {

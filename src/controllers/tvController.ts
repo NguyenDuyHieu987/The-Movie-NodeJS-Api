@@ -1,3 +1,7 @@
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+
 import Credit from '@/models/credit';
 import History from '@/models/history';
 import Image from '@/models/image';
@@ -7,9 +11,6 @@ import Season from '@/models/season';
 import TV from '@/models/tv';
 import Video from '@/models/video';
 import type { credit, image, user } from '@/types';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 
 class TVController {
   async get(req: Request, res: Response, next: NextFunction) {

@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput",
     "typecheck:once": "tsc --noEmit",
     "test": "jest",
-    "lint": "eslint --cache src/**/*.{ts,js,cjs}",
-    "format": "eslint --fix --cache src/**/*.{ts,js,cjs}",
+    "lint": "eslint --cache src/**/*.{ts,cts,js,cjs}",
+    "format": "eslint --fix --cache src/**/*.{ts,cts,js,cjs}",
     "lint-staged": "lint-staged",
     "prepare": "husky install"
   },
@@ -63,6 +63,7 @@
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-n": "^16.5.0",
     "eslint-plugin-prettier": "^5.1.2",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
@@ -78,7 +79,7 @@
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=20.x"
+    "node": ">=18.x"
   },
   "_moduleAliases": {
     "@": "build"

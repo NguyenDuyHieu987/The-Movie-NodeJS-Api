@@ -1,8 +1,9 @@
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+
 import RedisCache from '@/config/redis';
 import Movie from '@/models/movie';
 import MovieSlug from '@/models/movieSlug';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
 
 class MovieSlugController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

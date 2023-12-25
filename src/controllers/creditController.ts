@@ -1,6 +1,7 @@
+import type { NextFunction, Request, Response } from 'express';
+
 import RedisCache from '@/config/redis';
 import Credit from '@/models/credit';
-import type { NextFunction, Request, Response } from 'express';
 
 class CreditController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

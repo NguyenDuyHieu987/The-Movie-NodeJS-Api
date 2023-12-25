@@ -1,8 +1,9 @@
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+
 import RedisCache from '@/config/redis';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
 
 class DiscoverController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {

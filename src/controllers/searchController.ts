@@ -1,12 +1,13 @@
+import type { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+
 import RedisCache from '@/config/redis';
 import Movie from '@/models/movie';
 import Search from '@/models/search';
 import TV from '@/models/tv';
 import type { user } from '@/types';
-import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 
 class SearchController extends RedisCache {
   async search(req: Request, res: Response, next: NextFunction) {

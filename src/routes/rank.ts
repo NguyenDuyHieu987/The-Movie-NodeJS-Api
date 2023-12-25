@@ -1,5 +1,6 @@
-import Rank from '@/controllers/ranksController';
 import express from 'express';
+
+import Rank from '@/controllers/ranksController';
 
 const router = express.Router();
 

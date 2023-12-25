@@ -1,7 +1,8 @@
-import Movie from '@/models/movie';
-import TV from '@/models/tv';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+
+import Movie from '@/models/movie';
+import TV from '@/models/tv';
 
 class UpdateViewController {
   async update(req: Request, res: Response, next: NextFunction) {

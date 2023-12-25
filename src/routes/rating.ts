@@ -1,5 +1,6 @@
-import Rate from '@/controllers/ratingController';
 import express from 'express';
+
+import Rate from '@/controllers/ratingController';
 const router = express.Router();
 
 router.get('/get/:movieType/:movieId', Rate.get);

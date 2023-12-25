@@ -1,3 +1,5 @@
+import type { Application, NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
 import accountRouter from './account';
 import authRouter from './auth';
 import commentRouter from './comment';
@@ -26,8 +28,6 @@ import videoRouter from './video';
 import yearRouter from './year';
 
 import ErrorHandler from '@/controllers/errorController';
-import type { Application, NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
 
 export default function route(app: Application) {
   app.use('/auth', authRouter);

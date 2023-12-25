@@ -1,5 +1,6 @@
-import Account from '@/controllers/accountController';
 import express from 'express';
+
+import Account from '@/controllers/accountController';
 const router = express.Router();
 
 router.post('/confirm/:type', Account.confirm);

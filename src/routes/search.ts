@@ -1,5 +1,6 @@
-import Search from '@/controllers/searchController';
 import express from 'express';
+
+import Search from '@/controllers/searchController';
 
 const router = express.Router();
 
