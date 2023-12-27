@@ -21,24 +21,34 @@ class ListController {
 
       const skip: number = +req.query.skip! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
-      let data: any[] = [];
-      let total: number = 0;
+
+      const result: {
+        skip: number;
+        results: any[];
+        limit: number;
+        total: number;
+      } = {
+        skip: skip + 1,
+        results: [],
+        limit,
+        total: 0
+      };
 
       switch (req.params.slug) {
         case 'all':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id
           })
             .skip(skip * limit)
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          result.total = await List.countDocuments({
             user_id: user.id
           });
           break;
         case 'movie':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id,
             media_type: 'movie'
           })
@@ -46,13 +56,13 @@ class ListController {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          result.total = await List.countDocuments({
             user_id: user.id,
             media_type: 'movie'
           });
           break;
         case 'tv':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id,
             media_type: 'tv'
           })
@@ -60,7 +70,7 @@ class ListController {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          total = await List.countDocuments({
+          result.total = await List.countDocuments({
             user_id: user.id,
             media_type: 'tv'
           });
@@ -74,10 +84,7 @@ class ListController {
           break;
       }
 
-      return res.json({
-        results: data,
-        total
-      });
+      return res.json(result);
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -105,37 +112,85 @@ class ListController {
       }) as user;
 
       const query = req.query?.query || '';
-      let data: any[] = [];
+      const skip: number = +req.query.skip! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+
+      const result: {
+        skip: number;
+        results: any[];
+        limit: number;
+        total: number;
+      } = {
+        skip: skip + 1,
+        results: [],
+        limit,
+        total: 0
+      };
 
       switch (req.params.slug) {
         case 'all':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id,
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
             ]
-          }).sort({ created_at: -1 });
+          })
+            .skip(skip * limit)
+            .limit(limit)
+            .sort({ created_at: -1 });
+
+          result.total = await Movie.countDocuments({
+            user_id: user.id,
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } }
+            ]
+          });
           break;
         case 'movie':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id,
             media_type: 'movie',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
             ]
-          }).sort({ created_at: -1 });
+          })
+            .skip(skip * limit)
+            .limit(limit)
+            .sort({ created_at: -1 });
+
+          result.total = await Movie.countDocuments({
+            user_id: user.id,
+            media_type: 'movie',
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } }
+            ]
+          });
           break;
         case 'tv':
-          data = await List.find({
+          result.results = await List.find({
             user_id: user.id,
             media_type: 'tv',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
             ]
-          }).sort({ created_at: -1 });
+          })
+            .skip(skip * limit)
+            .limit(limit)
+            .sort({ created_at: -1 });
+
+          result.total = await Movie.countDocuments({
+            user_id: user.id,
+            media_type: 'tv',
+            $or: [
+              { name: { $regex: query, $options: 'i' } },
+              { original_name: { $regex: query, $options: 'i' } }
+            ]
+          });
           break;
         default:
           return next(
@@ -146,10 +201,7 @@ class ListController {
           break;
       }
 
-      return res.json({
-        results: data,
-        total: data.length
-      });
+      return res.json(result);
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||

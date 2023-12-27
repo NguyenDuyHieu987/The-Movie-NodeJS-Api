@@ -81,9 +81,9 @@ class SearchController extends RedisCache {
             ]
           });
 
-          result.total = totalMovie + totalTv;
           result.movie = movie;
           result.tv = tv;
+          result.total = totalMovie + totalTv;
           result.total_movie = totalMovie;
           result.total_tv = totalTv;
           break;

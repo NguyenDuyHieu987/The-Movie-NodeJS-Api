@@ -126,7 +126,7 @@ class PlanController extends RedisCache {
 
             // console.log(signed1);
 
-            res.json({
+            return res.json({
               url: process.env.VNP_URL! + '?' + vnpParams
             });
 
@@ -162,18 +162,27 @@ class PlanController extends RedisCache {
                   price_data: {
                     currency: 'VND',
                     product_data: {
-                      name: `Nâng cấp VIP ${plan.order}: Phimhay247 gói cao cấp`,
+                      name: `Nâng cấp VIP ${plan.vip}: Phimhay247 gói cao cấp`,
                       description: `Nâng cấp tài khoản gói: ${plan.name}`,
-                      images: []
+                      images: [],
+                      tax_code: 'txcd_10000000',
+                      metadata: {
+                        plan_id: plan.id
+                      }
                     },
                     unit_amount: plan.price!,
                     recurring: {
-                      interval: 'month'
-                    }
+                      interval: 'month',
+                      interval_count: 1
+                    },
+                    tax_behavior: 'inclusive'
                   },
                   quantity: 1
                 }
               ],
+              metadata: {
+                plan_id: plan.id
+              },
               allow_promotion_codes: true,
               discounts: [
                 {
@@ -195,7 +204,7 @@ class PlanController extends RedisCache {
               // success_url:
               //   (process.env.NODE_ENV == 'production'
               //     ? process.env.CLIENT_URL!
-              //     : 'http://localhost:3000') +
+              //     : req.headers.origin) +
               //   '/upgrade/state/StripeSuccess?session_id={CHECKOUT_SESSION_ID}',
               success_url:
                 (process.env.NODE_ENV == 'production'
@@ -212,9 +221,9 @@ class PlanController extends RedisCache {
 
             // console.log(req.headers.host);
             // console.log(req.hostname);
-            // console.log(req.headers.origin);
+            console.log(req.headers.origin);
 
-            res.json({
+            return res.json({
               url: session.url
             });
             break;
@@ -256,10 +265,46 @@ class PlanController extends RedisCache {
             {}
           );
 
-          if (session.payment_status == 'paid') {
-            // const result = await Bill.create({});
+          if (session.status != 'complete') {
+            return res.json({ success: false, status: session.status });
+          }
 
-            return res.json(session);
+          const subscriptionId: string = session.subscription as string;
+
+          if (session.payment_status == 'paid') {
+            const subscription = await stripe.subscriptions.retrieve(
+              subscriptionId,
+              {}
+            );
+
+            const result = await Bill.findOne({
+              account_id: session.client_reference_id,
+              subscription_id: subscriptionId
+            });
+
+            if (result == null) {
+              const billId: string = uuidv4();
+
+              // const result = await Bill.create({
+              //   id: billId,
+              //   account_id: session.client_reference_id,
+              //   session_id: session.id,
+              //   subscription_id: subscriptionId,
+              //   session: session,
+              //   subscription: subscription,
+              //   payment_method: 'stripe',
+              //   created_at: new Date().toISOString(),
+              //   updated_at: new Date().toISOString()
+              // });
+
+              return res.json({ success: true, session, subscription });
+            } else {
+              return res.json({
+                success: true,
+                result
+                // result: 'You have successfully registered for subscription'
+              });
+            }
 
             // const clientUrl =
             //   process.env.NODE_ENV == 'production'
@@ -268,7 +313,10 @@ class PlanController extends RedisCache {
 
             // return res.redirect(clientUrl);
           } else {
-            res.json({ status: 'unpaid' });
+            return res.json({
+              success: false,
+              payment_status: session.payment_status
+            });
           }
 
           break;
