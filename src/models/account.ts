@@ -1,8 +1,11 @@
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 const Account = new mongoose.Schema(
   {
-    id: { type: String },
+    id: { type: String, default: uuidv4() },
+    facebook_user_id: { type: String },
+    google_user_id: { type: String },
     username: { type: String },
     password: { type: String },
     email: { type: String, default: null },

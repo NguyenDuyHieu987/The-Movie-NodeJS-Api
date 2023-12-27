@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
+import { v4 as uuidv4 } from 'uuid';
 
 import Account from '@/models/account';
 import type { SigupForm, user } from '@/types';
@@ -175,23 +176,17 @@ class AuthController {
           throw error;
         });
 
-      const account = await Account.findOne({ id: facebookUser!.id });
+      const account = await Account.findOne({
+        facebook_user_id: facebookUser!.id,
+        auth_type: 'facebook'
+      });
 
       if (account == null) {
-        // await Account.collection.insertOne({
-        //   id: facebookUser.id,
-        //   username: facebookUser.name,
-        //   full_name: facebookUser.name,
-        //   avatar: facebookUser.picture.data.url,
-        //   email: facebookUser.email,
-        //   auth_type: 'facebook',
-        //   role: 'normal',
-        //   created_at: new Date().toISOString(),
-        //   updated_at: new Date().toISOString(),
-        // });
+        const accountId: string = uuidv4();
 
-        await Account.create({
-          id: facebookUser.id,
+        const newAccount = await Account.create({
+          id: accountId,
+          facebook_user_id: facebookUser.id,
           username: facebookUser.name,
           full_name: facebookUser.name,
           avatar: facebookUser.picture.data.url,
@@ -200,11 +195,6 @@ class AuthController {
           role: 'normal',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        });
-
-        const newAccount = await Account.findOne({
-          id: facebookUser.id,
-          auth_type: 'facebook'
         });
 
         if (newAccount != null) {
@@ -263,7 +253,7 @@ class AuthController {
         }
       } else {
         const accountLogedIn = await Account.findOneAndUpdate(
-          { id: facebookUser.id },
+          { id: account.id, auth_type: 'facebook' },
           {
             $set: {
               avatar: facebookUser.picture.data.url
@@ -350,11 +340,17 @@ class AuthController {
           throw error;
         });
 
-      const account = await Account.findOne({ id: googleUser!.sub });
+      const account = await Account.findOne({
+        google_user_id: googleUser.sub,
+        auth_type: 'google'
+      });
 
       if (account == null) {
-        await Account.create({
-          id: googleUser.sub,
+        const accountId: string = uuidv4();
+
+        const newAccount = await Account.create({
+          id: accountId,
+          google_user_id: googleUser.sub,
           username: googleUser.name,
           full_name: googleUser.name,
           avatar: googleUser.picture,
@@ -363,11 +359,6 @@ class AuthController {
           role: 'normal',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        });
-
-        const newAccount = await Account.findOne({
-          id: googleUser.sub,
-          auth_type: 'google'
         });
 
         if (newAccount != null) {
@@ -568,8 +559,10 @@ class AuthController {
       });
 
       if (account == null) {
-        await Account.create({
-          id: user.id,
+        const accountId: string = uuidv4();
+
+        const newAccout = await Account.create({
+          id: accountId,
           username: user.username,
           password: user.password,
           full_name: user.full_name,
@@ -638,7 +631,6 @@ class AuthController {
 
               const encoded = jwt.sign(
                 {
-                  id: formUser.id,
                   username: formUser.username,
                   password: passwordEncrypted,
                   email: formUser.email,

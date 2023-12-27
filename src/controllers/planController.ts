@@ -197,6 +197,9 @@ class PlanController extends RedisCache {
                   end_behavior: {
                     missing_payment_method: 'pause'
                   }
+                },
+                metadata: {
+                  plan_id: plan.id
                 }
               },
               client_reference_id: user.id,
@@ -221,7 +224,7 @@ class PlanController extends RedisCache {
 
             // console.log(req.headers.host);
             // console.log(req.hostname);
-            console.log(req.headers.origin);
+            // console.log(req.headers.origin);
 
             return res.json({
               url: session.url
@@ -285,6 +288,22 @@ class PlanController extends RedisCache {
             if (result == null) {
               const billId: string = uuidv4();
 
+              const start_date = new Date(
+                (subscription.start_date as number) * 1000
+              ).toISOString();
+
+              const end_date = new Date(
+                (subscription.ended_at as number) * 1000
+              ).toISOString();
+
+              const trial_start = new Date(
+                (subscription.trial_start as number) * 1000
+              ).toISOString();
+
+              const trial_end = new Date(
+                (subscription.trial_end as number) * 1000
+              ).toISOString();
+
               // const result = await Bill.create({
               //   id: billId,
               //   account_id: session.client_reference_id,
@@ -297,7 +316,12 @@ class PlanController extends RedisCache {
               //   updated_at: new Date().toISOString()
               // });
 
-              return res.json({ success: true, session, subscription });
+              return res.json({
+                success: true,
+                session,
+                subscription,
+                date: trial_end
+              });
             } else {
               return res.json({
                 success: true,
