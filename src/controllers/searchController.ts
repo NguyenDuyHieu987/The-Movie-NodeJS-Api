@@ -356,88 +356,88 @@ class SearchController extends RedisCache {
             break;
         }
 
-        if (movie != null) {
-          const itemSearch = await Search.findOne({
-            movie_id: movieId,
-            media_type: movieType,
-            type: 'search'
-            // query: searchQuery,
-          });
-
-          if (itemSearch != null) {
-            itemSearch.search_times! += 1;
-            itemSearch.updated_at = new Date();
-
-            await itemSearch.save();
-
-            return res.json({
-              updated: true,
-              result: 'Update search successfully'
-            });
-          } else {
-            const idSearch: string = uuidv4();
-
-            let resultInserted = null;
-
-            if (movie.media_type == 'movie') {
-              resultInserted = await Search.create({
-                id: idSearch,
-                type: 'search',
-                query: movie.name,
-                search_times: 0,
-                movie_id: movie.id,
-                media_type: movie.media_type,
-                adult: movie.adult,
-                backdrop_path: movie.backdrop_path,
-                release_date: movie?.release_date,
-                name: movie.name,
-                original_name: movie.original_name,
-                original_language: movie.original_language,
-                overview: movie.overview,
-                poster_path: movie.poster_path,
-                genres: movie.genres,
-                runtime: movie.runtime,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-            } else if (movie.media_type == 'tv') {
-              resultInserted = await Search.create({
-                id: idSearch,
-                type: 'search',
-                query: movie.name,
-                search_times: 0,
-                movie_id: movie.id,
-                media_type: movie.media_type,
-                adult: movie.adult,
-                backdrop_path: movie.backdrop_path,
-                first_air_date: movie?.first_air_date,
-                last_air_date: movie?.last_air_date,
-                name: movie.name,
-                original_name: movie.original_name,
-                original_language: movie.original_language,
-                overview: movie.overview,
-                poster_path: movie.poster_path,
-                genres: movie.genres,
-                episode_run_time: movie.episode_run_time,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-            }
-
-            if (resultInserted != null) {
-              return res.json({
-                added: true,
-                result: resultInserted
-              });
-            } else {
-              return res.json({
-                success: false,
-                result: 'Add search failed'
-              });
-            }
-          }
-        } else {
+        if (movie == null) {
           return next(createHttpError.NotFound('Movie is not exists'));
+        }
+
+        const itemSearch = await Search.findOne({
+          movie_id: movieId,
+          media_type: movieType,
+          type: 'search'
+          // query: searchQuery,
+        });
+
+        if (itemSearch != null) {
+          itemSearch.search_times! += 1;
+          itemSearch.updated_at = new Date();
+
+          await itemSearch.save();
+
+          return res.json({
+            updated: true,
+            result: 'Update search successfully'
+          });
+        } else {
+          const idSearch: string = uuidv4();
+
+          let resultInserted = null;
+
+          if (movie.media_type == 'movie') {
+            resultInserted = await Search.create({
+              id: idSearch,
+              type: 'search',
+              query: movie.name,
+              search_times: 0,
+              movie_id: movie.id,
+              media_type: movie.media_type,
+              adult: movie.adult,
+              backdrop_path: movie.backdrop_path,
+              release_date: movie?.release_date,
+              name: movie.name,
+              original_name: movie.original_name,
+              original_language: movie.original_language,
+              overview: movie.overview,
+              poster_path: movie.poster_path,
+              genres: movie.genres,
+              runtime: movie.runtime,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          } else if (movie.media_type == 'tv') {
+            resultInserted = await Search.create({
+              id: idSearch,
+              type: 'search',
+              query: movie.name,
+              search_times: 0,
+              movie_id: movie.id,
+              media_type: movie.media_type,
+              adult: movie.adult,
+              backdrop_path: movie.backdrop_path,
+              first_air_date: movie?.first_air_date,
+              last_air_date: movie?.last_air_date,
+              name: movie.name,
+              original_name: movie.original_name,
+              original_language: movie.original_language,
+              overview: movie.overview,
+              poster_path: movie.poster_path,
+              genres: movie.genres,
+              episode_run_time: movie.episode_run_time,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          }
+
+          if (resultInserted == null) {
+            return res.json({
+              success: false,
+              result: 'Add search failed'
+            });
+          }
+
+          return res.json({
+            added: true,
+            result: resultInserted
+          });
         }
       } else {
         const itemSearch = await Search.findOne({
@@ -547,17 +547,17 @@ class SearchController extends RedisCache {
                 });
               }
 
-              if (resultInserted != null) {
-                return res.json({
-                  added: true,
-                  result: resultInserted
-                });
-              } else {
+              if (resultInserted == null) {
                 return res.json({
                   success: false,
                   result: 'Add search failed'
                 });
               }
+
+              return res.json({
+                added: true,
+                result: resultInserted
+              });
             }
           }
         }
@@ -616,17 +616,17 @@ class SearchController extends RedisCache {
           updated_at: new Date().toISOString()
         });
 
-        if (resultInserted != null) {
-          return res.json({
-            added: true,
-            result: resultInserted
-          });
-        } else {
+        if (resultInserted == null) {
           return res.json({
             success: false,
             result: 'Add search history failed'
           });
         }
+
+        return res.json({
+          added: true,
+          result: resultInserted
+        });
       }
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
@@ -666,17 +666,17 @@ class SearchController extends RedisCache {
           type: 'history'
         });
 
-        if (resultDeleted.deletedCount == 1) {
-          return res.json({
-            success: true,
-            result: 'Delete search history successfully'
-          });
-        } else {
+        if (resultDeleted.deletedCount != 1) {
           return res.json({
             success: false,
             result: 'Delete search history failed'
           });
         }
+
+        return res.json({
+          success: true,
+          result: 'Delete search history successfully'
+        });
       } else {
         return next(
           createHttpError.NotFound(`Search history with id: ${id} is not found`)
@@ -710,17 +710,17 @@ class SearchController extends RedisCache {
         type: 'history'
       });
 
-      if (resultCleared.deletedCount >= 1) {
-        return res.json({
-          success: true,
-          result: 'Clear search history successfully'
-        });
-      } else {
+      if (resultCleared.deletedCount < 1) {
         return res.json({
           success: false,
           result: 'Clear search history failed'
         });
       }
+
+      return res.json({
+        success: true,
+        result: 'Clear search history successfully'
+      });
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         return res.json({ isTokenExpired: true, result: 'Token is expired' });

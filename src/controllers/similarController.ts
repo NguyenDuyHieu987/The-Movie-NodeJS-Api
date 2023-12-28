@@ -28,56 +28,58 @@ class SimilarController extends RedisCache {
         case 'movie':
           const movie = await Movie.findOne({ id: movieId });
 
-          if (movie != null) {
-            const genre: any[] = movie.genres;
-            const country: string = movie.original_language!;
-
-            similar = await Movie.find({
-              id: {
-                $nin: [movieId]
-              },
-              $or: [
-                { original_language: { $regex: country } },
-                {
-                  genres: {
-                    $elemMatch: { $or: [...genre] }
-                  }
-                }
-              ]
-            })
-              .skip(page * limit)
-              .limit(limit)
-              .sort({ views: -1 });
-          } else {
+          if (movie == null) {
             return next(createHttpError.NotFound(`Movie is not exist`));
           }
+
+          const genre: any[] = movie.genres;
+          const country: string = movie.original_language!;
+
+          similar = await Movie.find({
+            id: {
+              $nin: [movieId]
+            },
+            $or: [
+              { original_language: { $regex: country } },
+              {
+                genres: {
+                  $elemMatch: { $or: [...genre] }
+                }
+              }
+            ]
+          })
+            .skip(page * limit)
+            .limit(limit)
+            .sort({ views: -1 });
+
           break;
         case 'tv':
           const tv = await TV.findOne({ id: movieId });
 
-          if (tv != null) {
-            const genre: any[] = tv.genres;
-            const country: string = tv.original_language!;
-
-            similar = await TV.find({
-              id: {
-                $nin: [movieId]
-              },
-              $or: [
-                { original_language: { $regex: country } },
-                {
-                  genres: {
-                    $elemMatch: { $or: [...genre] }
-                  }
-                }
-              ]
-            })
-              .skip(page * limit)
-              .limit(limit)
-              .sort({ views: -1 });
-          } else {
+          if (tv == null) {
             return next(createHttpError.NotFound(`Movie is not exist`));
           }
+
+          const genre1: any[] = tv.genres;
+          const country1: string = tv.original_language!;
+
+          similar = await TV.find({
+            id: {
+              $nin: [movieId]
+            },
+            $or: [
+              { original_language: { $regex: country1 } },
+              {
+                genres: {
+                  $elemMatch: { $or: [...genre1] }
+                }
+              }
+            ]
+          })
+            .skip(page * limit)
+            .limit(limit)
+            .sort({ views: -1 });
+
           break;
         default:
           return next(

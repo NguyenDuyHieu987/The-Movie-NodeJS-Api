@@ -21,17 +21,17 @@ class SeasonController extends RedisCache {
 
       const response = { results: seasons };
 
-      if (seasons.length > 0) {
-        await RedisCache.client.setEx(
-          key,
-          +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(response)
-        );
-
-        return res.json(response);
-      } else {
+      if (seasons.length <= 0) {
         return next(createHttpError.NotFound(`Seasons is not exist`));
       }
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
+
+      return res.json(response);
     } catch (error) {
       next(error);
     }
@@ -80,17 +80,17 @@ class SeasonController extends RedisCache {
         }
       ]);
 
-      if (season.length > 0) {
-        await RedisCache.client.setEx(
-          key,
-          +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(season[0])
-        );
-
-        return res.json(season[0]);
-      } else {
+      if (season.length <= 0) {
         return next(createHttpError.NotFound(`Season is not exist`));
       }
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(season[0])
+      );
+
+      return res.json(season[0]);
     } catch (error) {
       next(error);
     }

@@ -390,64 +390,30 @@ class CommentController {
           break;
       }
 
-      if (isExistMovies) {
-        const commentForm: commentForm = req.body;
+      if (!isExistMovies) {
+        return next(createHttpError.NotFound('Movie is not exists'));
+      }
 
-        if (commentForm.content.length == 0) {
-          return next(
-            createHttpError.NotFound('Content comment is not allowed empty')
-          );
-        }
+      const commentForm: commentForm = req.body;
 
-        const idComment: string = uuidv4();
+      if (commentForm.content.length == 0) {
+        return next(
+          createHttpError.NotFound('Content comment is not allowed empty')
+        );
+      }
 
-        let result = null;
+      const idComment: string = uuidv4();
 
+      let result = null;
+
+      if (
+        commentForm.type == 'children' &&
+        Object.hasOwnProperty.bind(commentForm)('parent_id')
+      ) {
         if (
-          commentForm.type == 'children' &&
-          Object.hasOwnProperty.bind(commentForm)('parent_id')
+          commentForm.parent_id != undefined &&
+          commentForm.parent_id != null
         ) {
-          if (
-            commentForm.parent_id != undefined &&
-            commentForm.parent_id != null
-          ) {
-            result = await Comment.create({
-              id: idComment,
-              content: commentForm.content,
-              user_id: user.id,
-              username: user.username,
-              user_avatar: user.avatar,
-              movie_id: movieId,
-              movie_type: movieType,
-              parent_id: commentForm.parent_id,
-              reply_to: commentForm.reply_to,
-              type: 'children',
-              // childrens: 0,
-              // like: 0,
-              // dislike: 0,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-
-            // if (result != null) {
-            //   await Comment.updateOne(
-            //     {
-            //       id: commentForm.parent_id,
-            //       movie_id: movieId,
-            //       movie_type: movieType,
-            //       type: 'parent',
-            //     },
-            //     {
-            //       $inc: { childrens: 1 },
-            //     }
-            //   );
-            // }
-
-            if (result == null) {
-              return createHttpError.InternalServerError('Post comment failed');
-            }
-          }
-        } else {
           result = await Comment.create({
             id: idComment,
             content: commentForm.content,
@@ -456,45 +422,77 @@ class CommentController {
             user_avatar: user.avatar,
             movie_id: movieId,
             movie_type: movieType,
-            type: commentForm?.type || 'parent',
-            // parent_id: null,
+            parent_id: commentForm.parent_id,
+            reply_to: commentForm.reply_to,
+            type: 'children',
             // childrens: 0,
             // like: 0,
             // dislike: 0,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
-        }
 
-        if (result != null) {
-          return res.json({
-            success: true,
-            result: {
-              id: idComment,
-              content: result.content,
-              user_id: user.id,
-              username: user.username,
-              user_avatar: user.avatar,
-              movie_id: movieId,
-              movie_type: movieType,
-              type: result?.type || 'parent',
-              parent_id: result?.parent_id || null,
-              reply_to: result?.reply_to || null,
-              childrens: 0,
-              like: 0,
-              dislike: 0,
-              created_at: result.created_at,
-              updated_at: result.updated_at
-            }
-          });
-        } else {
-          return next(
-            createHttpError.InternalServerError('Post comment failed')
-          );
+          // if (result != null) {
+          //   await Comment.updateOne(
+          //     {
+          //       id: commentForm.parent_id,
+          //       movie_id: movieId,
+          //       movie_type: movieType,
+          //       type: 'parent',
+          //     },
+          //     {
+          //       $inc: { childrens: 1 },
+          //     }
+          //   );
+          // }
+
+          if (result == null) {
+            return createHttpError.InternalServerError('Post comment failed');
+          }
         }
       } else {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        result = await Comment.create({
+          id: idComment,
+          content: commentForm.content,
+          user_id: user.id,
+          username: user.username,
+          user_avatar: user.avatar,
+          movie_id: movieId,
+          movie_type: movieType,
+          type: commentForm?.type || 'parent',
+          // parent_id: null,
+          // childrens: 0,
+          // like: 0,
+          // dislike: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
       }
+
+      if (result == null) {
+        return next(createHttpError.InternalServerError('Post comment failed'));
+      }
+
+      return res.json({
+        success: true,
+        result: {
+          id: idComment,
+          content: result.content,
+          user_id: user.id,
+          username: user.username,
+          user_avatar: user.avatar,
+          movie_id: movieId,
+          movie_type: movieType,
+          type: result?.type || 'parent',
+          parent_id: result?.parent_id || null,
+          reply_to: result?.reply_to || null,
+          childrens: 0,
+          like: 0,
+          dislike: 0,
+          created_at: result.created_at,
+          updated_at: result.updated_at
+        }
+      });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -542,35 +540,35 @@ class CommentController {
           break;
       }
 
-      if (isExistMovies) {
-        const commentForm: commentForm = req.body;
-
-        const result = await Comment.updateOne(
-          {
-            id: commentForm.id,
-            user_id: user.id,
-            movie_id: movieId,
-            movie_type: movieType
-          },
-          {
-            $set: {
-              content: commentForm.content,
-              updated: true,
-              updated_at: new Date().toISOString()
-            }
-          }
-        );
-
-        if (result.matchedCount == 1) {
-          return res.json({ success: true, content: commentForm.content });
-        } else {
-          return next(
-            createHttpError.InternalServerError('Update comment failed')
-          );
-        }
-      } else {
+      if (!isExistMovies) {
         return next(createHttpError.NotFound('Movie is not exists'));
       }
+
+      const commentForm: commentForm = req.body;
+
+      const result = await Comment.updateOne(
+        {
+          id: commentForm.id,
+          user_id: user.id,
+          movie_id: movieId,
+          movie_type: movieType
+        },
+        {
+          $set: {
+            content: commentForm.content,
+            updated: true,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.matchedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Update comment failed')
+        );
+      }
+
+      return res.json({ success: true, content: commentForm.content });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -618,80 +616,38 @@ class CommentController {
           break;
       }
 
-      if (isExistMovies) {
-        const commentForm: commentForm = req.body;
+      if (!isExistMovies) {
+        return createHttpError.NotFound('Movie is not exists');
+      }
 
-        if (commentForm.type == 'parent') {
-          const result1 = await Comment.deleteOne({
-            id: commentForm.id,
-            user_id: user.id,
-            movie_id: movieId,
-            movie_type: movieType,
-            parent_id: null,
-            type: 'parent'
-          });
+      const commentForm: commentForm = req.body;
 
-          const childrens = await Comment.find({
+      if (commentForm.type == 'parent') {
+        const result1 = await Comment.deleteOne({
+          id: commentForm.id,
+          user_id: user.id,
+          movie_id: movieId,
+          movie_type: movieType,
+          parent_id: null,
+          type: 'parent'
+        });
+
+        const childrens = await Comment.find({
+          movie_id: movieId,
+          movie_type: movieType,
+          parent_id: commentForm.id,
+          type: 'children'
+        });
+
+        if (childrens.length > 0) {
+          const result2 = await Comment.deleteMany({
             movie_id: movieId,
             movie_type: movieType,
             parent_id: commentForm.id,
             type: 'children'
           });
 
-          if (childrens.length > 0) {
-            const result2 = await Comment.deleteMany({
-              movie_id: movieId,
-              movie_type: movieType,
-              parent_id: commentForm.id,
-              type: 'children'
-            });
-
-            if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
-              return res.json({
-                success: true
-              });
-            } else {
-              return next(
-                createHttpError.InternalServerError('Delete comment failed')
-              );
-            }
-          } else if (childrens.length == 0) {
-            if (result1.deletedCount == 1) {
-              return res.json({
-                success: true
-              });
-            } else {
-              return next(
-                createHttpError.InternalServerError('Delete comment failed')
-              );
-            }
-          }
-        } else if (commentForm.type == 'children') {
-          const result1 = await Comment.deleteOne({
-            id: commentForm.id,
-            user_id: user.id,
-            movie_id: movieId,
-            movie_type: movieType,
-            parent_id: commentForm?.parent_id || null,
-            type: 'children'
-          });
-
-          // const result2 = await Comment.updateOne(
-          //   {
-          //     id: commentForm.parent_id,
-          //     movie_id: movieId,
-          //     movie_type: movieType,
-          //     type: 'parent',
-          //   },
-          //   {
-          //     $inc: { childrens: -1 },
-          //   }
-          // );
-
-          if (
-            result1.deletedCount == 1
-            //  &&  result2.modifiedCount == 1
-          ) {
+          if (result1.deletedCount == 1 && result2.deletedCount >= 1) {
             return res.json({
               success: true
             });
@@ -700,9 +656,51 @@ class CommentController {
               createHttpError.InternalServerError('Delete comment failed')
             );
           }
+        } else if (childrens.length == 0) {
+          if (result1.deletedCount != 1) {
+            return next(
+              createHttpError.InternalServerError('Delete comment failed')
+            );
+          }
+
+          return res.json({
+            success: true
+          });
         }
-      } else {
-        return createHttpError.NotFound('Movie is not exists');
+      } else if (commentForm.type == 'children') {
+        const result1 = await Comment.deleteOne({
+          id: commentForm.id,
+          user_id: user.id,
+          movie_id: movieId,
+          movie_type: movieType,
+          parent_id: commentForm?.parent_id || null,
+          type: 'children'
+        });
+
+        // const result2 = await Comment.updateOne(
+        //   {
+        //     id: commentForm.parent_id,
+        //     movie_id: movieId,
+        //     movie_type: movieType,
+        //     type: 'parent',
+        //   },
+        //   {
+        //     $inc: { childrens: -1 },
+        //   }
+        // );
+
+        if (
+          result1.deletedCount == 1
+          //  &&  result2.modifiedCount == 1
+        ) {
+          return res.json({
+            success: true
+          });
+        } else {
+          return next(
+            createHttpError.InternalServerError('Delete comment failed')
+          );
+        }
       }
     } catch (error) {
       if (
@@ -783,35 +781,35 @@ class CommentController {
           updated_at: new Date().toISOString()
         });
 
-        if (result != null) {
-          // const result2 = await Comment.findOneAndUpdate(
-          //   {
-          //     id: commentId,
-          //   },
-          //   {
-          //     $inc: { like: 1 },
-          //   },
-          //   {
-          //     returnDocument: 'after',
-          //   }
-          // );
-
-          // if (result2 != null) {
-          return res.json({
-            success: true,
-            action: 'like'
-            // like: result2.like,
-          });
-          // } else {
-          //   return next(
-          //     createHttpError.InternalServerError('Like comment failed')
-          //   );
-          // }
-        } else {
+        if (result == null) {
           return next(
             createHttpError.InternalServerError('Like comment failed')
           );
         }
+
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { like: 1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
+
+        // if (result2 != null) {
+        return res.json({
+          success: true,
+          action: 'like'
+          // like: result2.like,
+        });
+        // } else {
+        //   return next(
+        //     createHttpError.InternalServerError('Like comment failed')
+        //   );
+        // }
       } else {
         const result = await CommentLike.deleteOne({
           user_id: user.id,
@@ -819,35 +817,35 @@ class CommentController {
           type: 'like'
         });
 
-        if (result.deletedCount == 1) {
-          // const result2 = await Comment.findOneAndUpdate(
-          //   {
-          //     id: commentId,
-          //   },
-          //   {
-          //     $inc: { like: -1 },
-          //   },
-          //   {
-          //     returnDocument: 'after',
-          //   }
-          // );
-
-          // if (result2 != null) {
-          return res.json({
-            success: true,
-            action: 'unlike'
-            // like: result2.like,
-          });
-          // } else {
-          //   return next(
-          //     createHttpError.InternalServerError('Unlike comment failed')
-          //   );
-          // }
-        } else {
+        if (result.deletedCount != 1) {
           return next(
             createHttpError.InternalServerError('Unlike comment failed')
           );
         }
+
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { like: -1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
+
+        // if (result2 != null) {
+        return res.json({
+          success: true,
+          action: 'unlike'
+          // like: result2.like,
+        });
+        // } else {
+        //   return next(
+        //     createHttpError.InternalServerError('Unlike comment failed')
+        //   );
+        // }
       }
     } catch (error) {
       if (
@@ -928,35 +926,35 @@ class CommentController {
           updated_at: new Date().toISOString()
         });
 
-        if (result != null) {
-          // const result2 = await Comment.findOneAndUpdate(
-          //   {
-          //     id: commentId,
-          //   },
-          //   {
-          //     $inc: { dislike: 1 },
-          //   },
-          //   {
-          //     returnDocument: 'after',
-          //   }
-          // );
-
-          // if (result2 != null) {
-          return res.json({
-            success: true,
-            action: 'dislike'
-            // dislike: result2.dislike,
-          });
-          // } else {
-          //   return next(
-          //     createHttpError.InternalServerError('Dislike comment failed')
-          //   );
-          // }
-        } else {
+        if (result == null) {
           return next(
             createHttpError.InternalServerError('Dislike comment failed')
           );
         }
+
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { dislike: 1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
+
+        // if (result2 != null) {
+        return res.json({
+          success: true,
+          action: 'dislike'
+          // dislike: result2.dislike,
+        });
+        // } else {
+        //   return next(
+        //     createHttpError.InternalServerError('Dislike comment failed')
+        //   );
+        // }
       } else {
         const result = await CommentLike.deleteOne({
           user_id: user.id,
@@ -964,35 +962,35 @@ class CommentController {
           type: 'dislike'
         });
 
-        if (result.deletedCount == 1) {
-          // const result2 = await Comment.findOneAndUpdate(
-          //   {
-          //     id: commentId,
-          //   },
-          //   {
-          //     $inc: { dislike: -1 },
-          //   },
-          //   {
-          //     returnDocument: 'after',
-          //   }
-          // );
-
-          // if (result2 != null) {
-          return res.json({
-            success: true,
-            action: 'undislike'
-            // dislike: result2.dislike,
-          });
-          // } else {
-          //   return next(
-          //     createHttpError.InternalServerError('Undislike comment failed')
-          //   );
-          // }
-        } else {
+        if (result.deletedCount != 1) {
           return next(
             createHttpError.InternalServerError('Undislike comment failed')
           );
         }
+
+        // const result2 = await Comment.findOneAndUpdate(
+        //   {
+        //     id: commentId,
+        //   },
+        //   {
+        //     $inc: { dislike: -1 },
+        //   },
+        //   {
+        //     returnDocument: 'after',
+        //   }
+        // );
+
+        // if (result2 != null) {
+        return res.json({
+          success: true,
+          action: 'undislike'
+          // dislike: result2.dislike,
+        });
+        // } else {
+        //   return next(
+        //     createHttpError.InternalServerError('Undislike comment failed')
+        //   );
+        // }
       }
     } catch (error) {
       if (

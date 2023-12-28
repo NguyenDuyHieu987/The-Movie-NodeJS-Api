@@ -276,88 +276,90 @@ class ListController {
         case 'movie':
           const movie = await Movie.findOne({ id: movieId });
 
-          if (movie != null) {
-            const itemList = await List.findOne({
-              user_id: user.id,
-              movie_id: movieId,
-              media_type: 'movie'
-            });
-
-            if (itemList == null) {
-              await List.create({
-                id: idItemList,
-                user_id: user.id,
-                movie_id: movieId,
-                name: movie.name,
-                original_name: movie.original_name,
-                original_language: movie.original_language,
-                media_type: 'movie',
-                genres: movie.genres,
-                backdrop_path: movie.backdrop_path,
-                poster_path: movie.poster_path,
-                dominant_backdrop_color: movie.dominant_backdrop_color,
-                dominant_poster_color: movie.dominant_poster_color,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-              return res.json({
-                success: true,
-                results: 'Add item to list suucessfully'
-              });
-            } else {
-              return next(
-                createHttpError.InternalServerError(
-                  'Movie is already exist in list'
-                )
-              );
-            }
-          } else {
+          if (movie == null) {
             return next(createHttpError.NotFound('Movie is not exists'));
           }
+
+          const itemList = await List.findOne({
+            user_id: user.id,
+            movie_id: movieId,
+            media_type: 'movie'
+          });
+
+          if (itemList != null) {
+            return next(
+              createHttpError.InternalServerError(
+                'Movie is already exist in list'
+              )
+            );
+          }
+
+          await List.create({
+            id: idItemList,
+            user_id: user.id,
+            movie_id: movieId,
+            name: movie.name,
+            original_name: movie.original_name,
+            original_language: movie.original_language,
+            media_type: 'movie',
+            genres: movie.genres,
+            backdrop_path: movie.backdrop_path,
+            poster_path: movie.poster_path,
+            dominant_backdrop_color: movie.dominant_backdrop_color,
+            dominant_poster_color: movie.dominant_poster_color,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+          return res.json({
+            success: true,
+            results: 'Add item to list suucessfully'
+          });
+
           break;
         case 'tv':
           const tv = await TV.findOne({ id: movieId });
 
-          if (tv != null) {
-            const itemList = await List.findOne({
-              user_id: user.id,
-              movie_id: movieId,
-              media_type: 'tv'
-            });
-
-            if (itemList == null) {
-              await List.create({
-                id: idItemList,
-                user_id: user.id,
-                movie_id: movieId,
-                name: tv.name,
-                original_name: tv.original_name,
-                original_language: tv.original_language,
-                media_type: 'tv',
-                genres: tv.genres,
-                backdrop_path: tv.backdrop_path,
-                poster_path: tv.poster_path,
-                dominant_backdrop_color: tv.dominant_backdrop_color,
-                dominant_poster_color: tv.dominant_poster_color,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-              return res.json({
-                success: true,
-                results: 'Add item to list suucessfully'
-              });
-            } else {
-              return next(
-                createHttpError.InternalServerError(
-                  'Movie is already exist in list'
-                )
-              );
-            }
-          } else {
+          if (tv == null) {
             return next(createHttpError.NotFound('Movie is not exists'));
           }
+
+          const itemList1 = await List.findOne({
+            user_id: user.id,
+            movie_id: movieId,
+            media_type: 'tv'
+          });
+
+          if (itemList1 != null) {
+            return next(
+              createHttpError.InternalServerError(
+                'Movie is already exist in list'
+              )
+            );
+          }
+
+          await List.create({
+            id: idItemList,
+            user_id: user.id,
+            movie_id: movieId,
+            name: tv.name,
+            original_name: tv.original_name,
+            original_language: tv.original_language,
+            media_type: 'tv',
+            genres: tv.genres,
+            backdrop_path: tv.backdrop_path,
+            poster_path: tv.poster_path,
+            dominant_backdrop_color: tv.dominant_backdrop_color,
+            dominant_poster_color: tv.dominant_poster_color,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+          return res.json({
+            success: true,
+            results: 'Add item to list suucessfully'
+          });
+
           break;
         default:
           return next(
@@ -403,16 +405,16 @@ class ListController {
         media_type: mediaType
       });
 
-      if (result.deletedCount == 1) {
-        return res.json({
-          success: true,
-          results: 'Remove item from list suucessfully'
-        });
-      } else {
+      if (result.deletedCount != 1) {
         return next(
           createHttpError.InternalServerError('Delete movie from list failed')
         );
       }
+
+      return res.json({
+        success: true,
+        results: 'Remove item from list suucessfully'
+      });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -443,20 +445,20 @@ class ListController {
         user_id: user.id
       });
 
-      if (result.deletedCount >= 1) {
-        const list = await List.find({ user_id: user.id });
-
-        return res.json({
-          success: true,
-          results: list
-        });
-      } else {
+      if (result.deletedCount < 1) {
         return next(
           createHttpError.InternalServerError(
             'Delete all movie from list failed'
           )
         );
       }
+
+      const list = await List.find({ user_id: user.id });
+
+      return res.json({
+        success: true,
+        results: list
+      });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||

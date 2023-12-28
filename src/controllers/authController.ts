@@ -23,137 +23,137 @@ class AuthController {
         auth_type: 'email'
       });
 
-      if (account != null) {
-        // Migrate to Argon2
-        if (account.password!.startsWith('$argon2id$')) {
-          const isCorrectPassword = await argon2.verify(
-            account.password!,
-            req.body.password,
-            {
-              // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
-            }
-          );
-
-          if (isCorrectPassword) {
-            const encoded = jwt.sign(
-              {
-                id: account.id,
-                username: account.username,
-                email: account.email,
-                full_name: account.full_name,
-                avatar: account.avatar,
-                role: account.role,
-                auth_type: account.auth_type,
-                created_at: account.created_at,
-                exp:
-                  Math.floor(Date.now() / 1000) +
-                  +process.env.JWT_EXP_OFFSET! * 3600
-              },
-              process.env.JWT_SIGNATURE_SECRET!,
-              {
-                algorithm: 'HS256'
-                // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-              }
-            );
-
-            res.set('Access-Control-Expose-Headers', 'Authorization');
-
-            res.cookie('user_token', encoded, {
-              domain: req.hostname,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
-            });
-
-            res.header('Authorization', encoded);
-
-            return res.json({
-              isLogin: true,
-              exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-              result: {
-                id: account.id,
-                username: account.username,
-                full_name: account.full_name,
-                avatar: account.avatar,
-                email: account.email,
-                auth_type: account.auth_type,
-                role: account.role,
-                created_at: account.created_at
-              }
-            });
-          } else {
-            return res.json({
-              isWrongPassword: true,
-              result: 'Wrong Password'
-            });
-          }
-        } else {
-          const passwordHashedOld = encryptPasswordOld(req.body.password);
-
-          if (account.password == passwordHashedOld) {
-            // Migrate to Argon2
-            account.password = await encryptPassword(req.body.password);
-            await account.save();
-
-            const encoded = jwt.sign(
-              {
-                id: account.id,
-                username: account.username,
-                email: account.email,
-                full_name: account.full_name,
-                avatar: account.avatar,
-                role: account.role,
-                auth_type: account.auth_type,
-                created_at: account.created_at,
-                exp:
-                  Math.floor(Date.now() / 1000) +
-                  +process.env.JWT_EXP_OFFSET! * 3600
-              },
-              process.env.JWT_SIGNATURE_SECRET!,
-              {
-                algorithm: 'HS256'
-                // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-              }
-            );
-
-            res.set('Access-Control-Expose-Headers', 'Authorization');
-
-            res.cookie('user_token', encoded, {
-              domain: req.hostname,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
-            });
-
-            res.header('Authorization', encoded);
-
-            return res.json({
-              isLogin: true,
-              exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-              result: {
-                id: account.id,
-                username: account.username,
-                full_name: account.full_name,
-                avatar: account.avatar,
-                email: account.email,
-                auth_type: account.auth_type,
-                role: account.role,
-                created_at: account.created_at
-              }
-            });
-          } else {
-            return res.json({
-              isWrongPassword: true,
-              result: 'Wrong Password'
-            });
-          }
-        }
-      } else {
+      if (account == null) {
         return res.json({
           isNotExist: true,
           result: 'Account does not exists'
+        });
+      }
+
+      // Migrate to Argon2
+      if (account.password!.startsWith('$argon2id$')) {
+        const isCorrectPassword = await argon2.verify(
+          account.password!,
+          req.body.password,
+          {
+            // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+          }
+        );
+
+        if (!isCorrectPassword) {
+          return res.json({
+            isWrongPassword: true,
+            result: 'Wrong Password'
+          });
+        }
+
+        const encoded = jwt.sign(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          isLogin: true,
+          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+          result: {
+            id: account.id,
+            username: account.username,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            email: account.email,
+            auth_type: account.auth_type,
+            role: account.role,
+            created_at: account.created_at
+          }
+        });
+      } else {
+        const passwordHashedOld = encryptPasswordOld(req.body.password);
+
+        if (account.password != passwordHashedOld) {
+          return res.json({
+            isWrongPassword: true,
+            result: 'Wrong Password'
+          });
+        }
+
+        // Migrate to Argon2
+        account.password = await encryptPassword(req.body.password);
+        await account.save();
+
+        const encoded = jwt.sign(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          isLogin: true,
+          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+          result: {
+            id: account.id,
+            username: account.username,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            email: account.email,
+            auth_type: account.auth_type,
+            role: account.role,
+            created_at: account.created_at
+          }
         });
       }
     } catch (error) {
@@ -197,60 +197,60 @@ class AuthController {
           updated_at: new Date().toISOString()
         });
 
-        if (newAccount != null) {
-          const encoded = jwt.sign(
-            {
-              id: newAccount.id,
-              username: newAccount.username,
-              email: newAccount.email,
-              full_name: newAccount.full_name,
-              avatar: newAccount.avatar,
-              role: newAccount.role,
-              auth_type: newAccount.auth_type,
-              created_at: newAccount.created_at,
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.JWT_EXP_OFFSET! * 3600
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256'
-              // expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-            }
-          );
-
-          res.set('Access-Control-Expose-Headers', 'Authorization');
-
-          res.cookie('user_token', encoded, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
-          });
-
-          res.header('Authorization', encoded);
-
-          return res.json({
-            isSignUp: true,
-            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-            result: {
-              id: newAccount.id,
-              username: newAccount.username,
-              full_name: newAccount.full_name,
-              avatar: newAccount.avatar,
-              email: newAccount.email,
-              auth_type: newAccount.auth_type,
-              role: newAccount.role,
-              created_at: newAccount.created_at
-            }
-          });
-        } else {
+        if (newAccount == null) {
           return res.json({
             isLogin: false,
             result: 'Login Facebook failed!'
           });
         }
+
+        const encoded = jwt.sign(
+          {
+            id: newAccount.id,
+            username: newAccount.username,
+            email: newAccount.email,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            role: newAccount.role,
+            auth_type: newAccount.auth_type,
+            created_at: newAccount.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          isSignUp: true,
+          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+          result: {
+            id: newAccount.id,
+            username: newAccount.username,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            email: newAccount.email,
+            auth_type: newAccount.auth_type,
+            role: newAccount.role,
+            created_at: newAccount.created_at
+          }
+        });
       } else {
         const accountLogedIn = await Account.findOneAndUpdate(
           { id: account.id, auth_type: 'facebook' },
@@ -262,60 +262,60 @@ class AuthController {
           { returnDocument: 'after' }
         );
 
-        if (accountLogedIn != null) {
-          const encoded = jwt.sign(
-            {
-              id: accountLogedIn.id,
-              username: accountLogedIn.username,
-              email: accountLogedIn.email,
-              full_name: accountLogedIn.full_name,
-              avatar: accountLogedIn.avatar,
-              role: accountLogedIn.role,
-              auth_type: accountLogedIn.auth_type,
-              created_at: accountLogedIn.created_at,
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.JWT_EXP_OFFSET! * 3600
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256'
-              //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-            }
-          );
-
-          res.set('Access-Control-Expose-Headers', 'Authorization');
-
-          res.cookie('user_token', encoded, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
-          });
-
-          res.header('Authorization', encoded);
-
-          return res.json({
-            isLogin: true,
-            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-            result: {
-              id: accountLogedIn.id,
-              username: accountLogedIn.username,
-              full_name: accountLogedIn.full_name,
-              avatar: accountLogedIn.avatar,
-              email: accountLogedIn.email,
-              auth_type: accountLogedIn.auth_type,
-              role: accountLogedIn.role,
-              created_at: accountLogedIn.created_at
-            }
-          });
-        } else {
+        if (accountLogedIn == null) {
           return res.json({
             isLogin: false,
             result: 'Login Facebook failed!'
           });
         }
+
+        const encoded = jwt.sign(
+          {
+            id: accountLogedIn.id,
+            username: accountLogedIn.username,
+            email: accountLogedIn.email,
+            full_name: accountLogedIn.full_name,
+            avatar: accountLogedIn.avatar,
+            role: accountLogedIn.role,
+            auth_type: accountLogedIn.auth_type,
+            created_at: accountLogedIn.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          isLogin: true,
+          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+          result: {
+            id: accountLogedIn.id,
+            username: accountLogedIn.username,
+            full_name: accountLogedIn.full_name,
+            avatar: accountLogedIn.avatar,
+            email: accountLogedIn.email,
+            auth_type: accountLogedIn.auth_type,
+            role: accountLogedIn.role,
+            created_at: accountLogedIn.created_at
+          }
+        });
       }
     } catch (error) {
       next(error);
@@ -361,60 +361,60 @@ class AuthController {
           updated_at: new Date().toISOString()
         });
 
-        if (newAccount != null) {
-          const encoded = jwt.sign(
-            {
-              id: newAccount.id,
-              username: newAccount.username,
-              email: newAccount.email,
-              full_name: newAccount.full_name,
-              avatar: newAccount.avatar,
-              role: newAccount.role,
-              auth_type: newAccount.auth_type,
-              created_at: newAccount.created_at,
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.JWT_EXP_OFFSET! * 3600
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256'
-              //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-            }
-          );
-
-          res.set('Access-Control-Expose-Headers', 'Authorization');
-
-          res.cookie('user_token', encoded, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
-          });
-
-          res.header('Authorization', encoded);
-
-          return res.json({
-            isSignUp: true,
-            exp_token_hours: +process.env.JWT_EXP_OFFSET!,
-            result: {
-              id: newAccount.id,
-              username: newAccount.username,
-              full_name: newAccount.full_name,
-              avatar: newAccount.avatar,
-              email: newAccount.email,
-              auth_type: newAccount.auth_type,
-              role: newAccount.role,
-              created_at: newAccount.created_at
-            }
-          });
-        } else {
+        if (newAccount == null) {
           return res.json({
             isLogin: false,
             result: 'Login Google failed!'
           });
         }
+
+        const encoded = jwt.sign(
+          {
+            id: newAccount.id,
+            username: newAccount.username,
+            email: newAccount.email,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            role: newAccount.role,
+            auth_type: newAccount.auth_type,
+            created_at: newAccount.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        return res.json({
+          isSignUp: true,
+          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
+          result: {
+            id: newAccount.id,
+            username: newAccount.username,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            email: newAccount.email,
+            auth_type: newAccount.auth_type,
+            role: newAccount.role,
+            created_at: newAccount.created_at
+          }
+        });
       } else {
         const encoded = jwt.sign(
           {
@@ -487,27 +487,30 @@ class AuthController {
         .setPrefix('user_logout')
         .verify(user_token);
 
-      if (isAlive) {
-        res.set('Access-Control-Expose-Headers', 'Authorization');
-
-        res.header('Authorization', user_token);
-
+      if (!isAlive) {
         return res.json({
-          isLogin: true,
-          result: {
-            id: user.id,
-            username: user.username,
-            full_name: user.full_name,
-            avatar: user.avatar,
-            email: user.email,
-            auth_type: user.auth_type,
-            role: user.role,
-            created_at: user.created_at
-          }
+          isLogin: false,
+          result: 'Token is no longer active'
         });
-      } else {
-        res.json({ isLogin: false, result: 'Token is no longer active' });
       }
+
+      res.set('Access-Control-Expose-Headers', 'Authorization');
+
+      res.header('Authorization', user_token);
+
+      return res.json({
+        isLogin: true,
+        result: {
+          id: user.id,
+          username: user.username,
+          full_name: user.full_name,
+          avatar: user.avatar,
+          email: user.email,
+          auth_type: user.auth_type,
+          role: user.role,
+          created_at: user.created_at
+        }
+      });
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {
@@ -558,42 +561,45 @@ class AuthController {
         auth_type: 'email'
       });
 
-      if (account == null) {
-        const accountId: string = uuidv4();
-
-        const newAccout = await Account.create({
-          id: accountId,
-          username: user.username,
-          password: user.password,
-          full_name: user.full_name,
-          avatar: user.avatar,
-          email: user.email,
-          auth_type: user.auth_type,
-          role: user.role,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-        jwtRedis.setPrefix('vrf_signup_token');
-
-        await jwtRedis.sign(signup_token, {
-          exp: +process.env.OTP_EXP_OFFSET! * 60
-        });
-
-        res.clearCookie('vrf_signup_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
-
+      if (account != null) {
         return res.json({
-          isSignUp: true,
-          result: 'Sign up account successfully'
+          isAccountExist: true,
+          result: 'Account is already exists'
         });
-      } else {
-        res.json({ isAccountExist: true, result: 'Account is already exists' });
       }
+
+      const accountId: string = uuidv4();
+
+      const newAccout = await Account.create({
+        id: accountId,
+        username: user.username,
+        password: user.password,
+        full_name: user.full_name,
+        avatar: user.avatar,
+        email: user.email,
+        auth_type: user.auth_type,
+        role: user.role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      jwtRedis.setPrefix('vrf_signup_token');
+
+      await jwtRedis.sign(signup_token, {
+        exp: +process.env.OTP_EXP_OFFSET! * 60
+      });
+
+      res.clearCookie('vrf_signup_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+
+      return res.json({
+        isSignUp: true,
+        result: 'Sign up account successfully'
+      });
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         return res.json({ isOTPExpired: true, result: 'OTP is expired' });
@@ -618,73 +624,71 @@ class AuthController {
             auth_type: 'email'
           });
 
-          if (account == null) {
-            if (await ValidateEmail(formUser.email)) {
-              // if (true) {
-              const OTP = GenerateOTP({ length: 6 });
-
-              console.log(OTP);
-
-              const passwordEncrypted = await encryptPassword(
-                formUser.password
-              );
-
-              const encoded = jwt.sign(
-                {
-                  username: formUser.username,
-                  password: passwordEncrypted,
-                  email: formUser.email,
-                  full_name: formUser.full_name,
-                  avatar: formUser.avatar,
-                  role: 'normal',
-                  auth_type: 'email',
-                  description: 'Register new account',
-                  exp:
-                    Math.floor(Date.now() / 1000) +
-                    +process.env.OTP_EXP_OFFSET! * 60
-                },
-                OTP,
-                {
-                  algorithm: 'HS256'
-                  // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
-                }
-              );
-
-              const emailResponse = await sendinblueEmail.VerificationOTP({
-                to: formUser.email,
-                otp: OTP,
-                title: 'Xác nhận đăng ký tài khoản',
-                noteExp: +process.env.OTP_EXP_OFFSET!
-              });
-
-              // res.set('Access-Control-Expose-Headers', 'Authorization');
-              // res.header('Authorization', encoded);
-
-              res.cookie('vrf_signup_token', encoded, {
-                domain: req.hostname,
-                httpOnly: req.session.cookie.httpOnly,
-                sameSite: req.session.cookie.sameSite,
-                secure: true,
-                maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000
-              });
-
-              return res.json({
-                isSended: true,
-                exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
-                result: 'Send otp email successfully'
-              });
-            } else {
-              return res.json({
-                isInValidEmail: true,
-                result: 'Email is Invalid'
-              });
-            }
-          } else {
+          if (account != null) {
             return res.json({
               isEmailExist: true,
               result: 'Email is already exists'
             });
           }
+
+          if (!(await ValidateEmail(formUser.email))) {
+            // if (true) {
+            return res.json({
+              isInValidEmail: true,
+              result: 'Email is Invalid'
+            });
+          }
+
+          const OTP = GenerateOTP({ length: 6 });
+
+          console.log(OTP);
+
+          const passwordEncrypted = await encryptPassword(formUser.password);
+
+          const encoded = jwt.sign(
+            {
+              username: formUser.username,
+              password: passwordEncrypted,
+              email: formUser.email,
+              full_name: formUser.full_name,
+              avatar: formUser.avatar,
+              role: 'normal',
+              auth_type: 'email',
+              description: 'Register new account',
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.OTP_EXP_OFFSET! * 60
+            },
+            OTP,
+            {
+              algorithm: 'HS256'
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
+            }
+          );
+
+          const emailResponse = await sendinblueEmail.VerificationOTP({
+            to: formUser.email,
+            otp: OTP,
+            title: 'Xác nhận đăng ký tài khoản',
+            noteExp: +process.env.OTP_EXP_OFFSET!
+          });
+
+          // res.set('Access-Control-Expose-Headers', 'Authorization');
+          // res.header('Authorization', encoded);
+
+          res.cookie('vrf_signup_token', encoded, {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000
+          });
+
+          return res.json({
+            isSended: true,
+            exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
+            result: 'Send otp email successfully'
+          });
 
           break;
         default:
@@ -709,71 +713,72 @@ class AuthController {
             auth_type: 'email'
           });
 
-          if (account != null) {
-            if (await ValidateEmail(req.body.email)) {
-              // if (true) {
-              const encoded = jwt.sign(
-                {
-                  id: account.id,
-                  email: account.email,
-                  auth_type: 'email',
-                  description: 'Reset your password',
-                  exp:
-                    Math.floor(Date.now() / 1000) +
-                    +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
-                },
-                process.env.JWT_SIGNATURE_SECRET!,
-                {
-                  algorithm: 'HS256'
-                  // expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
-                }
-              );
-
-              const clientUrl =
-                process.env.NODE_ENV == 'production'
-                  ? process.env.CLIENT_URL!
-                  : req.headers.origin;
-
-              const resetPasswordLink = `${clientUrl}/ResetPassword?token=${encoded}`;
-
-              console.log(resetPasswordLink);
-
-              const emailResponse = await sendinblueEmail.VerificationLink({
-                to: req.body.email,
-                title: 'Đặt lại mật khẩu của bạn',
-                subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
-                nameLink: 'Đặt lại mật khẩu',
-                linkVerify: resetPasswordLink,
-                note1:
-                  'Truy cập dường liên kết sau đây để đặt lại mật khẩu của bạn:',
-                noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!
-              });
-
-              res.cookie('rst_pwd_token', encoded, {
-                domain: req.hostname,
-                httpOnly: req.session.cookie.httpOnly,
-                sameSite: req.session.cookie.sameSite,
-                secure: true,
-                maxAge: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60 * 1000
-              });
-
-              return res.json({
-                isSended: true,
-                exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
-                result: 'Send email successfully'
-              });
-            } else {
-              return res.json({
-                isInValidEmail: true,
-                result: 'Email is Invalid'
-              });
-            }
-          } else {
+          if (account == null) {
             return res.json({
               isEmailExist: false,
               result: 'Email is not registered'
             });
           }
+
+          if (!(await ValidateEmail(req.body.email))) {
+            // if (true) {
+            return res.json({
+              isInValidEmail: true,
+              result: 'Email is Invalid'
+            });
+          }
+
+          const encoded = jwt.sign(
+            {
+              id: account.id,
+              email: account.email,
+              auth_type: 'email',
+              description: 'Reset your password',
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
+            },
+            process.env.JWT_SIGNATURE_SECRET!,
+            {
+              algorithm: 'HS256'
+              // expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+            }
+          );
+
+          const clientUrl =
+            process.env.NODE_ENV == 'production'
+              ? process.env.CLIENT_URL!
+              : req.headers.origin;
+
+          const resetPasswordLink = `${clientUrl}/ResetPassword?token=${encoded}`;
+
+          console.log(resetPasswordLink);
+
+          const emailResponse = await sendinblueEmail.VerificationLink({
+            to: req.body.email,
+            title: 'Đặt lại mật khẩu của bạn',
+            subject: 'Hoàn thành yêu cầu đặt lại mật khẩu',
+            nameLink: 'Đặt lại mật khẩu',
+            linkVerify: resetPasswordLink,
+            note1:
+              'Truy cập dường liên kết sau đây để đặt lại mật khẩu của bạn:',
+            noteExp: +process.env.FORGOT_PASSWORD_EXP_OFFSET!
+          });
+
+          res.cookie('rst_pwd_token', encoded, {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60 * 1000
+          });
+
+          return res.json({
+            isSended: true,
+            exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+            result: 'Send email successfully'
+          });
+
           break;
         default:
           return next(

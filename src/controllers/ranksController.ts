@@ -1360,66 +1360,66 @@ class RankController extends RedisCache {
           break;
       }
 
-      if (movie != null) {
-        const idRank: string = uuidv4();
-
-        let resultInserted = null;
-
-        if (movie.media_type == 'movie') {
-          resultInserted = await Rank.create({
-            id: idRank,
-            type: 'play',
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            release_date: movie?.release_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            original_language: movie.original_language,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            runtime: movie.runtime,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        } else if (movie.media_type == 'tv') {
-          resultInserted = await Rank.create({
-            id: idRank,
-            type: 'play',
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            first_air_date: movie?.first_air_date,
-            last_air_date: movie?.last_air_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            original_language: movie.original_language,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            episode_run_time: movie.episode_run_time,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
-
-        if (resultInserted != null) {
-          return res.json({
-            success: true,
-            result: 'Add rank play successfully'
-          });
-        } else {
-          return res.json({
-            success: false,
-            result: 'Add rank play failed'
-          });
-        }
-      } else {
+      if (movie == null) {
         return next(createHttpError.NotFound('Movie is not exists'));
       }
+
+      const idRank: string = uuidv4();
+
+      let resultInserted = null;
+
+      if (movie.media_type == 'movie') {
+        resultInserted = await Rank.create({
+          id: idRank,
+          type: 'play',
+          movie_id: movie.id,
+          media_type: movie.media_type,
+          adult: movie.adult,
+          backdrop_path: movie.backdrop_path,
+          release_date: movie?.release_date,
+          name: movie.name,
+          original_name: movie.original_name,
+          original_language: movie.original_language,
+          overview: movie.overview,
+          poster_path: movie.poster_path,
+          genres: movie.genres,
+          runtime: movie.runtime,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      } else if (movie.media_type == 'tv') {
+        resultInserted = await Rank.create({
+          id: idRank,
+          type: 'play',
+          movie_id: movie.id,
+          media_type: movie.media_type,
+          adult: movie.adult,
+          backdrop_path: movie.backdrop_path,
+          first_air_date: movie?.first_air_date,
+          last_air_date: movie?.last_air_date,
+          name: movie.name,
+          original_name: movie.original_name,
+          original_language: movie.original_language,
+          overview: movie.overview,
+          poster_path: movie.poster_path,
+          genres: movie.genres,
+          episode_run_time: movie.episode_run_time,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      }
+
+      if (resultInserted == null) {
+        return res.json({
+          success: false,
+          result: 'Add rank play failed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        result: 'Add rank play successfully'
+      });
     } catch (error) {
       next(error);
     }
@@ -1450,68 +1450,68 @@ class RankController extends RedisCache {
             break;
         }
 
-        if (movie != null) {
-          const idRank: string = uuidv4();
-
-          let resultInserted = null;
-
-          if (movie.media_type == 'movie') {
-            resultInserted = await Rank.create({
-              id: idRank,
-              type: 'search',
-              query: movie.name,
-              movie_id: movie.id,
-              media_type: movie.media_type,
-              adult: movie.adult,
-              backdrop_path: movie.backdrop_path,
-              release_date: movie?.release_date,
-              name: movie.name,
-              original_name: movie.original_name,
-              original_language: movie.original_language,
-              overview: movie.overview,
-              poster_path: movie.poster_path,
-              genres: movie.genres,
-              runtime: movie.runtime,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-          } else if (movie.media_type == 'tv') {
-            resultInserted = await Rank.create({
-              id: idRank,
-              type: 'search',
-              query: movie.name,
-              movie_id: movie.id,
-              media_type: movie.media_type,
-              adult: movie.adult,
-              backdrop_path: movie.backdrop_path,
-              first_air_date: movie?.first_air_date,
-              last_air_date: movie?.last_air_date,
-              name: movie.name,
-              original_name: movie.original_name,
-              original_language: movie.original_language,
-              overview: movie.overview,
-              poster_path: movie.poster_path,
-              genres: movie.genres,
-              episode_run_time: movie.episode_run_time,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-          }
-
-          if (resultInserted != null) {
-            return res.json({
-              success: true,
-              result: 'Add rank search successfully'
-            });
-          } else {
-            return res.json({
-              success: false,
-              result: 'Add rank search failed'
-            });
-          }
-        } else {
+        if (movie == null) {
           return next(createHttpError.NotFound('Movie is not exists'));
         }
+
+        const idRank: string = uuidv4();
+
+        let resultInserted = null;
+
+        if (movie.media_type == 'movie') {
+          resultInserted = await Rank.create({
+            id: idRank,
+            type: 'search',
+            query: movie.name,
+            movie_id: movie.id,
+            media_type: movie.media_type,
+            adult: movie.adult,
+            backdrop_path: movie.backdrop_path,
+            release_date: movie?.release_date,
+            name: movie.name,
+            original_name: movie.original_name,
+            original_language: movie.original_language,
+            overview: movie.overview,
+            poster_path: movie.poster_path,
+            genres: movie.genres,
+            runtime: movie.runtime,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        } else if (movie.media_type == 'tv') {
+          resultInserted = await Rank.create({
+            id: idRank,
+            type: 'search',
+            query: movie.name,
+            movie_id: movie.id,
+            media_type: movie.media_type,
+            adult: movie.adult,
+            backdrop_path: movie.backdrop_path,
+            first_air_date: movie?.first_air_date,
+            last_air_date: movie?.last_air_date,
+            name: movie.name,
+            original_name: movie.original_name,
+            original_language: movie.original_language,
+            overview: movie.overview,
+            poster_path: movie.poster_path,
+            genres: movie.genres,
+            episode_run_time: movie.episode_run_time,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        if (resultInserted == null) {
+          return res.json({
+            success: false,
+            result: 'Add rank search failed'
+          });
+        }
+
+        return res.json({
+          success: true,
+          result: 'Add rank search successfully'
+        });
       } else {
         let movie1: any = null;
 
@@ -1585,17 +1585,17 @@ class RankController extends RedisCache {
             });
           }
 
-          if (resultInserted != null) {
-            return res.json({
-              success: true,
-              result: 'Add rank search successfully'
-            });
-          } else {
+          if (resultInserted == null) {
             return res.json({
               success: false,
               result: 'Add rank search failed'
             });
           }
+
+          return res.json({
+            success: true,
+            result: 'Add rank search successfully'
+          });
         }
       }
     } catch (error) {
@@ -1635,70 +1635,70 @@ class RankController extends RedisCache {
           break;
       }
 
-      if (movie != null) {
-        const idRank: string = uuidv4();
-
-        let resultInserted = null;
-
-        if (movie.media_type == 'movie') {
-          resultInserted = await Rank.create({
-            id: idRank,
-            type: 'rate',
-            rate_value: rateValue,
-            user_id: user.id,
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            release_date: movie?.release_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            original_language: movie.original_language,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            runtime: movie.runtime,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        } else if (movie.media_type == 'tv') {
-          resultInserted = await Rank.create({
-            id: idRank,
-            type: 'rate',
-            rate_value: rateValue,
-            user_id: user.id,
-            movie_id: movie.id,
-            media_type: movie.media_type,
-            adult: movie.adult,
-            backdrop_path: movie.backdrop_path,
-            first_air_date: movie?.first_air_date,
-            last_air_date: movie?.last_air_date,
-            name: movie.name,
-            original_name: movie.original_name,
-            original_language: movie.original_language,
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-            genres: movie.genres,
-            episode_run_time: movie.episode_run_time,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
-
-        if (resultInserted != null) {
-          return res.json({
-            success: true,
-            result: 'Add rank play successfully'
-          });
-        } else {
-          return res.json({
-            success: false,
-            result: 'Add rank play failed'
-          });
-        }
-      } else {
+      if (movie == null) {
         return next(createHttpError.NotFound('Movie is not exists'));
       }
+
+      const idRank: string = uuidv4();
+
+      let resultInserted = null;
+
+      if (movie.media_type == 'movie') {
+        resultInserted = await Rank.create({
+          id: idRank,
+          type: 'rate',
+          rate_value: rateValue,
+          user_id: user.id,
+          movie_id: movie.id,
+          media_type: movie.media_type,
+          adult: movie.adult,
+          backdrop_path: movie.backdrop_path,
+          release_date: movie?.release_date,
+          name: movie.name,
+          original_name: movie.original_name,
+          original_language: movie.original_language,
+          overview: movie.overview,
+          poster_path: movie.poster_path,
+          genres: movie.genres,
+          runtime: movie.runtime,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      } else if (movie.media_type == 'tv') {
+        resultInserted = await Rank.create({
+          id: idRank,
+          type: 'rate',
+          rate_value: rateValue,
+          user_id: user.id,
+          movie_id: movie.id,
+          media_type: movie.media_type,
+          adult: movie.adult,
+          backdrop_path: movie.backdrop_path,
+          first_air_date: movie?.first_air_date,
+          last_air_date: movie?.last_air_date,
+          name: movie.name,
+          original_name: movie.original_name,
+          original_language: movie.original_language,
+          overview: movie.overview,
+          poster_path: movie.poster_path,
+          genres: movie.genres,
+          episode_run_time: movie.episode_run_time,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      }
+
+      if (resultInserted == null) {
+        return res.json({
+          success: false,
+          result: 'Add rank play failed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        result: 'Add rank play successfully'
+      });
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         return res.json({ isTokenExpired: true, result: 'Token is expired' });

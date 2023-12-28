@@ -15,7 +15,7 @@ import Plan from '@/models/plan';
 import Subscription from '@/models/subscription';
 import type { PaymentMethods, user } from '@/types';
 
-class PlanController extends RedisCache {
+class SubscriptionController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
@@ -454,88 +454,88 @@ class PlanController extends RedisCache {
             return res.json({ success: false, status: session.status });
           }
 
-          if (session.payment_status != 'paid') {
+          if (session.payment_status == 'paid') {
+            const subscription = await stripe.subscriptions.retrieve(
+              session.subscription as string,
+              {}
+            );
+
+            if (bill.status != 'complete') {
+              const billId: string = uuidv4();
+
+              const subscriptionId: string = uuidv4();
+
+              const start_date = new Date(
+                (subscription.start_date as number) * 1000
+              ).toISOString();
+
+              const end_date = new Date(
+                (subscription.ended_at as number) * 1000
+              ).toISOString();
+
+              const trial_start = new Date(
+                (subscription.trial_start as number) * 1000
+              ).toISOString();
+
+              const trial_end = new Date(
+                (subscription.trial_end as number) * 1000
+              ).toISOString();
+
+              bill.session = session;
+              bill.customer_id = session.customer as string;
+              bill.subscription_id = subscriptionId;
+              bill.subscription = subscription;
+              bill.status = 'complete';
+              bill.payment_status = 'paid';
+              bill.customer_details = session.customer_details;
+              bill.amount_total = session.amount_total;
+              bill.amount_discount = session.total_details!.amount_discount;
+              bill.amount_tax = session.total_details!.amount_tax;
+
+              await bill.save();
+
+              const result = await Subscription.create({
+                id: subscriptionId,
+                account_id: session.client_reference_id,
+                subscription_id: subscription.id,
+                subscription,
+                customer_id: session.customer,
+                plan_id: subscription.metadata.plan_id,
+                status: subscription.status,
+                latest_bill: bill.id
+              });
+
+              return res.json({
+                success: true,
+                session,
+                subscription,
+                date: trial_end
+              });
+            } else {
+              if (bill.payment_status != 'paid') {
+                bill.payment_status = 'paid';
+              }
+
+              await bill.save();
+
+              return res.json({
+                success: true,
+                result: 'You have successfully registered for subscription'
+              });
+            }
+
+            // const clientUrl =
+            //   process.env.NODE_ENV == 'production'
+            //     ? process.env.CLIENT_URL!
+            //     : req.headers.origin! || process.env.CLIENT_DEV_URL!;
+
+            // return res.redirect(clientUrl);
+          } else {
             return res.json({
               success: false,
               payment_status: session.payment_status
             });
           }
-
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string,
-            {}
-          );
-
-          if (bill.status != 'complete') {
-            const billId: string = uuidv4();
-
-            const subscriptionId: string = uuidv4();
-
-            const start_date = new Date(
-              (subscription.start_date as number) * 1000
-            ).toISOString();
-
-            const end_date = new Date(
-              (subscription.ended_at as number) * 1000
-            ).toISOString();
-
-            const trial_start = new Date(
-              (subscription.trial_start as number) * 1000
-            ).toISOString();
-
-            const trial_end = new Date(
-              (subscription.trial_end as number) * 1000
-            ).toISOString();
-
-            bill.session = session;
-            bill.customer_id = session.customer as string;
-            bill.subscription_id = subscriptionId;
-            bill.subscription = subscription;
-            bill.status = 'complete';
-            bill.payment_status = 'paid';
-            bill.customer_details = session.customer_details;
-            bill.amount_total = session.amount_total;
-            bill.amount_discount = session.total_details!.amount_discount;
-            bill.amount_tax = session.total_details!.amount_tax;
-
-            await bill.save();
-
-            // const result = await Subscription.create({
-            //   id: subscriptionId,
-            //   account_id: session.client_reference_id,
-            //   subscription_id: subscription.id,
-            //   subscription: subscription,
-            //   customer_id: session.customer,
-            //   plan_id: subscription.metadata.plan_id,
-            //   status: subscription.status,
-            //   latest_bill: bill.id
-            // });
-
-            return res.json({
-              success: true,
-              session,
-              subscription,
-              date: trial_end
-            });
-          } else {
-            if (bill.payment_status != 'paid') {
-              bill.payment_status = 'paid';
-            }
-
-            await bill.save();
-
-            return res.json({
-              success: true,
-              result: 'You have successfully registered for subscription'
-            });
-          }
-
-          // const clientUrl =
-          //   process.env.NODE_ENV == 'production'
-          //     ? process.env.CLIENT_URL!
-          //     : req.headers.origin! || process.env.CLIENT_DEV_URL!;
-
-          // return res.redirect(clientUrl);
 
           break;
         default:
@@ -552,4 +552,4 @@ class PlanController extends RedisCache {
   }
 }
 
-export default new PlanController();
+export default new SubscriptionController();

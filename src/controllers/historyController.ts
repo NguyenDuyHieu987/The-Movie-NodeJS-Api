@@ -289,188 +289,190 @@ class HistoryController {
         case 'movie':
           const movie = await Movie.findOne({ id: movieId });
 
-          if (movie != null) {
-            const itemHistory = await History.findOne({
-              user_id: user.id,
-              movie_id: movieId,
-              media_type: 'movie'
-            });
-
-            if (itemHistory == null) {
-              await History.create({
-                id: idItemHistory,
-                user_id: user.id,
-                movie_id: movieId,
-                name: movie.name,
-                original_name: movie.original_name,
-                original_language: movie.original_language,
-                media_type: 'movie',
-                genres: movie.genres,
-                backdrop_path: movie.backdrop_path,
-                poster_path: movie.poster_path,
-                dominant_backdrop_color: movie.dominant_backdrop_color,
-                dominant_poster_color: movie.dominant_poster_color,
-                duration,
-                percent,
-                seconds,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-              return res.json({
-                success: true,
-                results: 'Add item to history suucessfully'
-              });
-            } else {
-              const oldDuration: number = itemHistory.duration!;
-              const oldSeconds: number = itemHistory.seconds!;
-              const oldPercent: number = itemHistory.percent!;
-
-              if (seconds > oldSeconds && percent > oldPercent) {
-                // await History.updateOne(
-                //   {
-                //     user_id: user.id,
-                //     movie_id: movieId,
-                //     media_type: 'movie',
-                //   },
-                //   {
-                //     $set: {
-                //       percent: percent,
-                //       seconds: seconds,
-                //       updated_at: new Date().toISOString(),
-                //     },
-                //   }
-                // );
-
-                itemHistory.percent = percent;
-                itemHistory.seconds = seconds;
-                itemHistory.updated_at = new Date();
-
-                await itemHistory.save();
-              } else {
-                // await History.updateOne(
-                //   {
-                //     user_id: user.id,
-                //     movie_id: movieId,
-                //     media_type: 'movie',
-                //   },
-                //   {
-                //     $set: {
-                //       percent: percent,
-                //       seconds: seconds,
-                //       updated_at: new Date().toISOString(),
-                //     },
-                //   }
-                // );
-
-                itemHistory.percent = percent;
-                itemHistory.seconds = seconds;
-                itemHistory.updated_at = new Date();
-
-                await itemHistory.save();
-              }
-
-              return res.json({
-                success: true,
-                results: 'Add item to history suucessfully'
-              });
-            }
-          } else {
+          if (movie == null) {
             return next(createHttpError.NotFound('Movie is not exists'));
           }
+
+          const itemHistory = await History.findOne({
+            user_id: user.id,
+            movie_id: movieId,
+            media_type: 'movie'
+          });
+
+          if (itemHistory == null) {
+            await History.create({
+              id: idItemHistory,
+              user_id: user.id,
+              movie_id: movieId,
+              name: movie.name,
+              original_name: movie.original_name,
+              original_language: movie.original_language,
+              media_type: 'movie',
+              genres: movie.genres,
+              backdrop_path: movie.backdrop_path,
+              poster_path: movie.poster_path,
+              dominant_backdrop_color: movie.dominant_backdrop_color,
+              dominant_poster_color: movie.dominant_poster_color,
+              duration,
+              percent,
+              seconds,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+            return res.json({
+              success: true,
+              results: 'Add item to history suucessfully'
+            });
+          } else {
+            const oldDuration: number = itemHistory.duration!;
+            const oldSeconds: number = itemHistory.seconds!;
+            const oldPercent: number = itemHistory.percent!;
+
+            if (seconds > oldSeconds && percent > oldPercent) {
+              // await History.updateOne(
+              //   {
+              //     user_id: user.id,
+              //     movie_id: movieId,
+              //     media_type: 'movie',
+              //   },
+              //   {
+              //     $set: {
+              //       percent: percent,
+              //       seconds: seconds,
+              //       updated_at: new Date().toISOString(),
+              //     },
+              //   }
+              // );
+
+              itemHistory.percent = percent;
+              itemHistory.seconds = seconds;
+              itemHistory.updated_at = new Date();
+
+              await itemHistory.save();
+            } else {
+              // await History.updateOne(
+              //   {
+              //     user_id: user.id,
+              //     movie_id: movieId,
+              //     media_type: 'movie',
+              //   },
+              //   {
+              //     $set: {
+              //       percent: percent,
+              //       seconds: seconds,
+              //       updated_at: new Date().toISOString(),
+              //     },
+              //   }
+              // );
+
+              itemHistory.percent = percent;
+              itemHistory.seconds = seconds;
+              itemHistory.updated_at = new Date();
+
+              await itemHistory.save();
+            }
+
+            return res.json({
+              success: true,
+              results: 'Add item to history suucessfully'
+            });
+          }
+
           break;
         case 'tv':
           const tv = await TV.findOne({ id: movieId });
 
-          if (tv != null) {
-            const itemHistory = await History.findOne({
-              user_id: user.id,
-              movie_id: movieId,
-              media_type: 'tv'
-            });
-
-            if (itemHistory == null) {
-              await History.create({
-                id: idItemHistory,
-                user_id: user.id,
-                movie_id: movieId,
-                name: tv.name,
-                original_name: tv.original_name,
-                original_language: tv.original_language,
-                media_type: 'tv',
-                genres: tv.genres,
-                backdrop_path: tv.backdrop_path,
-                poster_path: tv.poster_path,
-                dominant_backdrop_color: tv.dominant_backdrop_color,
-                dominant_poster_color: tv.dominant_poster_color,
-                duration,
-                percent,
-                seconds,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-              return res.json({
-                success: true,
-                results: 'Add item to history suucessfully'
-              });
-            } else {
-              const oldDuration: number = itemHistory.duration!;
-              const oldSeconds: number = itemHistory.seconds!;
-              const oldPercent: number = itemHistory.percent!;
-
-              if (seconds > oldSeconds && percent > oldPercent) {
-                // await History.updateOne(
-                //   {
-                //     user_id: user.id,
-                //     movie_id: movieId,
-                //     media_type: 'tv',
-                //   },
-                //   {
-                //     $set: {
-                //       percent: percent,
-                //       seconds: seconds,
-                //       updated_at: new Date().toISOString(),
-                //     },
-                //   }
-                // );
-
-                itemHistory.percent = percent;
-                itemHistory.seconds = seconds;
-                itemHistory.updated_at = new Date();
-
-                await itemHistory.save();
-              } else {
-                // await History.updateOne(
-                //   {
-                //     user_id: user.id,
-                //     movie_id: movieId,
-                //     media_type: 'tv',
-                //   },
-                //   {
-                //     $set: {
-                //       percent: percent,
-                //       seconds: seconds,
-                //       updated_at: new Date().toISOString(),
-                //     },
-                //   }
-                // );
-
-                itemHistory.percent = percent;
-                itemHistory.seconds = seconds;
-                itemHistory.updated_at = new Date();
-
-                await itemHistory.save();
-              }
-
-              return res.json({
-                success: true,
-                results: 'Add item to history suucessfully'
-              });
-            }
-          } else {
+          if (tv == null) {
             return next(createHttpError.NotFound('Movie is not exists'));
           }
+
+          const itemHistory1 = await History.findOne({
+            user_id: user.id,
+            movie_id: movieId,
+            media_type: 'tv'
+          });
+
+          if (itemHistory1 == null) {
+            await History.create({
+              id: idItemHistory,
+              user_id: user.id,
+              movie_id: movieId,
+              name: tv.name,
+              original_name: tv.original_name,
+              original_language: tv.original_language,
+              media_type: 'tv',
+              genres: tv.genres,
+              backdrop_path: tv.backdrop_path,
+              poster_path: tv.poster_path,
+              dominant_backdrop_color: tv.dominant_backdrop_color,
+              dominant_poster_color: tv.dominant_poster_color,
+              duration,
+              percent,
+              seconds,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+            return res.json({
+              success: true,
+              results: 'Add item to history suucessfully'
+            });
+          } else {
+            const oldDuration: number = itemHistory1.duration!;
+            const oldSeconds: number = itemHistory1.seconds!;
+            const oldPercent: number = itemHistory1.percent!;
+
+            if (seconds > oldSeconds && percent > oldPercent) {
+              // await History.updateOne(
+              //   {
+              //     user_id: user.id,
+              //     movie_id: movieId,
+              //     media_type: 'tv',
+              //   },
+              //   {
+              //     $set: {
+              //       percent: percent,
+              //       seconds: seconds,
+              //       updated_at: new Date().toISOString(),
+              //     },
+              //   }
+              // );
+
+              itemHistory1.percent = percent;
+              itemHistory1.seconds = seconds;
+              itemHistory1.updated_at = new Date();
+
+              await itemHistory1.save();
+            } else {
+              // await History.updateOne(
+              //   {
+              //     user_id: user.id,
+              //     movie_id: movieId,
+              //     media_type: 'tv',
+              //   },
+              //   {
+              //     $set: {
+              //       percent: percent,
+              //       seconds: seconds,
+              //       updated_at: new Date().toISOString(),
+              //     },
+              //   }
+              // );
+
+              itemHistory1.percent = percent;
+              itemHistory1.seconds = seconds;
+              itemHistory1.updated_at = new Date();
+
+              await itemHistory1.save();
+            }
+
+            return res.json({
+              success: true,
+              results: 'Add item to history suucessfully'
+            });
+          }
+
           break;
         default:
           return next(
@@ -517,18 +519,18 @@ class HistoryController {
         media_type: mediaType
       });
 
-      if (result.deletedCount == 1) {
-        return res.json({
-          success: true,
-          results: 'Remove item from history suucessfully'
-        });
-      } else {
+      if (result.deletedCount != 1) {
         return next(
           createHttpError.InternalServerError(
             'Delete movie from history failed'
           )
         );
       }
+
+      return res.json({
+        success: true,
+        results: 'Remove item from history suucessfully'
+      });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
@@ -560,20 +562,20 @@ class HistoryController {
         user_id: user.id
       });
 
-      if (result.deletedCount >= 1) {
-        const history = await History.find({ user_id: user.id });
-
-        return res.json({
-          success: true,
-          results: history
-        });
-      } else {
+      if (result.deletedCount < 1) {
         return next(
           createHttpError.InternalServerError(
             'Delete all movie from history failed'
           )
         );
       }
+
+      const history = await History.find({ user_id: user.id });
+
+      return res.json({
+        success: true,
+        results: history
+      });
     } catch (error) {
       if (
         error instanceof jwt.TokenExpiredError ||
