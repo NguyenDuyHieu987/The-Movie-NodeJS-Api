@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
 import Account from '@/models/account';
+import Subscription from '@/models/subscription';
 import type { SigupForm, user } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
@@ -494,11 +495,37 @@ class AuthController {
         });
       }
 
+      const subscription = await Subscription.aggregate([
+        {
+          $match: { account_id: user.id }
+        },
+        {
+          $lookup: {
+            from: 'plans',
+            localField: 'plan_id',
+            foreignField: 'id',
+            as: 'vip'
+          }
+        },
+        {
+          $unwind: '$vip'
+        },
+        {
+          $addFields: {
+            vip: '$vip.vip'
+          }
+        }
+      ]);
+
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
       res.header('Authorization', user_token);
 
-      return res.json({
+      const response: {
+        isLogin: boolean;
+        result: any;
+        subscription?: any;
+      } = {
         isLogin: true,
         result: {
           id: user.id,
@@ -510,7 +537,13 @@ class AuthController {
           role: user.role,
           created_at: user.created_at
         }
-      });
+      };
+
+      if (subscription?.length == 1) {
+        response.subscription = subscription[0];
+      }
+
+      return res.json(response);
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         res.clearCookie('user_token', {

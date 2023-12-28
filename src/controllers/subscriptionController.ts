@@ -17,23 +17,18 @@ import type { user } from '@/types';
 class SubscriptionController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      //   const user_token =
-      //     req.cookies.user_token ||
-      //     req.headers.authorization!.replace('Bearer ', '');
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
 
-      //   const user = jwt.verify(
-      //     user_token,
-      //     process.env.JWT_SIGNATURE_SECRET!
-      //   ) as user;
-
-      const key: string = req.originalUrl;
-      const dataCache: any = await RedisCache.client.get(key);
-
-      const userId = 'bdba8e44-9e1f-447e-b633-a70452a85280';
+      const user = jwt.verify(
+        user_token,
+        process.env.JWT_SIGNATURE_SECRET!
+      ) as user;
 
       const subscription = await Subscription.aggregate([
         {
-          $match: { account_id: userId }
+          $match: { account_id: user.id }
         },
         {
           $lookup: {
@@ -53,8 +48,32 @@ class SubscriptionController extends RedisCache {
         }
       ]);
 
-      return res.json(subscription);
+      if (subscription.length < 1) {
+        return res.json(null);
+      }
+
+      return res.json(subscription[0]);
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        res.clearCookie('user_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true
+        });
+        return res.json({ isTokenExpired: true, result: 'Token is expired' });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        res.clearCookie('user_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true
+        });
+        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
+      }
+
       next(error);
     }
   }
