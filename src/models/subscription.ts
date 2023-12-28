@@ -7,13 +7,16 @@ const Subscription = new mongoose.Schema(
     account_id: { type: String },
     subscription_id: { type: String },
     customer_id: { type: String },
-    subscription: { type: String },
-    latest_bill: { type: String },
+    subscription: { type: Object },
+    latest_invoice: { type: String },
     plan_id: { type: String },
     start_date: { type: Date, default: Date.now },
-    end_date: { type: Date },
-    trial_date: { type: Date, default: Date.now },
+    ended_date: { type: Date },
+    current_period_start: { type: Date, default: Date.now },
+    current_period_end: { type: Date },
+    trial_start: { type: Date, default: Date.now },
     trial_end: { type: Date },
+    billing_cycle_anchor: { type: Date },
     interval: {
       type: String,
       enum: ['day', 'week', 'month', 'year'],
@@ -33,6 +36,7 @@ const Subscription = new mongoose.Schema(
       ],
       default: 'trialing'
     },
+    canceled_at: { type: Date },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

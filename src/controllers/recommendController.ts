@@ -15,7 +15,7 @@ class RecommendController extends RedisCache {
     super();
   }
 
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const user_token =
         req.cookies.user_token ||

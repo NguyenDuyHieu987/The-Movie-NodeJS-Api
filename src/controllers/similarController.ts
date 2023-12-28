@@ -10,7 +10,7 @@ class SimilarController extends RedisCache {
     super();
   }
 
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const mediaType: string = req.params.type;
       const movieId: string = req.params.movieId;

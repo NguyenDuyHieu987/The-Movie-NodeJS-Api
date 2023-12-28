@@ -6,7 +6,7 @@ import Notification from '@/models/notification';
 import type { user } from '@/types';
 
 class NotificationController {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const skip: number = +req.query.skip! - 1 || 0;
       const limit: number = +req.query.limit! || 20;

@@ -10,13 +10,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 import RedisCache from '@/config/redis';
 import { STRIPE_API_VERSION } from '@/config/stripe';
-import Bill from '@/models/bill';
+import Invoice from '@/models/invoice';
 import Plan from '@/models/plan';
 import Subscription from '@/models/subscription';
 import type { PaymentMethods, user } from '@/types';
 
 class PlanController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -114,33 +114,6 @@ class PlanController extends RedisCache {
           : req.headers.origin) +
         '/upgrade/PaymentPicker?planorder=' +
         plan.order
-    });
-
-    const billId: string = uuidv4();
-
-    const bill = await Bill.create({
-      id: billId,
-      account_id: session.client_reference_id,
-      session_id: session.id,
-      session,
-      description: `Nâng cấp tài khoản gói: ${plan.name}`,
-      unit: 1,
-      unit_amount: plan.price!,
-      amount_total: session.amount_total,
-      amount_discount: 0,
-      amount_tax: 0,
-      currency: session.currency,
-      status: 'pending',
-      payment_status: 'unpaid',
-      payment_method: 'stripe',
-      url: session.url,
-      success_url:
-        (process.env.NODE_ENV == 'production'
-          ? process.env.APP_URL!
-          : `http://${req.headers.host}`) +
-        `/plan/stripe/retrieve/${session.id}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
     });
 
     return session.url!;
@@ -346,15 +319,15 @@ class PlanController extends RedisCache {
                 plan.order
             });
 
-            const billId: string = uuidv4();
+            const invoiceId: string = uuidv4();
 
-            const bill = await Bill.create({
-              id: billId,
+            const invoice = await Invoice.create({
+              id: invoiceId,
               account_id: session.client_reference_id,
               session_id: session.id,
               session,
               description: `Nâng cấp tài khoản gói: ${plan.name}`,
-              unit: 1,
+              quantity: 1,
               unit_amount: plan.price!,
               amount_total: session.amount_total,
               amount_discount: 0,
@@ -396,6 +369,15 @@ class PlanController extends RedisCache {
 
   async retrieve(req: Request, res: Response, next: NextFunction) {
     try {
+      const user_token =
+        req.cookies.user_token ||
+        req.headers.authorization!.replace('Bearer ', '');
+
+      const user = jwt.verify(
+        user_token,
+        process.env.JWT_SIGNATURE_SECRET!
+      ) as user;
+
       const method: PaymentMethods | string = req.params.method?.toUpperCase();
       const sessionId: string = req.params.id;
 
@@ -416,23 +398,29 @@ class PlanController extends RedisCache {
             {}
           );
 
-          const bill = await Bill.findOne({
+          if (user.id != session.client_reference_id) {
+            return createHttpError.InternalServerError(
+              `You cannot perform this action`
+            );
+          }
+
+          const invoice = await Invoice.findOne({
             account_id: session.client_reference_id,
             session_id: sessionId
           });
 
-          if (bill == null) {
-            // return createHttpError.NotFound(`Can't find bill`);
+          if (invoice == null) {
+            // return createHttpError.NotFound(`Can't find invoice`);
 
             return res.json({
               success: false,
-              billNotFound: true,
-              result: `Can't find bill`
+              invoiceNotFound: true,
+              result: `Can't find invoice`
             });
           }
 
-          if (bill.status == 'canceled') {
-            return res.json({ success: false, status: bill.status });
+          if (invoice.status == 'canceled' || invoice.status == 'expired') {
+            return res.json({ success: false, status: invoice.status });
           }
 
           if (session.status != 'complete') {
@@ -445,10 +433,10 @@ class PlanController extends RedisCache {
             }
 
             if (session.status == 'expired') {
-              bill.status = 'expired';
-              bill.session = session;
+              invoice.status = 'expired';
+              invoice.session = session;
 
-              await bill.save();
+              await invoice.save();
             }
 
             return res.json({ success: false, status: session.status });
@@ -461,68 +449,130 @@ class PlanController extends RedisCache {
             });
           }
 
-          const subscription = await stripe.subscriptions.retrieve(
+          const stripeSubscription = await stripe.subscriptions.retrieve(
             session.subscription as string,
             {}
           );
 
-          if (bill.status != 'complete') {
-            const billId: string = uuidv4();
+          const stripeInvoice = await stripe.invoices.retrieve(
+            session.invoice as string,
+            {}
+          );
 
+          if (invoice.status != 'complete') {
             const subscriptionId: string = uuidv4();
 
+            const subscription = await Subscription.findOne({
+              account_id: session.client_reference_id,
+              subscription_id: stripeSubscription.id
+            });
+
             const start_date = new Date(
-              (subscription.start_date as number) * 1000
+              (stripeSubscription.start_date as number) * 1000
             ).toISOString();
 
-            const end_date = new Date(
-              (subscription.ended_at as number) * 1000
+            const ended_date =
+              stripeSubscription.ended_at &&
+              new Date(
+                (stripeSubscription.ended_at as number) * 1000
+              ).toISOString();
+
+            const current_period_start = new Date(
+              (stripeSubscription.current_period_start as number) * 1000
+            ).toISOString();
+
+            const current_period_end = new Date(
+              (stripeSubscription.current_period_end as number) * 1000
             ).toISOString();
 
             const trial_start = new Date(
-              (subscription.trial_start as number) * 1000
+              (stripeSubscription.trial_start as number) * 1000
             ).toISOString();
 
             const trial_end = new Date(
-              (subscription.trial_end as number) * 1000
+              (stripeSubscription.trial_end as number) * 1000
             ).toISOString();
 
-            bill.session = session;
-            bill.customer_id = session.customer as string;
-            bill.subscription_id = subscriptionId;
-            bill.subscription = subscription;
-            bill.status = 'complete';
-            bill.payment_status = 'paid';
-            bill.customer_details = session.customer_details;
-            bill.amount_total = session.amount_total;
-            bill.amount_discount = session.total_details!.amount_discount;
-            bill.amount_tax = session.total_details!.amount_tax;
+            const billing_cycle_anchor = new Date(
+              (stripeSubscription.billing_cycle_anchor as number) * 1000
+            ).toISOString();
 
-            await bill.save();
+            const created_at = new Date(
+              (stripeSubscription.created as number) * 1000
+            ).toISOString();
 
-            // const result = await Subscription.create({
-            //   id: subscriptionId,
-            //   account_id: session.client_reference_id,
-            //   subscription_id: subscription.id,
-            //   subscription: subscription,
-            //   customer_id: session.customer,
-            //   plan_id: subscription.metadata.plan_id,
-            //   status: subscription.status,
-            //   latest_bill: bill.id
-            // });
+            const result = await Subscription.create({
+              id: subscriptionId,
+              account_id: session.client_reference_id,
+              subscription_id: stripeSubscription.id,
+              subscription: stripeSubscription,
+              customer_id: session.customer,
+              plan_id: stripeSubscription.metadata.plan_id,
+              status: stripeSubscription.status,
+              latest_invoice: invoice.id,
+              trial_start,
+              trial_end,
+              start_date,
+              ended_date,
+              current_period_start,
+              current_period_end,
+              billing_cycle_anchor,
+              interval: stripeSubscription.items.data[0].plan.interval,
+              interval_count:
+                stripeSubscription.items.data[0].plan.interval_count,
+              created_at,
+              updated_at: created_at
+            });
+
+            const period_start = new Date(
+              (stripeInvoice.period_start as number) * 1000
+            );
+
+            const period_end = new Date(
+              (stripeInvoice.period_end as number) * 1000
+            );
+
+            invoice.session = session;
+            invoice.customer_id = session.customer as string;
+            invoice.subscription_id = subscriptionId;
+            invoice.invoice_id = session.invoice as string;
+            invoice.subscription = stripeSubscription;
+            invoice.invoice = stripeInvoice;
+            invoice.customer_details = session.customer_details;
+            invoice.items = stripeInvoice.lines.data;
+            invoice.status = 'complete';
+            invoice.payment_status = 'paid';
+            invoice.amount_total = session.amount_total;
+            invoice.amount_due = stripeInvoice.amount_due;
+            invoice.amount_paid = stripeInvoice.amount_paid;
+            invoice.amount_remaining = stripeInvoice.amount_remaining;
+            invoice.amount_discount = session.total_details!.amount_discount;
+            invoice.amount_tax = session.total_details!.amount_tax;
+            invoice.period_start = period_start;
+            invoice.period_end = period_end;
+            invoice.updated_at = new Date();
+
+            await invoice.save();
 
             return res.json({
               success: true,
               session,
-              subscription,
-              date: trial_end
+              subscription: stripeSubscription,
+              invoice: stripeInvoice
             });
           } else {
-            if (bill.payment_status != 'paid') {
-              bill.payment_status = 'paid';
+            if (invoice.payment_status != 'paid') {
+              invoice.payment_status = 'paid';
+
+              await invoice.save();
             }
 
-            await bill.save();
+            return res.json({
+              success: true,
+              session,
+              subscription: stripeSubscription,
+              invoice: stripeInvoice
+            });
 
             return res.json({
               success: true,

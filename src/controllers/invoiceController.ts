@@ -2,10 +2,10 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
 import RedisCache from '@/config/redis';
-import Plan from '@/models/plan';
+import Invoice from '@/models/invoice';
 
-class BillController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+class InvoiceController extends RedisCache {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -14,7 +14,7 @@ class BillController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const data = await Plan.find().sort({ order: 1 });
+      const data = await Invoice.find().sort({ order: 1 });
 
       if (data != null) {
         const response = { results: data };
@@ -35,4 +35,4 @@ class BillController extends RedisCache {
   }
 }
 
-export default new BillController();
+export default new InvoiceController();

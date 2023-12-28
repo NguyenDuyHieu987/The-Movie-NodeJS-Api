@@ -5,7 +5,7 @@ import RedisCache from '@/config/redis';
 import Genre from '@/models/genre';
 
 class GenreController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -14,28 +14,17 @@ class GenreController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      switch (req.params.slug) {
-        case 'all':
-          const data = await Genre.find();
+      const data = await Genre.find();
 
-          const response = { results: data };
+      const response = { results: data };
 
-          await RedisCache.client.setEx(
-            key,
-            +process.env.REDIS_CACHE_TIME!,
-            JSON.stringify(response)
-          );
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
 
-          return res.json(response);
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Genres with slug: ${req.params.slug} is not found!`
-            )
-          );
-          break;
-      }
+      return res.json(response);
     } catch (error) {
       next(error);
     }

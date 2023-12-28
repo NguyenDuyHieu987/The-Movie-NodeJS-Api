@@ -7,7 +7,7 @@ import Trending from '@/models/trending';
 import { user } from '@/types';
 
 class TrendingController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query.page! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
@@ -28,7 +28,20 @@ class TrendingController extends RedisCache {
             .limit(limit);
 
           total = await Trending.countDocuments({});
+          break;
+        case 'movie':
+          data = await Trending.find({ media_type: 'movie' })
+            .skip(page * limit)
+            .limit(limit);
 
+          total = await Trending.countDocuments({ media_type: 'movie' });
+          break;
+        case 'tv':
+          data = await Trending.find({ media_type: 'tv' })
+            .skip(page * limit)
+            .limit(limit);
+
+          total = await Trending.countDocuments({ media_type: 'tv' });
           break;
         default:
           return next(

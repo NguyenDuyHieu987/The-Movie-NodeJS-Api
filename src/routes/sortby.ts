@@ -4,6 +4,6 @@ import SortOption from '@/controllers/sortbyController';
 
 const router = express.Router();
 
-router.get('/:slug', SortOption.get);
+router.get('/get-all', SortOption.getAll);
 
 export default router;

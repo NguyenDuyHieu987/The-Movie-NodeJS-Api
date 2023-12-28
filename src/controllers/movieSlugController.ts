@@ -6,7 +6,7 @@ import Movie from '@/models/movie';
 import MovieSlug from '@/models/movieSlug';
 
 class MovieSlugController extends RedisCache {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query.page! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
