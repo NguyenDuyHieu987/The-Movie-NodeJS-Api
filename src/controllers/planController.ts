@@ -41,7 +41,7 @@ class PlanController extends RedisCache {
     }
   }
 
-  private async createCheckoutSession(
+  private static async createCheckoutSession(
     req: Request,
     stripe: Stripe,
     plan: any,
