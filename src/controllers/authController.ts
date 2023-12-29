@@ -17,6 +17,43 @@ import sendinblueEmail from '@/utils/sendinblueEmail';
 class AuthController {
   constructor() {}
 
+  private async getSubscription(userId: string, result: any) {
+    const subscription = await Subscription.aggregate([
+      {
+        $match: { account_id: userId }
+      },
+      {
+        $lookup: {
+          from: 'plans',
+          localField: 'plan_id',
+          foreignField: 'id',
+          as: 'vip'
+        }
+      },
+      {
+        $unwind: '$vip'
+      },
+      {
+        $addFields: {
+          vip: '$vip.vip'
+        }
+      }
+    ]);
+
+    const response: {
+      isLogin?: boolean;
+      isSignUp?: boolean;
+      result: any;
+      subscription?: any;
+    } = result;
+
+    if (subscription?.length == 1) {
+      response.subscription = subscription[0];
+    }
+
+    return response;
+  }
+
   async logIn(req: Request, res: Response, next: NextFunction) {
     try {
       const account = await Account.findOne({
@@ -81,9 +118,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(account.id, {
           isLogin: true,
-          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
           result: {
             id: account.id,
             username: account.username,
@@ -95,6 +131,8 @@ class AuthController {
             created_at: account.created_at
           }
         });
+
+        return res.json(response);
       } else {
         const passwordHashedOld = encryptPasswordOld(req.body.password);
 
@@ -142,9 +180,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(account.id, {
           isLogin: true,
-          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
           result: {
             id: account.id,
             username: account.username,
@@ -156,6 +193,8 @@ class AuthController {
             created_at: account.created_at
           }
         });
+
+        return res.json(response);
       }
     } catch (error) {
       next(error);
@@ -238,9 +277,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(newAccount.id, {
           isSignUp: true,
-          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
           result: {
             id: newAccount.id,
             username: newAccount.username,
@@ -252,6 +290,8 @@ class AuthController {
             created_at: newAccount.created_at
           }
         });
+
+        return res.json(response);
       } else {
         const accountLogedIn = await Account.findOneAndUpdate(
           { id: account.id, auth_type: 'facebook' },
@@ -303,9 +343,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(accountLogedIn.id, {
           isLogin: true,
-          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
           result: {
             id: accountLogedIn.id,
             username: accountLogedIn.username,
@@ -317,6 +356,8 @@ class AuthController {
             created_at: accountLogedIn.created_at
           }
         });
+
+        return res.json(response);
       }
     } catch (error) {
       next(error);
@@ -402,9 +443,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(newAccount.id, {
           isSignUp: true,
-          exp_token_hours: +process.env.JWT_EXP_OFFSET!,
           result: {
             id: newAccount.id,
             username: newAccount.username,
@@ -416,6 +456,8 @@ class AuthController {
             created_at: newAccount.created_at
           }
         });
+
+        return res.json(response);
       } else {
         const encoded = jwt.sign(
           {
@@ -450,9 +492,8 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        return res.json({
+        const response = this.getSubscription(account.id, {
           isLogin: true,
-          exp_token_hours: process.env.JWT_EXP_OFFSET!,
           result: {
             id: account.id,
             username: account.username,
@@ -464,6 +505,8 @@ class AuthController {
             created_at: account.created_at
           }
         });
+
+        return res.json(response);
       }
     } catch (error) {
       next(error);
@@ -495,6 +538,10 @@ class AuthController {
         });
       }
 
+      res.set('Access-Control-Expose-Headers', 'Authorization');
+
+      res.header('Authorization', user_token);
+
       const subscription = await Subscription.aggregate([
         {
           $match: { account_id: user.id }
@@ -516,10 +563,6 @@ class AuthController {
           }
         }
       ]);
-
-      res.set('Access-Control-Expose-Headers', 'Authorization');
-
-      res.header('Authorization', user_token);
 
       const response: {
         isLogin: boolean;
