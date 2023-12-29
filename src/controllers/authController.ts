@@ -14,10 +14,20 @@ import GenerateOTP from '@/utils/generateOTP';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 
+type ResponseLogin = {
+  isLogin?: boolean;
+  isSignUp?: boolean;
+  result: any;
+  subscription?: any;
+};
+
 class AuthController {
   constructor() {}
 
-  private async getSubscription(userId: string, result: any) {
+  private static async getSubscription(
+    userId: string,
+    result: any
+  ): Promise<ResponseLogin> {
     const subscription = await Subscription.aggregate([
       {
         $match: { account_id: userId }
@@ -118,7 +128,7 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(account.id, {
+        const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
           result: {
             id: account.id,
@@ -180,7 +190,7 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(account.id, {
+        const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
           result: {
             id: account.id,
@@ -277,7 +287,7 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(newAccount.id, {
+        const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
           result: {
             id: newAccount.id,
@@ -343,19 +353,22 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(accountLogedIn.id, {
-          isLogin: true,
-          result: {
-            id: accountLogedIn.id,
-            username: accountLogedIn.username,
-            full_name: accountLogedIn.full_name,
-            avatar: accountLogedIn.avatar,
-            email: accountLogedIn.email,
-            auth_type: accountLogedIn.auth_type,
-            role: accountLogedIn.role,
-            created_at: accountLogedIn.created_at
+        const response = await AuthController.getSubscription(
+          accountLogedIn.id,
+          {
+            isLogin: true,
+            result: {
+              id: accountLogedIn.id,
+              username: accountLogedIn.username,
+              full_name: accountLogedIn.full_name,
+              avatar: accountLogedIn.avatar,
+              email: accountLogedIn.email,
+              auth_type: accountLogedIn.auth_type,
+              role: accountLogedIn.role,
+              created_at: accountLogedIn.created_at
+            }
           }
-        });
+        );
 
         return res.json(response);
       }
@@ -443,7 +456,7 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(newAccount.id, {
+        const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
           result: {
             id: newAccount.id,
@@ -492,7 +505,7 @@ class AuthController {
 
         res.header('Authorization', encoded);
 
-        const response = this.getSubscription(account.id, {
+        const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
           result: {
             id: account.id,
