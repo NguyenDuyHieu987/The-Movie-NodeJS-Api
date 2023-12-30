@@ -30,9 +30,9 @@ class RecommendController extends RedisCache {
       const key: string = `__recommend__${user_token}__` + req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      // if (dataCache != null) {
-      //   return res.json(JSON.parse(dataCache));
-      // }
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
 
       const list = await List.find({
         user_id: user.id
@@ -131,11 +131,11 @@ class RecommendController extends RedisCache {
         page_size: limit
       };
 
-      // await RedisCache.client.setEx(
-      //   key,
-      //   +process.env.REDIS_CACHE_TIME!,
-      //   JSON.stringify(response)
-      // );
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
 
       return res.json(response);
     } catch (error) {
