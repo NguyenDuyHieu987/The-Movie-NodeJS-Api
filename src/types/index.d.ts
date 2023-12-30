@@ -23,7 +23,7 @@ export declare type user = {
   updatedAt?: string;
 };
 
-export declare type SigupForm = {
+export declare type SignupForm = {
   id: string;
   username: string;
   password: string;

@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import Account from '@/models/account';
 import Subscription from '@/models/subscription';
-import type { SigupForm, user } from '@/types';
+import type { SignupForm, user } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
@@ -632,7 +632,7 @@ class AuthController {
 
       const user = jwt.verify(signup_token, req.body.otp, {
         algorithms: ['HS256']
-      }) as SigupForm;
+      }) as SignupForm;
 
       const isAlive = await jwtRedis
         .setPrefix('vrf_signup_token')
@@ -704,7 +704,7 @@ class AuthController {
 
   async signUpVerify(req: Request, res: Response, next: NextFunction) {
     try {
-      const formUser: SigupForm = req.body;
+      const formUser: SignupForm = req.body;
 
       switch (req.params.type) {
         case 'email':
@@ -734,13 +734,17 @@ class AuthController {
 
           const passwordEncrypted = await encryptPassword(formUser.password);
 
+          const avatar: string = (
+            Math.floor(Math.random() * 10) + 1
+          ).toString();
+
           const encoded = jwt.sign(
             {
               username: formUser.username,
               password: passwordEncrypted,
               email: formUser.email,
               full_name: formUser.full_name,
-              avatar: formUser.avatar,
+              avatar,
               role: 'normal',
               auth_type: 'email',
               description: 'Register new account',

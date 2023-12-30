@@ -20,12 +20,12 @@ class JwtRedis extends RedisCache {
     return this;
   }
 
-  async sign(jwt: string, option: { exp: number }) {
+  async sign(jwt: string, options: { exp: number }) {
     const key = this.initKey(jwt);
 
-    // await RedisCache.client.setEx(key, option.exp, JSON.stringify(true));
+    // await RedisCache.client.setEx(key, options.exp, JSON.stringify(true));
     await RedisCache.client.set(key, JSON.stringify(true), {
-      EX: option.exp,
+      EX: options.exp,
       NX: true
     });
   }
