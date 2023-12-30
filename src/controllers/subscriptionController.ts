@@ -35,16 +35,11 @@ class SubscriptionController extends RedisCache {
             from: 'plans',
             localField: 'plan_id',
             foreignField: 'id',
-            as: 'vip'
+            as: 'plan'
           }
         },
         {
-          $unwind: '$vip'
-        },
-        {
-          $addFields: {
-            vip: '$vip.vip'
-          }
+          $unwind: '$plan'
         }
       ]);
 

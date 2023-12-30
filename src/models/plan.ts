@@ -8,7 +8,7 @@ const Plan = new mongoose.Schema(
     price: { type: Number },
     video_quality: { type: String },
     resolution: { type: String },
-    support_devices: { type: String },
+    support_devices: { type: Array },
     order: { type: Number },
     vip: { type: Number }
   },

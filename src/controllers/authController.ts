@@ -37,16 +37,11 @@ class AuthController {
           from: 'plans',
           localField: 'plan_id',
           foreignField: 'id',
-          as: 'vip'
+          as: 'plan'
         }
       },
       {
-        $unwind: '$vip'
-      },
-      {
-        $addFields: {
-          vip: '$vip.vip'
-        }
+        $unwind: '$plan'
       }
     ]);
 
@@ -555,33 +550,7 @@ class AuthController {
 
       res.header('Authorization', user_token);
 
-      const subscription = await Subscription.aggregate([
-        {
-          $match: { account_id: user.id }
-        },
-        {
-          $lookup: {
-            from: 'plans',
-            localField: 'plan_id',
-            foreignField: 'id',
-            as: 'vip'
-          }
-        },
-        {
-          $unwind: '$vip'
-        },
-        {
-          $addFields: {
-            vip: '$vip.vip'
-          }
-        }
-      ]);
-
-      const response: {
-        isLogin: boolean;
-        result: any;
-        subscription?: any;
-      } = {
+      const response = await AuthController.getSubscription(user.id, {
         isLogin: true,
         result: {
           id: user.id,
@@ -593,11 +562,7 @@ class AuthController {
           role: user.role,
           created_at: user.created_at
         }
-      };
-
-      if (subscription?.length == 1) {
-        response.subscription = subscription[0];
-      }
+      });
 
       return res.json(response);
     } catch (error) {
