@@ -9,6 +9,7 @@ const Plan = new mongoose.Schema(
     video_quality: { type: String },
     resolution: { type: String },
     support_devices: { type: Array },
+    ads: { type: Boolean },
     order: { type: Number },
     vip: { type: Number }
   },
