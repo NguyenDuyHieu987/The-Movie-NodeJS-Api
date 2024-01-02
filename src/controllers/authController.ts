@@ -214,7 +214,7 @@ class AuthController {
       );
 
       const facebookUser: any = await fetch(
-        `https://graph.facebook.com/v15.0/me?access_token=${accessToken}&fields=id,name,email,picture`
+        `${process.env.FACEBOOK_API_URL}/me?access_token=${accessToken}&fields=id,name,email,picture`
       )
         .then((response: any) => response.json())
         .catch((error) => {
@@ -380,7 +380,7 @@ class AuthController {
       );
 
       const googleUser: any = await fetch(
-        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`,
+        `${process.env.GOOGLE_API_URL}/oauth2/v3/userinfo?access_token=${accessToken}`,
         {
           headers: { Authorization: accessToken }
         }
