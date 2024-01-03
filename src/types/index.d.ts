@@ -16,7 +16,7 @@ export declare type user = {
   email: string;
   role: 'normal' | 'admin';
   avatar: string;
-  auth_type: 'email' | 'facebook' | 'google';
+  auth_type: string | 'email' | 'facebook' | 'google';
   created_at: string;
   updated_at: string;
   createdAt?: string;
