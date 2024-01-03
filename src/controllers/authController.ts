@@ -1064,13 +1064,17 @@ class AuthController {
 
       const user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256']
-      });
+      }) as user;
 
       jwtRedis.setPrefix('user_logout');
 
       await jwtRedis.sign(user_token, {
         exp: +process.env.JWT_EXP_OFFSET! * 60 * 60
       });
+
+      if (user.auth_type == 'google') {
+        // oauth2Client.revokeCredentials();
+      }
 
       res.clearCookie('user_token', {
         domain: req.hostname,
