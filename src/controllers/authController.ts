@@ -409,6 +409,7 @@ class AuthController {
   async logInGoogle(req: Request, res: Response, next: NextFunction) {
     try {
       let googleUser = null;
+
       if (req.headers.authorization) {
         const accessToken: string = req.headers.authorization!.replace(
           'Bearer ',
