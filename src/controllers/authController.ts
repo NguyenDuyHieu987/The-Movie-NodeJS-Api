@@ -1,10 +1,12 @@
 import * as argon2 from 'argon2';
 import type { NextFunction, Request, Response } from 'express';
+import { google } from 'googleapis';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
+import { oauth2Client } from '@/config/google';
 import Account from '@/models/account';
 import Subscription from '@/models/subscription';
 import type { SignupForm, user } from '@/types';
@@ -213,13 +215,17 @@ class AuthController {
         ''
       );
 
-      const facebookUser: any = await fetch(
+      const facebookUser = await fetch(
         `${process.env.FACEBOOK_API_URL}/me?access_token=${accessToken}&fields=id,name,email,picture`
       )
-        .then((response: any) => response.json())
+        .then((response) => response.json())
         .catch((error) => {
           throw error;
         });
+
+      if (!facebookUser) {
+        createHttpError.InternalServerError("Cant't find the Facebook user");
+      }
 
       const account = await Account.findOne({
         facebook_user_id: facebookUser!.id,
@@ -372,26 +378,77 @@ class AuthController {
     }
   }
 
+  private static async getGoogleUserByAccessToken(accessToken: string) {
+    oauth2Client.setCredentials({
+      access_token: accessToken
+    });
+
+    const oauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: 'v2'
+    });
+
+    const googleUser = await oauth2.userinfo.get();
+
+    return googleUser.data;
+
+    // const googleUser = await fetch(
+    //   `${process.env.GOOGLE_API_URL}/oauth2/v3/userinfo?access_token=${accessToken}`,
+    //   {
+    //     headers: { Authorization: accessToken }
+    //   }
+    // )
+    //   .then((response) => response.json())
+    //   .catch((error) => {
+    //     throw error;
+    //   });
+
+    // return { id: googleUser?.sub, ...googleUser };
+  }
+
   async logInGoogle(req: Request, res: Response, next: NextFunction) {
     try {
-      const accessToken: string = req.headers.authorization!.replace(
-        'Bearer ',
-        ''
-      );
+      let googleUser = null;
+      if (req.headers.authorization) {
+        const accessToken: string = req.headers.authorization!.replace(
+          'Bearer ',
+          ''
+        );
 
-      const googleUser: any = await fetch(
-        `${process.env.GOOGLE_API_URL}/oauth2/v3/userinfo?access_token=${accessToken}`,
-        {
-          headers: { Authorization: accessToken }
+        googleUser =
+          await AuthController.getGoogleUserByAccessToken(accessToken);
+      }
+
+      const authorizationCode = req.body?.authorization_code;
+      const redirectUri = req.body?.redirect_uri;
+
+      if (authorizationCode) {
+        let oauth2ClientWithRedUri = oauth2Client;
+
+        if (redirectUri) {
+          oauth2ClientWithRedUri = new google.auth.OAuth2(
+            process.env.GOOGLE_OAUTH2_CLIENT_ID,
+            process.env.GOOGLE_OAUTH2_CLIENT_SECRET,
+            redirectUri
+          );
         }
-      )
-        .then((response: any) => response.json())
-        .catch((error) => {
-          throw error;
-        });
+
+        const { tokens } =
+          await oauth2ClientWithRedUri.getToken(authorizationCode);
+        const accessToken = tokens.access_token!;
+
+        googleUser =
+          await AuthController.getGoogleUserByAccessToken(accessToken);
+      }
+
+      if (googleUser == null) {
+        createHttpError.InternalServerError("Cant't find the Google user");
+      }
+
+      const googleUserId = googleUser?.id;
 
       const account = await Account.findOne({
-        google_user_id: googleUser.sub,
+        google_user_id: googleUserId,
         auth_type: 'google'
       });
 
@@ -400,7 +457,154 @@ class AuthController {
 
         const newAccount = await Account.create({
           id: accountId,
-          google_user_id: googleUser.sub,
+          google_user_id: googleUserId,
+          username: googleUser?.name,
+          full_name: googleUser?.name,
+          avatar: googleUser?.picture,
+          email: googleUser?.email,
+          auth_type: 'google',
+          role: 'normal',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+        if (newAccount == null) {
+          return res.json({
+            isLogin: false,
+            result: 'Login Google failed!'
+          });
+        }
+
+        const encoded = jwt.sign(
+          {
+            id: newAccount.id,
+            username: newAccount.username,
+            email: newAccount.email,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            role: newAccount.role,
+            auth_type: newAccount.auth_type,
+            created_at: newAccount.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        const response = await AuthController.getSubscription(newAccount.id, {
+          isSignUp: true,
+          result: {
+            id: newAccount.id,
+            username: newAccount.username,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            email: newAccount.email,
+            auth_type: newAccount.auth_type,
+            role: newAccount.role,
+            created_at: newAccount.created_at
+          }
+        });
+
+        return res.json(response);
+      } else {
+        const encoded = jwt.sign(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at,
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.JWT_EXP_OFFSET! * 3600
+          },
+          process.env.JWT_SIGNATURE_SECRET!,
+          {
+            algorithm: 'HS256'
+            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
+          }
+        );
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+
+        res.cookie('user_token', encoded, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        });
+
+        res.header('Authorization', encoded);
+
+        const response = await AuthController.getSubscription(account.id, {
+          isLogin: true,
+          result: {
+            id: account.id,
+            username: account.username,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            email: account.email,
+            auth_type: account.auth_type,
+            role: account.role,
+            created_at: account.created_at
+          }
+        });
+
+        return res.json(response);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async logInGoogle_Archive(req: Request, res: Response, next: NextFunction) {
+    try {
+      const accessToken: string = req.headers.authorization!.replace(
+        'Bearer ',
+        ''
+      );
+
+      const googleUser =
+        await AuthController.getGoogleUserByAccessToken(accessToken);
+
+      if (!googleUser) {
+        createHttpError.InternalServerError("Cant't find the Google user");
+      }
+
+      const googleUserId = googleUser?.id;
+
+      const account = await Account.findOne({
+        google_user_id: googleUserId,
+        auth_type: 'google'
+      });
+
+      if (account == null) {
+        const accountId: string = uuidv4();
+
+        const newAccount = await Account.create({
+          id: accountId,
+          google_user_id: googleUserId,
           username: googleUser.name,
           full_name: googleUser.name,
           avatar: googleUser.picture,
