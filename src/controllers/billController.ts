@@ -6,17 +6,11 @@ import RedisCache from '@/config/redis';
 import Invoice from '@/models/invoice';
 import type { user } from '@/types';
 
-class InvoiceController extends RedisCache {
+class BillController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const skip: number = +req.query.skip! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
-      const key: string = req.originalUrl;
-      const dataCache: any = await RedisCache.client.get(key);
-
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
 
       const user_token =
         req.cookies.user_token ||
@@ -39,7 +33,30 @@ class InvoiceController extends RedisCache {
         total: 0
       };
 
-      result.results = await Invoice.find({ account_id: user.id })
+      result.results = await Invoice.aggregate()
+        .match({
+          account_id: user.id
+        })
+        .project({
+          id: 1,
+          description: 1,
+          unit_amount: 1,
+          quantity: 1,
+          amount_total: 1,
+          amount_due: 1,
+          amount_paid: 1,
+          amount_remaining: 1,
+          amount_discount: 1,
+          amount_tax: 1,
+          currency: 1,
+          status: 1,
+          payment_status: 1,
+          payment_method: 1,
+          period_start: 1,
+          period_end: 1,
+          created_at: 1,
+          updated_at: 1
+        })
         .skip(skip * limit)
         .limit(limit)
         .sort({
@@ -50,12 +67,6 @@ class InvoiceController extends RedisCache {
         account_id: user.id
       });
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(result)
-      );
-
       return res.json(result);
     } catch (error) {
       next(error);
@@ -63,4 +74,4 @@ class InvoiceController extends RedisCache {
   }
 }
 
-export default new InvoiceController();
+export default new BillController();

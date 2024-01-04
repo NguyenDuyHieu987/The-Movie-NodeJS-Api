@@ -2,6 +2,7 @@ import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import accountRouter from './account';
 import authRouter from './auth';
+import billRouter from './bill';
 import commentRouter from './comment';
 import countryRouter from './country';
 import creditRouter from './credit';
@@ -55,6 +56,7 @@ export default function route(app: Application) {
   app.use('/plan', planRouter);
   app.use('/rating', ratingRouter);
   app.use('/comment', commentRouter);
+  app.use('/bill', billRouter);
   app.use('/invoice', invoiceRouter);
   app.use('/subscription', subscriptionRouter);
   app.use('/ranks', ranRouter);

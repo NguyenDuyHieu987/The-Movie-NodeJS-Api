@@ -8,6 +8,7 @@ const Subscription = new mongoose.Schema(
     subscription_id: { type: String },
     customer_id: { type: String },
     subscription: { type: Object },
+    description: { type: String },
     latest_invoice: { type: String },
     plan_id: { type: String },
     start_date: { type: Date, default: Date.now },

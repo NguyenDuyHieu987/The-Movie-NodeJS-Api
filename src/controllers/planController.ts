@@ -506,6 +506,7 @@ class PlanController extends RedisCache {
               account_id: session.client_reference_id,
               subscription_id: stripeSubscription.id,
               subscription: stripeSubscription,
+              description: stripeSubscription.description,
               customer_id: session.customer,
               plan_id: stripeSubscription.metadata.plan_id,
               status: stripeSubscription.status,
@@ -538,6 +539,7 @@ class PlanController extends RedisCache {
             invoice.invoice_id = session.invoice as string;
             invoice.subscription = stripeSubscription;
             invoice.invoice = stripeInvoice;
+            // invoice.description = stripeInvoice.lines.data[0].description;
             invoice.customer_details = session.customer_details;
             invoice.items = stripeInvoice.lines.data;
             invoice.status = 'complete';
@@ -556,9 +558,10 @@ class PlanController extends RedisCache {
 
             return res.json({
               success: true,
-              session,
-              subscription: stripeSubscription,
-              invoice: stripeInvoice
+              result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
+              // session,
+              // subscription: stripeSubscription,
+              // invoice: stripeInvoice
             });
           } else {
             if (invoice.payment_status != 'paid') {
@@ -569,14 +572,10 @@ class PlanController extends RedisCache {
 
             return res.json({
               success: true,
-              session,
-              subscription: stripeSubscription,
-              invoice: stripeInvoice
-            });
-
-            return res.json({
-              success: true,
-              result: 'You have successfully registered for subscription'
+              result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
+              // session,
+              // subscription: stripeSubscription,
+              // invoice: stripeInvoice
             });
           }
 
