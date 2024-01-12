@@ -43,8 +43,8 @@ jobs:
           version: latest
 
       - name: Install Dependencies and Build
-        run: |
-          pnpm install
+        run: | 
+          pnpm install --frozen-lockfile
           npm run build
 
       - name: Install SSH key
