@@ -1,5 +1,7 @@
 import RedisCache from '@/config/redis';
 
+export const REVOKE_TOKEN_PREFIX = 'revoke__';
+
 class JwtRedis extends RedisCache {
   private redisPrefix: string = '';
 
@@ -9,13 +11,19 @@ class JwtRedis extends RedisCache {
   }
 
   private initKey(key: string): string {
-    const my_key = `${this.redisPrefix}_${key}`;
+    const my_key = `${this.redisPrefix}__${key}`;
 
     return my_key;
   }
 
   public setPrefix(prefix: string) {
     this.redisPrefix = prefix;
+
+    return this;
+  }
+
+  public setRevokePrefix(prefix: string) {
+    this.redisPrefix = REVOKE_TOKEN_PREFIX + prefix;
 
     return this;
   }

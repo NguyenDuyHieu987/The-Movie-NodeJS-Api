@@ -1355,7 +1355,7 @@ class RankController extends RedisCache {
       }
 
       if (movie == null) {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        throw createHttpError.NotFound('Movie is not exists');
       }
 
       const idRank: string = uuidv4();
@@ -1444,7 +1444,7 @@ class RankController extends RedisCache {
         }
 
         if (movie == null) {
-          return next(createHttpError.NotFound('Movie is not exists'));
+          throw createHttpError.NotFound('Movie is not exists');
         }
 
         const idRank: string = uuidv4();
@@ -1623,7 +1623,7 @@ class RankController extends RedisCache {
       }
 
       if (movie == null) {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        throw createHttpError.NotFound('Movie is not exists');
       }
 
       const idRank: string = uuidv4();

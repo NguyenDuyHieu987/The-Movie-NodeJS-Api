@@ -29,7 +29,7 @@ class SimilarController extends RedisCache {
           const movie = await Movie.findOne({ id: movieId });
 
           if (movie == null) {
-            return next(createHttpError.NotFound(`Movie is not exist`));
+            throw createHttpError.NotFound(`Movie is not exist`);
           }
 
           const genre: any[] = movie.genres;
@@ -57,7 +57,7 @@ class SimilarController extends RedisCache {
           const tv = await TV.findOne({ id: movieId });
 
           if (tv == null) {
-            return next(createHttpError.NotFound(`Movie is not exist`));
+            throw createHttpError.NotFound(`Movie is not exist`);
           }
 
           const genre1: any[] = tv.genres;
@@ -87,7 +87,6 @@ class SimilarController extends RedisCache {
               `Movie with type: ${mediaType} is not found`
             )
           );
-          break;
       }
 
       const response = {

@@ -19,6 +19,10 @@ const authenticationHandler = async (
       req.cookies.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
 
+    if (!userToken || userToken.length == 0) {
+      throw createHttpError.BadRequest('Token is required');
+    }
+
     // console.log(req.headers['user-agent']);
 
     let user = null;
@@ -28,10 +32,12 @@ const authenticationHandler = async (
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
     if (userToken && userToken.length > 0 && !res.locals.user) {
-      const isAlive = await jwtRedis.setPrefix('user_logout').verify(userToken);
+      const isAlive = await jwtRedis
+        .setRevokePrefix('user_token')
+        .verify(userToken);
 
       if (!isAlive) {
-        return next(createHttpError.Unauthorized('Token is no longer active'));
+        throw createHttpError.Unauthorized('Token is no longer active');
       }
 
       user = jwt.verify(userToken, process.env.JWT_SIGNATURE_SECRET!, {
@@ -43,18 +49,14 @@ const authenticationHandler = async (
     }
 
     if (isRequiredAuth && !user) {
-      return next(
-        createHttpError.Unauthorized(
-          'You need authorized to perform this action'
-        )
+      throw createHttpError.Unauthorized(
+        'You need authorized to perform this action'
       );
     }
 
     if (isRequiredAuth && isUsedRole && user && !role.includes(user.role)) {
-      return next(
-        createHttpError.Forbidden(
-          'You do not have permission to perform this action'
-        )
+      throw createHttpError.Forbidden(
+        'You do not have permission to perform this action'
       );
     }
 
@@ -79,6 +81,8 @@ const authenticationHandler = async (
       });
       return next(createHttpError.Unauthorized('Token is invalid'));
     }
+
+    return next(error);
   }
 };
 

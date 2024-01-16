@@ -50,7 +50,7 @@ class RatingController {
           const movie = await Movie.findOne({ id: movieId });
 
           if (movie == null) {
-            return next(createHttpError.NotFound(`Movie is not exist`));
+            throw createHttpError.NotFound(`Movie is not exist`);
           }
 
           const voteAverage: number =
@@ -98,7 +98,7 @@ class RatingController {
           const tv = await TV.findOne({ id: movieId });
 
           if (tv == null) {
-            return next(createHttpError.NotFound(`TV is not exist`));
+            throw createHttpError.NotFound(`TV is not exist`);
           }
 
           const voteAverage1: number =

@@ -232,7 +232,7 @@ class HistoryController {
           const movie = await Movie.findOne({ id: movieId });
 
           if (movie == null) {
-            return next(createHttpError.NotFound('Movie is not exists'));
+            throw createHttpError.NotFound('Movie is not exists');
           }
 
           const itemHistory = await History.findOne({
@@ -325,7 +325,7 @@ class HistoryController {
           const tv = await TV.findOne({ id: movieId });
 
           if (tv == null) {
-            return next(createHttpError.NotFound('Movie is not exists'));
+            throw createHttpError.NotFound('Movie is not exists');
           }
 
           const itemHistory1 = await History.findOne({

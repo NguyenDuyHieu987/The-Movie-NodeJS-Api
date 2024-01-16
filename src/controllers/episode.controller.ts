@@ -32,7 +32,7 @@ class EpisodeController extends RedisCache {
 
         return res.json({ results: episodes });
       } else {
-        return next(createHttpError.NotFound(`Episodes is not exist`));
+        throw createHttpError.NotFound(`Episodes is not exist`);
       }
     } catch (error) {
       return next(error);
@@ -68,7 +68,7 @@ class EpisodeController extends RedisCache {
 
         return res.json(episode);
       } else {
-        return next(createHttpError.NotFound(`Episode is not exist`));
+        throw createHttpError.NotFound(`Episode is not exist`);
       }
     } catch (error) {
       return next(error);

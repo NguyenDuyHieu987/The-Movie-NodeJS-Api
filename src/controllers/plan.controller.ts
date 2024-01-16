@@ -391,7 +391,7 @@ class PlanController extends RedisCache {
           });
 
           if (invoice == null) {
-            // return next(createHttpError.NotFound(`Can't find invoice`));
+            // throw createHttpError.NotFound(`Can't find invoice`);
 
             return res.json({
               success: false,

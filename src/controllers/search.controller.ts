@@ -323,7 +323,7 @@ class SearchController extends RedisCache {
         }
 
         if (movie == null) {
-          return next(createHttpError.NotFound('Movie is not exists'));
+          throw createHttpError.NotFound('Movie is not exists');
         }
 
         const itemSearch = await Search.findOne({

@@ -21,15 +21,6 @@ class AccountController {
 
       const formUser = req.body;
 
-      const isAlive = await jwtRedis.setPrefix('user_logout').verify(userToken);
-
-      if (!isAlive) {
-        return res.json({
-          isTokenAlive: false,
-          result: 'Token is no longer active'
-        });
-      }
-
       const OTP: string = GenerateOTP({ length: 6 });
       let encoded: string = '';
       let emailResponse: any = null;
@@ -77,7 +68,7 @@ class AccountController {
           });
 
           if (account == null) {
-            return next(createHttpError.NotFound(`Account is not found`));
+            throw createHttpError.NotFound(`Account is not found`);
           }
 
           const isCorrectPassword = await argon2.verify(
@@ -249,7 +240,7 @@ class AccountController {
       }
 
       const isAlive = await jwtRedis
-        .setPrefix('chg_pwd_token')
+        .setPrefix('revoke__chg_pwd_token')
         .verify(verifyToken);
 
       if (!isAlive) {
@@ -325,13 +316,13 @@ class AccountController {
             decodeChangePassword.logout_all_device == 'true';
 
           if (isLogOutAllDevice) {
-            jwtRedis.setPrefix('user_logout');
+            jwtRedis.setRevokePrefix('user_token');
 
             await jwtRedis.sign(userToken, {
               exp: +process.env.JWT_EXP_OFFSET! * 60 * 60
             });
 
-            jwtRedis.setPrefix('chg_pwd_token');
+            jwtRedis.setRevokePrefix('chg_pwd_token');
 
             await jwtRedis.sign(verifyToken, {
               exp: +process.env.OTP_EXP_OFFSET! * 60
@@ -517,7 +508,9 @@ class AccountController {
         });
       }
 
-      const isAlive = await jwtRedis.setPrefix('chg_email_token').verify(token);
+      const isAlive = await jwtRedis
+        .setRevokePrefix('chg_email_token')
+        .verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -584,7 +577,9 @@ class AccountController {
         });
       }
 
-      const isAlive = await jwtRedis.setPrefix('chg_email_token').verify(token);
+      const isAlive = await jwtRedis
+        .setRevokePrefix('chg_email_token')
+        .verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -622,7 +617,7 @@ class AccountController {
         });
       }
 
-      jwtRedis.setPrefix('chg_email_token');
+      jwtRedis.setRevokePrefix('chg_email_token');
 
       await jwtRedis.sign(token, {
         exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
@@ -705,7 +700,9 @@ class AccountController {
         });
       }
 
-      const isAlive = await jwtRedis.setPrefix('rst_pwd_token').verify(token);
+      const isAlive = await jwtRedis
+        .setRevokePrefix('rst_pwd_token')
+        .verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -774,7 +771,9 @@ class AccountController {
         });
       }
 
-      const isAlive = await jwtRedis.setPrefix('rst_pwd_token').verify(token);
+      const isAlive = await jwtRedis
+        .setRevokePrefix('rst_pwd_token')
+        .verify(token);
 
       if (!isAlive) {
         return res.json({
@@ -814,7 +813,7 @@ class AccountController {
         });
       }
 
-      jwtRedis.setPrefix('rst_pwd_token');
+      jwtRedis.setRevokePrefix('rst_pwd_token');
 
       await jwtRedis.sign(token, {
         exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60

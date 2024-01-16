@@ -387,7 +387,7 @@ class CommentController {
       }
 
       if (!isExistMovies) {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        throw createHttpError.NotFound('Movie is not exists');
       }
 
       const commentForm: CommentForm = req.body;
@@ -468,7 +468,7 @@ class CommentController {
       }
 
       if (result == null) {
-        return next(createHttpError.InternalServerError('Post comment failed'));
+        throw createHttpError.InternalServerError('Post comment failed');
       }
 
       return res.json({
@@ -522,7 +522,7 @@ class CommentController {
       }
 
       if (!isExistMovies) {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        throw createHttpError.NotFound('Movie is not exists');
       }
 
       const commentForm: CommentForm = req.body;
@@ -581,7 +581,7 @@ class CommentController {
       }
 
       if (!isExistMovies) {
-        return next(createHttpError.NotFound('Movie is not exists'));
+        throw createHttpError.NotFound('Movie is not exists');
       }
 
       const commentForm: CommentForm = req.body;

@@ -731,15 +731,6 @@ class AuthController {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      const isAlive = await jwtRedis.setPrefix('user_logout').verify(userToken);
-
-      if (!isAlive) {
-        return res.json({
-          isLogin: false,
-          result: 'Token is no longer active'
-        });
-      }
-
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
       res.header('Authorization', userToken);
@@ -811,7 +802,7 @@ class AuthController {
         updated_at: new Date().toISOString()
       });
 
-      jwtRedis.setPrefix('vrf_signup_token');
+      jwtRedis.setRevokePrefix('vrf_signup_token');
 
       await jwtRedis.sign(signupToken, {
         exp: +process.env.OTP_EXP_OFFSET! * 60
@@ -1026,7 +1017,7 @@ class AuthController {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      jwtRedis.setPrefix('user_logout');
+      jwtRedis.setRevokePrefix('user_token');
 
       await jwtRedis.sign(userToken, {
         exp: +process.env.JWT_EXP_OFFSET! * 60 * 60

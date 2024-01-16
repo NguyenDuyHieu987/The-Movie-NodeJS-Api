@@ -22,7 +22,7 @@ class SeasonController extends RedisCache {
       const response = { results: seasons };
 
       if (seasons.length <= 0) {
-        return next(createHttpError.NotFound(`Seasons is not exist`));
+        throw createHttpError.NotFound(`Seasons is not exist`);
       }
 
       await RedisCache.client.setEx(
@@ -81,7 +81,7 @@ class SeasonController extends RedisCache {
       ]);
 
       if (season.length <= 0) {
-        return next(createHttpError.NotFound(`Season is not exist`));
+        throw createHttpError.NotFound(`Season is not exist`);
       }
 
       await RedisCache.client.setEx(

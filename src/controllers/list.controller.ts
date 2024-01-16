@@ -222,7 +222,7 @@ class ListController {
           const movie = await Movie.findOne({ id: movieId });
 
           if (movie == null) {
-            return next(createHttpError.NotFound('Movie is not exists'));
+            throw createHttpError.NotFound('Movie is not exists');
           }
 
           const itemList = await List.findOne({
@@ -265,7 +265,7 @@ class ListController {
           const tv = await TV.findOne({ id: movieId });
 
           if (tv == null) {
-            return next(createHttpError.NotFound('Movie is not exists'));
+            throw createHttpError.NotFound('Movie is not exists');
           }
 
           const itemList1 = await List.findOne({
