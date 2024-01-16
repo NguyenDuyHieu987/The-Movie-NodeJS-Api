@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
+import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import type { User } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
@@ -82,7 +83,7 @@ class AccountController {
             account.password!,
             formUser.old_password,
             {
-              // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+              // secret: Buffer.from(APP_TOKEN_SECRET),
             }
           );
 

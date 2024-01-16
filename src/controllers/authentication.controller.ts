@@ -7,6 +7,8 @@ import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
 import { oauth2Client } from '@/config/google';
+import RedisCache from '@/config/redis';
+import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import Subscription from '@/models/subscription';
 import type { SignupForm, User } from '@/types';
@@ -17,6 +19,7 @@ import {
   JWT_ALGORITHM,
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
+  signRefreshToken,
   signUserToken
 } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
@@ -29,8 +32,10 @@ type ResponseLogin = {
   subscription?: any;
 };
 
-class AuthController {
-  constructor() {}
+class AuthController extends RedisCache {
+  constructor() {
+    super();
+  }
 
   private static async getSubscription(
     userId: string,
@@ -87,7 +92,7 @@ class AuthController {
           account.password!,
           req.body.password,
           {
-            // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+            // secret: Buffer.from(APP_TOKEN_SECRET),
           }
         );
 
@@ -97,45 +102,6 @@ class AuthController {
             result: 'Wrong Password'
           });
         }
-
-        const encoded = signUserToken({
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at
-        });
-
-        res.set('Access-Control-Expose-Headers', 'Authorization');
-
-        res.cookie('user_token', encoded, {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
-        });
-
-        res.header('Authorization', encoded);
-
-        const response = await AuthController.getSubscription(account.id, {
-          isLogin: true,
-          result: {
-            id: account.id,
-            username: account.username,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            email: account.email,
-            auth_type: account.auth_type,
-            role: account.role,
-            created_at: account.created_at
-          }
-        });
-
-        return res.json(response);
       } else {
         const passwordHashedOld = encryptPasswordOld(req.body.password);
 
@@ -149,46 +115,61 @@ class AuthController {
         // Migrate to Argon2
         account.password = await encryptPassword(req.body.password);
         await account.save();
+      }
 
-        const encoded = signUserToken({
+      const encoded = signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
+
+      const refreshToen = signRefreshToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
+
+      // await RedisCache.client.set('user_token', JSON.stringify([refreshToen]), {
+      //   EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
+      // });
+
+      res.set('Access-Control-Expose-Headers', 'Authorization');
+
+      res.cookie('user_token', encoded, {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true,
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+      });
+
+      res.header('Authorization', encoded);
+
+      const response = await AuthController.getSubscription(account.id, {
+        isLogin: true,
+        result: {
           id: account.id,
           username: account.username,
-          email: account.email,
           full_name: account.full_name,
           avatar: account.avatar,
-          role: account.role,
+          email: account.email,
           auth_type: account.auth_type,
+          role: account.role,
           created_at: account.created_at
-        });
+        }
+      });
 
-        res.set('Access-Control-Expose-Headers', 'Authorization');
-
-        res.cookie('user_token', encoded, {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
-        });
-
-        res.header('Authorization', encoded);
-
-        const response = await AuthController.getSubscription(account.id, {
-          isLogin: true,
-          result: {
-            id: account.id,
-            username: account.username,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            email: account.email,
-            auth_type: account.auth_type,
-            role: account.role,
-            created_at: account.created_at
-          }
-        });
-
-        return res.json(response);
-      }
+      return res.json(response);
     } catch (error) {
       return next(error);
     }

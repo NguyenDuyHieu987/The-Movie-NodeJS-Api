@@ -1,8 +1,13 @@
+import { ConversationsMessageFile } from '@sendinblue/client';
 import type { Algorithm } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 
-export const JWT_ALGORITHM: Algorithm = 'ES512';
+export const JWT_SIGNATURE_SECRET: string =
+  process.env.JWT_SIGNATURE_SECRET!.replace(/\\n/g, '\n');
+export const JWT_REFRESH_SECRET: string =
+  process.env.JWT_REFRESH_SECRET!.replace(/\\n/g, '\n');
 
+export const JWT_ALGORITHM: Algorithm = 'ES512';
 export const JWT_ALLOWED_ALGORITHMS: Algorithm[] = ['ES256', 'ES384', 'ES512'];
 
 export function signDefaultToken(params: object | string) {
@@ -12,7 +17,7 @@ export function signDefaultToken(params: object | string) {
           ...params
         }
       : params,
-    process.env.JWT_SIGNATURE_SECRET!,
+    JWT_SIGNATURE_SECRET,
     {
       algorithm: JWT_ALGORITHM
       // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! + 'h',
@@ -23,7 +28,7 @@ export function signDefaultToken(params: object | string) {
 }
 
 export function verifyDefaultToken(token: string) {
-  return jwt.verify(token, process.env.JWT_SIGNATURE_SECRET!, {
+  return jwt.verify(token, JWT_SIGNATURE_SECRET, {
     algorithms: JWT_ALLOWED_ALGORITHMS
   });
 }
@@ -36,7 +41,7 @@ export function signUserToken(params: object) {
         Math.floor(Date.now() / 1000) +
         +process.env.JWT_ACCESS_EXP_OFFSET! * 3600
     },
-    process.env.JWT_SIGNATURE_SECRET!,
+    JWT_SIGNATURE_SECRET,
     {
       algorithm: JWT_ALGORITHM
     }
@@ -44,7 +49,7 @@ export function signUserToken(params: object) {
 }
 
 export function verifyUserToken(token: string) {
-  return jwt.verify(token, process.env.JWT_SIGNATURE_SECRET!, {
+  return jwt.verify(token, JWT_SIGNATURE_SECRET, {
     algorithms: JWT_ALLOWED_ALGORITHMS
   });
 }
@@ -54,10 +59,16 @@ export function signRefreshToken(params: object) {
     {
       ...params
     },
-    process.env.JWT_REFRESH_SECRET!,
+    JWT_REFRESH_SECRET,
     {
       algorithm: JWT_ALGORITHM,
-      expiresIn: '1y'
+      expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
     }
   );
+}
+
+export function verifyRefreshToken(token: string) {
+  return jwt.verify(token, JWT_REFRESH_SECRET, {
+    algorithms: JWT_ALLOWED_ALGORITHMS
+  });
 }

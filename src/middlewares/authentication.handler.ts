@@ -2,14 +2,10 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
 import type { RoleUser, User } from '@/types';
-import {
-  JWT_ALGORITHM,
-  JWT_ALLOWED_ALGORITHMS,
-  verifyUserToken
-} from '@/utils/jwt';
+import { verifyUserToken } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 
-const authenticationHandler = async (
+export const authenticationHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -23,19 +19,19 @@ const authenticationHandler = async (
       req.cookies.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
 
-    if (!userToken || userToken.length == 0) {
-      throw createHttpError.BadRequest('Token is required');
-    }
-
     // console.log(req.headers['user-agent']);
 
-    let user = null;
+    let user = res.locals.user || null;
     const role = params.role || [];
 
     const isUsedRole: boolean = role.length > 0;
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
-    if (userToken && userToken.length > 0 && !res.locals.user) {
+    if (isRequiredAuth && (!userToken || userToken.length == 0)) {
+      throw createHttpError.BadRequest('Token is required');
+    }
+
+    if (userToken && userToken.length > 0 && !user) {
       const isAlive = await jwtRedis
         .setRevokePrefix('user_token')
         .verify(userToken);
@@ -67,5 +63,3 @@ const authenticationHandler = async (
     return next(error);
   }
 };
-
-export { authenticationHandler };

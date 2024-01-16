@@ -1,6 +1,8 @@
 import * as argon2 from 'argon2';
 import CryptoJS from 'crypto-js';
 
+import { APP_TOKEN_SECRET } from '@/constants';
+
 export function encryptPasswordOld(password: string) {
   const encryptedHex = CryptoJS.SHA512(password).toString();
 
@@ -14,7 +16,7 @@ export async function encryptPassword(password: string) {
     type: argon2.argon2id,
     memoryCost: 2 ** 16,
     hashLength: 50
-    // secret: Buffer.from(process.env.APP_TOKEN_SECRET!),
+    // secret: Buffer.from(APP_TOKEN_SECRET),
   });
 
   return encryptedHex;

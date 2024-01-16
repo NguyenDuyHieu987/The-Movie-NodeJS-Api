@@ -18,6 +18,7 @@ import MongoDB from './config/db';
 import RedisCache from './config/redis';
 import route from './routes';
 import middleware from './middlewares';
+import { APP_TOKEN_SECRET } from './constants';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ const cookieConfig: CookieOptions = {
 };
 
 const sessionConfig: SessionOptions = {
-  secret: process.env.APP_TOKEN_SECRET!,
+  secret: APP_TOKEN_SECRET,
   // name: process.env.APP_NAME!,
   resave: false,
   saveUninitialized: false,
@@ -112,8 +113,8 @@ app.use(
 );
 app.use(multer().any());
 
-route(app);
 middleware(app);
+route(app);
 
 const server = http.createServer(app);
 
