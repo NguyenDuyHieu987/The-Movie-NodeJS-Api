@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
 import Comment from '@/models/comment';
@@ -30,14 +29,8 @@ class CommentController {
       let likeDislike: any[] = [];
 
       if (req.headers?.authorization || req.cookies?.user_token) {
-        const user_token =
-          req.cookies.user_token ||
-          req.headers.authorization!.replace('Bearer ', '');
-
-        const user = jwt.verify(
-          user_token,
-          process.env.JWT_SIGNATURE_SECRET!
-        ) as User;
+        const userToken = res.locals.userToken;
+        const user = res.locals.user as User;
 
         likeDislike = [
           {
@@ -177,18 +170,6 @@ class CommentController {
 
       return res.json({ results: comment, total });
     } catch (error) {
-      if (
-        error instanceof jwt.TokenExpiredError ||
-        error instanceof jwt.JsonWebTokenError
-      ) {
-        res.clearCookie('user_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
-      }
-
       return next(error);
     }
   }
@@ -215,14 +196,8 @@ class CommentController {
       let likeDislike: any[] = [];
 
       if (req.headers?.authorization || req.cookies?.user_token) {
-        const user_token =
-          req.cookies.user_token ||
-          req.headers.authorization!.replace('Bearer ', '');
-
-        const user = jwt.verify(
-          user_token,
-          process.env.JWT_SIGNATURE_SECRET!
-        ) as User;
+        const userToken = res.locals.userToken;
+        const user = res.locals.user as User;
 
         likeDislike = [
           {
@@ -345,18 +320,6 @@ class CommentController {
 
       return res.json({ results: comment });
     } catch (error) {
-      if (
-        error instanceof jwt.TokenExpiredError ||
-        error instanceof jwt.JsonWebTokenError
-      ) {
-        res.clearCookie('user_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
-      }
-
       return next(error);
     }
   }

@@ -191,14 +191,8 @@ class TVController {
       };
 
       if (req.headers?.authorization || req.cookies?.user_token) {
-        const user_token =
-          req.cookies.user_token ||
-          req.headers.authorization!.replace('Bearer ', '');
-
-        const user = jwt.verify(
-          user_token,
-          process.env.JWT_SIGNATURE_SECRET!
-        ) as User;
+        const userToken = res.locals.userToken;
+        const user = res.locals.user as User;
 
         // const item_list = await List.findOne({
         //   user_id: user.id,
@@ -375,18 +369,6 @@ class TVController {
         //  ...extraValue
       });
     } catch (error) {
-      if (
-        error instanceof jwt.TokenExpiredError ||
-        error instanceof jwt.JsonWebTokenError
-      ) {
-        res.clearCookie('user_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
-      }
-
       return next(error);
     }
   }

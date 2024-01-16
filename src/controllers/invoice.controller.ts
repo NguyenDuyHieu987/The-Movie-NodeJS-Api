@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 
 import RedisCache from '@/config/redis';
 import Invoice from '@/models/invoice';
@@ -18,14 +17,8 @@ class InvoiceController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const user_token =
-        req.cookies.user_token ||
-        req.headers.authorization!.replace('Bearer ', '');
-
-      const user = jwt.verify(
-        user_token,
-        process.env.JWT_SIGNATURE_SECRET!
-      ) as User;
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
 
       const result: {
         skip: number;

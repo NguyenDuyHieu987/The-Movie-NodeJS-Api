@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
 import RedisCache from '@/config/redis';

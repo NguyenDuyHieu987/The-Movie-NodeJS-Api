@@ -80,5 +80,6 @@ export function removeVietnameseTones(str: string) {
 export * from './emailValidation';
 export * from './encryptPassword';
 export * from './generateOTP';
+export * from './jwt';
 export * from './jwtRedis';
 export * from './sendinblueEmail';

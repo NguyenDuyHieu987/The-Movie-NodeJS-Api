@@ -1,7 +1,6 @@
 import cryptoJs from 'crypto-js';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import fetch from 'node-fetch';
 import qs from 'qs';
@@ -121,14 +120,8 @@ class PlanController extends RedisCache {
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token =
-        req.cookies.user_token ||
-        req.headers.authorization!.replace('Bearer ', '');
-
-      const user = jwt.verify(
-        user_token,
-        process.env.JWT_SIGNATURE_SECRET!
-      ) as User;
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
 
       const planId: string = req.params.id;
       const plan = await Plan.findOne({ id: planId });
@@ -348,14 +341,8 @@ class PlanController extends RedisCache {
 
   async retrieve(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_token =
-        req.cookies.user_token ||
-        req.headers.authorization!.replace('Bearer ', '');
-
-      const user = jwt.verify(
-        user_token,
-        process.env.JWT_SIGNATURE_SECRET!
-      ) as User;
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
 
       const method: PaymentMethods | string = req.params.method?.toUpperCase();
       const sessionId: string = req.params.id;

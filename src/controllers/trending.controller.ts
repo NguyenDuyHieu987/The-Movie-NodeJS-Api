@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 
 import RedisCache from '@/config/redis';
 import Trending from '@/models/trending';
@@ -77,14 +76,8 @@ class TrendingController extends RedisCache {
     let listHistory: any[] = [];
 
     if (!req.headers?.authorization || req.cookies?.user_token) {
-      // const user_token =
-      //   req.cookies?.user_token ||
-      //   req.headers.authorization!.replace('Bearer ', '');
-
-      // const user = jwt.verify(
-      //   user_token,
-      //   process.env.JWT_SIGNATURE_SECRET!
-      // ) as User;
+      // const userToken = res.locals.userToken;
+      // const user = res.locals.user as User;
 
       listHistory = [
         {

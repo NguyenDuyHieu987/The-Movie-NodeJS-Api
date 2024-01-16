@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
 import RedisCache from '@/config/redis';
@@ -529,14 +528,6 @@ class SearchController extends RedisCache {
         }
       }
     } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
-        return res.json({ isTokenExpired: true, result: 'Token is expired' });
-      }
-
-      if (error instanceof jwt.JsonWebTokenError) {
-        return res.json({ isInvalidToken: true, result: 'Token is invalid' });
-      }
-
       return next(error);
     }
   }

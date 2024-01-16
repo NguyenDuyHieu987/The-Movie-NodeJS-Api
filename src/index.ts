@@ -38,7 +38,7 @@ const cookieConfig: CookieOptions = {
 };
 
 const sessionConfig: SessionOptions = {
-  secret: process.env.JWT_SIGNATURE_SECRET!,
+  secret: process.env.APP_TOKEN_SECRET!,
   // name: process.env.APP_NAME!,
   resave: false,
   saveUninitialized: false,

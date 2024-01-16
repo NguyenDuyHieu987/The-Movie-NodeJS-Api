@@ -35,6 +35,9 @@ dependencies:
   crypto-js:
     specifier: ^4.2.0
     version: 4.2.0
+  dotenv:
+    specifier: ^16.3.1
+    version: 16.3.1
   express:
     specifier: ^4.18.2
     version: 4.18.2
@@ -68,6 +71,9 @@ dependencies:
   node-fetch:
     specifier: ^2.7.0
     version: 2.7.0
+  qs:
+    specifier: ^6.11.2
+    version: 6.11.2
   redis:
     specifier: ^4.6.12
     version: 4.6.12
@@ -136,9 +142,6 @@ devDependencies:
   '@typescript-eslint/parser':
     specifier: ^6.19.0
     version: 6.19.0(eslint@8.56.0)(typescript@5.3.3)
-  dotenv:
-    specifier: ^16.3.1
-    version: 16.3.1
   eslint:
     specifier: ^8.56.0
     version: 8.56.0
@@ -2418,7 +2421,7 @@ packages:
   /dotenv@16.3.1:
     resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
     engines: {node: '>=12'}
-    dev: true
+    dev: false
 
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}

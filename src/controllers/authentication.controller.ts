@@ -13,6 +13,12 @@ import type { SignupForm, User } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
+import {
+  JWT_ALGORITHM,
+  JWT_ALLOWED_ALGORITHMS,
+  signDefaultToken,
+  signUserToken
+} from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 
@@ -92,26 +98,16 @@ class AuthController {
           });
         }
 
-        const encoded = jwt.sign(
-          {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-          }
-        );
+        const encoded = signUserToken({
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -120,7 +116,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -154,26 +150,16 @@ class AuthController {
         account.password = await encryptPassword(req.body.password);
         await account.save();
 
-        const encoded = jwt.sign(
-          {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-          }
-        );
+        const encoded = signUserToken({
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -182,7 +168,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -255,26 +241,16 @@ class AuthController {
           });
         }
 
-        const encoded = jwt.sign(
-          {
-            id: newAccount.id,
-            username: newAccount.username,
-            email: newAccount.email,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            role: newAccount.role,
-            auth_type: newAccount.auth_type,
-            created_at: newAccount.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            // expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: newAccount.id,
+          username: newAccount.username,
+          email: newAccount.email,
+          full_name: newAccount.full_name,
+          avatar: newAccount.avatar,
+          role: newAccount.role,
+          auth_type: newAccount.auth_type,
+          created_at: newAccount.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -283,7 +259,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -321,26 +297,16 @@ class AuthController {
           });
         }
 
-        const encoded = jwt.sign(
-          {
-            id: accountLogedIn.id,
-            username: accountLogedIn.username,
-            email: accountLogedIn.email,
-            full_name: accountLogedIn.full_name,
-            avatar: accountLogedIn.avatar,
-            role: accountLogedIn.role,
-            auth_type: accountLogedIn.auth_type,
-            created_at: accountLogedIn.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: accountLogedIn.id,
+          username: accountLogedIn.username,
+          email: accountLogedIn.email,
+          full_name: accountLogedIn.full_name,
+          avatar: accountLogedIn.avatar,
+          role: accountLogedIn.role,
+          auth_type: accountLogedIn.auth_type,
+          created_at: accountLogedIn.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -349,7 +315,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -476,26 +442,16 @@ class AuthController {
           });
         }
 
-        const encoded = jwt.sign(
-          {
-            id: newAccount.id,
-            username: newAccount.username,
-            email: newAccount.email,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            role: newAccount.role,
-            auth_type: newAccount.auth_type,
-            created_at: newAccount.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: newAccount.id,
+          username: newAccount.username,
+          email: newAccount.email,
+          full_name: newAccount.full_name,
+          avatar: newAccount.avatar,
+          role: newAccount.role,
+          auth_type: newAccount.auth_type,
+          created_at: newAccount.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -504,7 +460,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -525,26 +481,16 @@ class AuthController {
 
         return res.json(response);
       } else {
-        const encoded = jwt.sign(
-          {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -553,7 +499,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -623,26 +569,16 @@ class AuthController {
           });
         }
 
-        const encoded = jwt.sign(
-          {
-            id: newAccount.id,
-            username: newAccount.username,
-            email: newAccount.email,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            role: newAccount.role,
-            auth_type: newAccount.auth_type,
-            created_at: newAccount.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: newAccount.id,
+          username: newAccount.username,
+          email: newAccount.email,
+          full_name: newAccount.full_name,
+          avatar: newAccount.avatar,
+          role: newAccount.role,
+          auth_type: newAccount.auth_type,
+          created_at: newAccount.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -651,7 +587,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -672,26 +608,16 @@ class AuthController {
 
         return res.json(response);
       } else {
-        const encoded = jwt.sign(
-          {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at,
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.JWT_EXP_OFFSET! * 3600
-          },
-          process.env.JWT_SIGNATURE_SECRET!,
-          {
-            algorithm: 'HS256'
-            //  expiresIn: process.env.JWT_EXP_OFFSET! + 'h'
-          }
-        );
+        const encoded = signUserToken({
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -700,7 +626,7 @@ class AuthController {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
         });
 
         res.header('Authorization', encoded);
@@ -761,7 +687,7 @@ class AuthController {
       const signupToken = req.cookies?.vrf_signup_token || req.body.token;
 
       const signupUser = jwt.verify(signupToken, req.body.otp, {
-        algorithms: ['HS256']
+        algorithms: JWT_ALLOWED_ALGORITHMS
       }) as SignupForm;
 
       const isAlive = await jwtRedis
@@ -884,7 +810,7 @@ class AuthController {
             },
             OTP,
             {
-              algorithm: 'HS256'
+              algorithm: JWT_ALGORITHM
               // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
             }
           );
@@ -949,22 +875,15 @@ class AuthController {
             });
           }
 
-          const encoded = jwt.sign(
-            {
-              id: account.id,
-              email: account.email,
-              auth_type: 'email',
-              description: 'Reset your password',
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256'
-              // expiresIn: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
-            }
-          );
+          const encoded = signDefaultToken({
+            id: account.id,
+            email: account.email,
+            auth_type: 'email',
+            description: 'Reset your password',
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
+          });
 
           const clientUrl =
             process.env.NODE_ENV == 'production'
@@ -1020,7 +939,7 @@ class AuthController {
       jwtRedis.setRevokePrefix('user_token');
 
       await jwtRedis.sign(userToken, {
-        exp: +process.env.JWT_EXP_OFFSET! * 60 * 60
+        exp: +process.env.JWT_ACCESS_EXP_OFFSET! * 60 * 60
       });
 
       if (user.auth_type == 'google') {

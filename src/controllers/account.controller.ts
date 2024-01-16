@@ -8,6 +8,13 @@ import type { User } from '@/types';
 import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
+import {
+  JWT_ALGORITHM,
+  JWT_ALLOWED_ALGORITHMS,
+  signDefaultToken,
+  signUserToken,
+  verifyDefaultToken
+} from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 
@@ -41,7 +48,7 @@ class AccountController {
             },
             OTP,
             {
-              algorithm: 'HS256'
+              algorithm: JWT_ALGORITHM
               // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
             }
           );
@@ -104,7 +111,7 @@ class AccountController {
             },
             OTP,
             {
-              algorithm: 'HS256'
+              algorithm: JWT_ALGORITHM
               // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
             }
           );
@@ -147,23 +154,16 @@ class AccountController {
             });
           }
 
-          encoded = jwt.sign(
-            {
-              id: user.id,
-              email: user.email,
-              auth_type: 'email',
-              new_email: formUser.new_email,
-              description: 'Change your email',
-              exp:
-                Math.floor(Date.now() / 1000) +
-                +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
-            },
-            process.env.JWT_SIGNATURE_SECRET!,
-            {
-              algorithm: 'HS256'
-              // expiresIn: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
-            }
-          );
+          encoded = signDefaultToken({
+            id: user.id,
+            email: user.email,
+            auth_type: 'email',
+            new_email: formUser.new_email,
+            description: 'Change your email',
+            exp:
+              Math.floor(Date.now() / 1000) +
+              +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
+          });
 
           const clientUrl =
             process.env.NODE_ENV == 'production'
@@ -251,7 +251,7 @@ class AccountController {
       }
 
       // const decodeChangePassword = jwt.verify(verify_token, req.body.otp, {
-      //   algorithms: ['HS256'],
+      //   algorithms: JWT_ALLOWED_ALGORITHMS,
       // }) as {
       //   old_password: string;
       //   new_password: string;
@@ -262,7 +262,7 @@ class AccountController {
         verifyToken,
         req.body.otp,
         {
-          algorithms: ['HS256']
+          algorithms: JWT_ALLOWED_ALGORITHMS
         },
         async (err, decoded) => {
           if (err instanceof jwt.TokenExpiredError) {
@@ -319,7 +319,7 @@ class AccountController {
             jwtRedis.setRevokePrefix('user_token');
 
             await jwtRedis.sign(userToken, {
-              exp: +process.env.JWT_EXP_OFFSET! * 60 * 60
+              exp: +process.env.JWT_ACCESS_EXP_OFFSET! * 60 * 60
             });
 
             jwtRedis.setRevokePrefix('chg_pwd_token');
@@ -328,26 +328,16 @@ class AccountController {
               exp: +process.env.OTP_EXP_OFFSET! * 60
             });
 
-            const encoded = jwt.sign(
-              {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                full_name: user.full_name,
-                avatar: user.avatar,
-                role: user.role,
-                auth_type: user.auth_type,
-                created_at: user.created_at,
-                exp:
-                  Math.floor(Date.now() / 1000) +
-                  +process.env.JWT_EXP_OFFSET! * 3600
-              },
-              process.env.JWT_SIGNATURE_SECRET!,
-              {
-                algorithm: 'HS256'
-                // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-              }
-            );
+            const encoded = signUserToken({
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              full_name: user.full_name,
+              avatar: user.avatar,
+              role: user.role,
+              auth_type: user.auth_type,
+              created_at: user.created_at
+            });
 
             res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -356,7 +346,7 @@ class AccountController {
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
-              maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
             });
 
             res.header('Authorization', encoded);
@@ -409,25 +399,16 @@ class AccountController {
         });
       }
 
-      const encoded = jwt.sign(
-        {
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at,
-          exp:
-            Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET! * 3600
-        },
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithm: 'HS256'
-          // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-        }
-      );
+      const encoded = signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -436,7 +417,7 @@ class AccountController {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
       });
 
       res.header('Authorization', encoded);
@@ -461,7 +442,7 @@ class AccountController {
         verify_token,
         req.body.otp,
         {
-          algorithms: ['HS256']
+          algorithms: JWT_ALLOWED_ALGORITHMS
         },
         async (err, decoded) => {
           if (err instanceof jwt.TokenExpiredError) {
@@ -519,13 +500,7 @@ class AccountController {
         });
       }
 
-      const changeEmailInfo: any = jwt.verify(
-        token,
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithms: ['HS256']
-        }
-      );
+      const changeEmailInfo: any = verifyDefaultToken(token);
 
       const account = await Account.findOne({
         id: changeEmailInfo.id,
@@ -588,13 +563,7 @@ class AccountController {
         });
       }
 
-      const changeEmailInfo: any = jwt.verify(
-        token,
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithms: ['HS256']
-        }
-      );
+      const changeEmailInfo: any = verifyDefaultToken(token);
 
       const account = await Account.findOneAndUpdate(
         {
@@ -623,25 +592,16 @@ class AccountController {
         exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
       });
 
-      const encoded = jwt.sign(
-        {
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at,
-          exp:
-            Math.floor(Date.now() / 1000) + +process.env.JWT_EXP_OFFSET! * 3600
-        },
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithm: 'HS256'
-          // expiresIn: process.env.JWT_EXP_OFFSET! + 'h',
-        }
-      );
+      const encoded = signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -650,7 +610,7 @@ class AccountController {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_EXP_OFFSET! * 3600 * 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
       });
 
       res.clearCookie('chg_email_token', {
@@ -711,13 +671,7 @@ class AccountController {
         });
       }
 
-      const resetPasswordInfo: any = jwt.verify(
-        token,
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithms: ['HS256']
-        }
-      );
+      const resetPasswordInfo: any = verifyDefaultToken(token);
 
       const account = await Account.findOne({
         id: resetPasswordInfo.id,
@@ -782,13 +736,7 @@ class AccountController {
         });
       }
 
-      const resetPasswordInfo: any = jwt.verify(
-        token,
-        process.env.JWT_SIGNATURE_SECRET!,
-        {
-          algorithms: ['HS256']
-        }
-      );
+      const resetPasswordInfo: any = verifyDefaultToken(token);
 
       const newPasswordEncrypted = await encryptPassword(req.body.new_password);
 
