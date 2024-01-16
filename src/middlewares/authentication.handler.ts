@@ -2,13 +2,13 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
-import type { User } from '@/types';
+import type { RoleUser, User } from '@/types';
 
 const authenticationHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-  params: { required?: boolean; role?: string[] } = {
+  params: { required?: boolean; role?: RoleUser[] } = {
     required: false,
     role: []
   }
@@ -22,6 +22,8 @@ const authenticationHandler = (
 
     let user = null;
 
+    const isRequiredAuth: boolean = params.required || params.role!.length > 0;
+
     if (user_token && user_token.length > 0 && !res.locals.user) {
       user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256']
@@ -31,7 +33,7 @@ const authenticationHandler = (
       res.locals.user = user;
     }
 
-    if (params.required || !user) {
+    if (isRequiredAuth && !user) {
       return next(
         createHttpError.Unauthorized(
           'You need authorized to perform this action'
@@ -39,7 +41,7 @@ const authenticationHandler = (
       );
     }
 
-    if (!params.role?.includes(user.role)) {
+    if (isRequiredAuth && !params.role?.includes(user!.role)) {
       return next(
         createHttpError.Forbidden(
           'You do not have permission to perform this action'

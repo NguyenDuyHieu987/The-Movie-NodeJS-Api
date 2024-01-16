@@ -9,12 +9,14 @@ export declare type TCredit = {
   crew: Array;
 };
 
+export declare type RoleUser = 'normal' | 'admin';
+
 export declare type User = {
   id: string;
   username: string;
   full_name: string;
   email: string;
-  role: 'normal' | 'admin';
+  role: RoleUser;
   avatar: string;
   auth_type: string | 'email' | 'facebook' | 'google';
   created_at: string;
