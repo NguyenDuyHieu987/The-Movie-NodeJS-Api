@@ -112,8 +112,8 @@ app.use(
 );
 app.use(multer().any());
 
-middleware(app);
 route(app);
+middleware(app);
 
 const server = http.createServer(app);
 

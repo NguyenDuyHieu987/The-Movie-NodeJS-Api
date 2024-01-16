@@ -3,8 +3,9 @@ import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
 import type { RoleUser, User } from '@/types';
+import jwtRedis from '@/utils/jwtRedis';
 
-const authenticationHandler = (
+const authenticationHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -14,22 +15,30 @@ const authenticationHandler = (
   }
 ) => {
   try {
-    const user_token: string | undefined | null =
+    const userToken: string | undefined | null =
       req.cookies.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
 
     // console.log(req.headers['user-agent']);
 
     let user = null;
+    const role = params.role || [];
 
-    const isRequiredAuth: boolean = params.required || params.role!.length > 0;
+    const isUsedRole: boolean = role.length > 0;
+    const isRequiredAuth: boolean = params.required || isUsedRole;
 
-    if (user_token && user_token.length > 0 && !res.locals.user) {
-      user = jwt.verify(user_token, process.env.JWT_SIGNATURE_SECRET!, {
+    if (userToken && userToken.length > 0 && !res.locals.user) {
+      const isAlive = await jwtRedis.setPrefix('user_logout').verify(userToken);
+
+      if (!isAlive) {
+        return next(createHttpError.Unauthorized('Token is no longer active'));
+      }
+
+      user = jwt.verify(userToken, process.env.JWT_SIGNATURE_SECRET!, {
         algorithms: ['HS256']
       }) as User;
 
-      res.locals.userToken = user_token;
+      res.locals.userToken = userToken;
       res.locals.user = user;
     }
 
@@ -41,7 +50,7 @@ const authenticationHandler = (
       );
     }
 
-    if (isRequiredAuth && !params.role?.includes(user!.role)) {
+    if (isRequiredAuth && isUsedRole && user && !role.includes(user.role)) {
       return next(
         createHttpError.Forbidden(
           'You do not have permission to perform this action'
@@ -51,6 +60,16 @@ const authenticationHandler = (
 
     return next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+      return next(createHttpError.Unauthorized('Token is expired'));
+    }
+
     if (error instanceof jwt.JsonWebTokenError) {
       res.clearCookie('user_token', {
         domain: req.hostname,
