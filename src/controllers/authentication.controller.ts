@@ -139,9 +139,13 @@ class AuthController extends RedisCache {
         created_at: account.created_at
       });
 
-      // await RedisCache.client.set('user_token', JSON.stringify([refreshToen]), {
-      //   EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
-      // });
+      // await RedisCache.client.set(
+      //   `user__${account.id}`,
+      //   JSON.stringify([refreshToen]),
+      //   {
+      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
+      //   }
+      // );
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
