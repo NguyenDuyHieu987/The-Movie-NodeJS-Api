@@ -64,8 +64,6 @@ jobs:
 
           rsync -r --update --delete-after ./.env ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
-          rsync -r --update --delete-after ./node_modules ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
-
           rsync -r --update --delete-after ./package.json ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
 
           rsync -r --update --delete-after ./ecosystem.config.cjs ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:/home/phimhay247z-api/htdocs/api.phimhay247z.org
@@ -78,4 +76,5 @@ jobs:
           key: ${{ secrets.PHIMHAY247_PK }}
           script: |
             cd /home/phimhay247z-api/htdocs/api.phimhay247z.org
+            pnpm install
             /home/azure/.nvm/versions/node/v20.10.0/bin/pm2 reload ecosystem.config.cjs
