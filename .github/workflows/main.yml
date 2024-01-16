@@ -64,6 +64,8 @@ jobs:
         run: |
           rsync -r --update --delete-after ./build ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
 
+          rsync -r --update --delete-after ./node_modules ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
+
           rsync -r --update --delete-after ./.env ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
 
           rsync -r --update --delete-after ./package.json ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
@@ -78,5 +80,4 @@ jobs:
           key: ${{ secrets.PHIMHAY247_PK }}
           script: |
             cd ${{secrets.TARGET}}
-            /home/${{ secrets.PHIMHAY247_USERNAME }}/.nvm/versions/node/v20.10.0/bin/pnpm install
             /home/${{ secrets.PHIMHAY247_USERNAME }}/.nvm/versions/node/v20.10.0/bin/pm2 reload ecosystem.config.cjs
