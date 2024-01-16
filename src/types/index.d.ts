@@ -1,15 +1,15 @@
-export declare type image = {
+export declare type TImage = {
   backdrops: Array;
   logos: Array;
   posters: Array;
 };
 
-export declare type credit = {
+export declare type TCredit = {
   cast: Array;
   crew: Array;
 };
 
-export declare type user = {
+export declare type User = {
   id: string;
   username: string;
   full_name: string;
@@ -38,7 +38,7 @@ export declare type SignupForm = {
   updatedAt?: string;
 };
 
-export declare type commentForm = {
+export declare type CommentForm = {
   id: string;
   user_id: string;
   movie_id: string;

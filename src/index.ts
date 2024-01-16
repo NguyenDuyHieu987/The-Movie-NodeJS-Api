@@ -11,11 +11,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import session, { CookieOptions, SessionOptions } from 'express-session';
+import { rateLimit } from 'express-rate-limit';
 import http from 'http';
 import multer from 'multer';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
 import route from './routes';
+import middleware from './middlewares';
 
 dotenv.config();
 
@@ -48,6 +50,18 @@ const sessionConfig: SessionOptions = {
   }),
   cookie: cookieConfig
 };
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 1000,
+  message: {
+    status: 429,
+    message:
+      'You have exceeded the limit of requests per minute. Please try again later.'
+  },
+  legacyHeaders: false // Disable the `X-RateLimit-*` headers.
+  // store: ... , // Use an external store for consistency across multiple server instances.
+});
 
 if (process.env.NODE_ENV! == 'production') {
   // trust first proxy
@@ -82,6 +96,7 @@ app.use(
 );
 app.use(session(sessionConfig));
 app.use(cookieParser());
+app.use(limiter);
 app.use(bodyParser.json());
 app.use(compression());
 // app.use(express.json());
@@ -97,12 +112,13 @@ app.use(
 );
 app.use(multer().any());
 
-const server = http.createServer(app);
-
+middleware(app);
 route(app);
 
-const PORT = 5000;
+const server = http.createServer(app);
 
-server.listen(process.env.PORT || PORT, () => {
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
   console.log(`App is listening on port: ${PORT}`);
 });

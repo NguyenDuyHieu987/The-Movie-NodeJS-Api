@@ -1,36 +1,34 @@
 import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import accountRouter from './account';
-import authRouter from './auth';
-import billRouter from './bill';
-import commentRouter from './comment';
-import countryRouter from './country';
-import creditRouter from './credit';
-import discoverRouter from './discover';
-import episodeRouter from './episode';
-import genreRouter from './genre';
-import historyRouter from './history';
-import imageRouter from './image';
-import invoiceRouter from './invoice';
-import listRouter from './list';
-import movieRouter from './movie';
-import notificationRouter from './notification';
-import planRouter from './plan';
-import ranRouter from './rank';
-import ratingRouter from './rating';
-import recommendRouter from './recommend';
-import searchRouter from './search';
-import seasonRouter from './season';
-import similarRouter from './similar';
-import sortOptionRouter from './sortby';
-import subscriptionRouter from './subscription';
-import trendingRouter from './trending';
-import tvRouter from './tv';
-import updateViewRouter from './updateView';
-import videoRouter from './video';
-import yearRouter from './year';
-
-import ErrorHandler from '@/controllers/errorController';
+import accountRouter from './account.route';
+import authRouter from './authentication.route';
+import billRouter from './bill.route';
+import commentRouter from './comment.route';
+import countryRouter from './country.route';
+import creditRouter from './credit.route';
+import discoverRouter from './discover.route';
+import episodeRouter from './episode.route';
+import genreRouter from './genre.route';
+import historyRouter from './history.route';
+import imageRouter from './image.route';
+import invoiceRouter from './invoice.route';
+import listRouter from './list.route';
+import movieRouter from './movie.route';
+import notificationRouter from './notification.route';
+import planRouter from './plan.route';
+import ranRouter from './rank.route';
+import ratingRouter from './rating.route';
+import recommendRouter from './recommend.route';
+import searchRouter from './search.route';
+import seasonRouter from './season.route';
+import similarRouter from './similar.route';
+import sortOptionRouter from './sortby.route';
+import subscriptionRouter from './subscription.route';
+import trendingRouter from './trending.route';
+import tvRouter from './tv.route';
+import updateViewRouter from './updateView.route';
+import videoRouter from './video.route';
+import yearRouter from './year.route';
 
 export default function route(app: Application) {
   app.use('/auth', authRouter);
@@ -70,5 +68,4 @@ export default function route(app: Application) {
       )
     );
   });
-  app.use(ErrorHandler);
 }
