@@ -73,6 +73,12 @@ export const authenticationHandler = async (
     return next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
+      res.clearCookie('refresh_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
       res.clearCookie('user_token', {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
@@ -83,6 +89,12 @@ export const authenticationHandler = async (
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
+      res.clearCookie('refresh_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
       res.clearCookie('user_token', {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
