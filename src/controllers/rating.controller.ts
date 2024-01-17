@@ -7,7 +7,7 @@ import Rate from '@/models/rate';
 import TV from '@/models/tv';
 import type { User } from '@/types';
 
-class RatingController {
+export class RatingController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;

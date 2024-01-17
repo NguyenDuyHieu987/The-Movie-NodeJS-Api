@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Video from '@/models/video';
 
-class VideoController extends RedisCache {
+export class VideoController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

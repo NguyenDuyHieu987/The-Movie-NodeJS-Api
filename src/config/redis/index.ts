@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
-import { createClient,RedisClientType } from 'redis';
+import { createClient, RedisClientType } from 'redis';
 dotenv.config();
 
-class RedisCache {
+export class RedisCache {
   protected static client: RedisClientType = createClient({
     // url:
     //   process.env.NODE_ENV == 'production'
@@ -39,4 +39,4 @@ class RedisCache {
   }
 }
 
-export default RedisCache;
+export default new RedisCache();

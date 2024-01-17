@@ -7,14 +7,14 @@ import qs from 'qs';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import { STRIPE_API_VERSION } from '@/config/stripe';
 import Invoice from '@/models/invoice';
 import Plan from '@/models/plan';
 import Subscription from '@/models/subscription';
 import type { PaymentMethods, User } from '@/types';
 
-class PlanController extends RedisCache {
+export class PlanController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

@@ -1,10 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Genre from '@/models/genre';
 
-class GenreController extends RedisCache {
+export class GenreController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

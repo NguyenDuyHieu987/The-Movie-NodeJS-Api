@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Image from '@/models/image';
 
-class ImageController extends RedisCache {
+export class ImageController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

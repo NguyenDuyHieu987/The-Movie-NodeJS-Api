@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ONE_HOUR, ONE_YEAR } from '@/common';
 import { oauth2Client } from '@/config/google';
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import Subscription from '@/models/subscription';
@@ -33,7 +33,7 @@ type ResponseLogin = {
   subscription?: any;
 };
 
-class AuthController extends RedisCache {
+export class AuthController extends RedisCache {
   constructor() {
     super();
   }
@@ -140,14 +140,6 @@ class AuthController extends RedisCache {
         created_at: account.created_at
       });
 
-      // await RedisCache.client.set(
-      //   `user__${account.id}`,
-      //   JSON.stringify([refreshToen]),
-      //   {
-      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
-      //   }
-      // );
-
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
       res.cookie('user_token', encoded, {
@@ -158,7 +150,7 @@ class AuthController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      res.cookie('refresh_token', encoded, {
+      res.cookie('refresh_token', refreshToen, {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
@@ -167,6 +159,14 @@ class AuthController extends RedisCache {
       });
 
       res.header('Authorization', encoded);
+
+      // await RedisCache.client.set(
+      //   `user__${account.id}`,
+      //   JSON.stringify([refreshToen]),
+      //   {
+      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
+      //   }
+      // );
 
       const response = await AuthController.getSubscription(account.id, {
         isLogin: true,
@@ -941,6 +941,13 @@ class AuthController extends RedisCache {
       }
 
       res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+
+      res.clearCookie('refresh_token', {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,

@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 
-class SimilarController extends RedisCache {
+export class SimilarController extends RedisCache {
   constructor() {
     super();
   }

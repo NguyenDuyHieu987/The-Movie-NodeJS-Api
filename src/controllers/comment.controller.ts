@@ -8,7 +8,7 @@ import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import type { CommentForm, User } from '@/types';
 
-class CommentController {
+export class CommentController {
   async getParent(req: Request, res: Response, next: NextFunction) {
     try {
       const skip: number = +req.query.skip! - 1 || 0;

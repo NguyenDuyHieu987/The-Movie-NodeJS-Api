@@ -1,10 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Episode from '@/models/episode';
 
-class EpisodeController extends RedisCache {
+export class EpisodeController extends RedisCache {
   async getList(req: Request, res: Response, next: NextFunction) {
     try {
       const movieId: string = req.params.movieId;

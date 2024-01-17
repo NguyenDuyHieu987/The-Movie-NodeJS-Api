@@ -25,8 +25,6 @@ dotenv.config();
 
 const app = express();
 
-const redisCache = new RedisCache();
-
 const cookieConfig: CookieOptions = {
   httpOnly: false,
   maxAge: +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000,
@@ -73,10 +71,10 @@ if (process.env.NODE_ENV! == 'production') {
   sessionConfig.cookie!.secure = true;
 }
 
-redisCache.connect();
+RedisCache.connect();
 
 process.on('exit', () => {
-  redisCache.quit();
+  RedisCache.quit();
 });
 
 MongoDB.connect();

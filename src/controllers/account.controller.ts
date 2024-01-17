@@ -20,7 +20,7 @@ import {
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 
-class AccountController {
+export class AccountController {
   constructor() {}
 
   async confirm(req: Request, res: Response, next: NextFunction) {

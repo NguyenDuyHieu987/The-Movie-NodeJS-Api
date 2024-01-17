@@ -1,8 +1,8 @@
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 
 export const REVOKE_TOKEN_PREFIX = 'revoke__';
 
-class JwtRedis extends RedisCache {
+export class JwtRedis extends RedisCache {
   private redisPrefix: string = '';
 
   constructor(prefix: string = '') {

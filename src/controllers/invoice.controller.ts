@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Invoice from '@/models/invoice';
 import type { User } from '@/types';
 
-class InvoiceController extends RedisCache {
+export class InvoiceController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const skip: number = +req.query.skip! - 1 || 0;

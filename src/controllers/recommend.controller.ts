@@ -1,14 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import History from '@/models/history';
 import List from '@/models/list';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import { User } from '@/types';
 
-class RecommendController extends RedisCache {
+export class RecommendController extends RedisCache {
   constructor() {
     super();
   }

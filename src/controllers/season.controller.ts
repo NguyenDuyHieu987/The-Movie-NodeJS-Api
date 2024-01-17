@@ -1,10 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Season from '@/models/season';
 
-class SeasonController extends RedisCache {
+export class SeasonController extends RedisCache {
   async getList(req: Request, res: Response, next: NextFunction) {
     try {
       const seriesId: string = req.params.seriesId;

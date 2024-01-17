@@ -10,7 +10,7 @@ import Rate from '@/models/rate';
 import Video from '@/models/video';
 import type { TCredit, TImage, User } from '@/types';
 
-class MovieController {
+export class MovieController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       let append_to_response: string[] | null = null;

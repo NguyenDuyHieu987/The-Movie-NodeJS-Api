@@ -12,7 +12,7 @@ import TV from '@/models/tv';
 import Video from '@/models/video';
 import type { TCredit, TImage, User } from '@/types';
 
-class TVController {
+export class TVController {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       let append_to_response: string[] | null = null;

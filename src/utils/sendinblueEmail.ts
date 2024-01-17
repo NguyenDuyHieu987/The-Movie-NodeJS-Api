@@ -16,7 +16,7 @@ import * as SibApiV3Sdk from '@sendinblue/client';
 //   .toString();
 // import EmailSender from '@/emailTemplates/VerificationOTP';
 
-class SendiblueEmail {
+export class SendiblueEmail {
   private static apiInstance: SibApiV3Sdk.TransactionalEmailsApi =
     new SibApiV3Sdk.TransactionalEmailsApi();
 

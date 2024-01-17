@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import TV from '@/models/tv';
 import TvSlug from '@/models/tvSlug';
 
-class MovieSlugController extends RedisCache {
+export class MovieSlugController extends RedisCache {
   async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query.page! - 1 || 0;

@@ -2,13 +2,13 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import { v4 as uuidv4 } from 'uuid';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
 import Search from '@/models/search';
 import TV from '@/models/tv';
 import type { User } from '@/types';
 
-class SearchController extends RedisCache {
+export class SearchController extends RedisCache {
   async search(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

@@ -7,7 +7,7 @@ import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import type { User } from '@/types';
 
-class ListController {
+export class ListController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;

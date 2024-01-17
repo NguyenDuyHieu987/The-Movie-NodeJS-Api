@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Trending from '@/models/trending';
 import { User } from '@/types';
 
-class TrendingController extends RedisCache {
+export class TrendingController extends RedisCache {
   async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query.page! - 1 || 0;

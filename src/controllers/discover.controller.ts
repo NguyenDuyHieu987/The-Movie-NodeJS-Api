@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 
-class DiscoverController extends RedisCache {
+export class DiscoverController extends RedisCache {
   async getSlug(req: Request, res: Response, next: NextFunction) {
     try {
       const page: number = +req.query.page! - 1 || 0;
@@ -217,7 +217,6 @@ class DiscoverController extends RedisCache {
                   `Discover with sort by: ${sortBy} is not found!`
                 )
               );
-              break;
           }
 
           result.total =
@@ -284,7 +283,6 @@ class DiscoverController extends RedisCache {
                   `Discover with sort by: ${sortBy} is not found!`
                 )
               );
-              break;
           }
 
           result.total = await Movie.countDocuments({
@@ -346,7 +344,6 @@ class DiscoverController extends RedisCache {
                   `Discover with sort by: ${sortBy} is not found!`
                 )
               );
-              break;
           }
 
           result.total = await TV.countDocuments({
@@ -359,7 +356,6 @@ class DiscoverController extends RedisCache {
               `Not found with slug: ${req.params.slug} !`
             )
           );
-          break;
       }
 
       await RedisCache.client.setEx(

@@ -7,7 +7,7 @@ import Movie from '@/models/movie';
 import TV from '@/models/tv';
 import type { User } from '@/types';
 
-class HistoryController {
+export class HistoryController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;

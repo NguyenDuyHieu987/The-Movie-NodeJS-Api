@@ -4,7 +4,7 @@ import createHttpError from 'http-errors';
 import Movie from '@/models/movie';
 import TV from '@/models/tv';
 
-class UpdateViewController {
+export class UpdateViewController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const movieId: string = req.params.movieId;

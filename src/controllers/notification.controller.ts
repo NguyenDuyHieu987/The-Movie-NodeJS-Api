@@ -4,7 +4,7 @@ import createHttpError from 'http-errors';
 import Notification from '@/models/notification';
 import type { User } from '@/types';
 
-class NotificationController {
+export class NotificationController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const skip: number = +req.query.skip! - 1 || 0;

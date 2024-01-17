@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import RedisCache from '@/config/redis';
+import { RedisCache } from '@/config/redis';
 import Credit from '@/models/credit';
 
-class CreditController extends RedisCache {
+export class CreditController extends RedisCache {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
