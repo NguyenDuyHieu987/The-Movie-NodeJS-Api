@@ -22,8 +22,6 @@ export const authenticationHandler = async (
 
     // console.log(req.headers['user-agent']);
     console.log(req.headers['x-forwarded-for']);
-    console.log(req.socket.remoteAddress);
-    console.log(req.ips);
     console.log(req.ip);
 
     let user = res.locals.user || null;
