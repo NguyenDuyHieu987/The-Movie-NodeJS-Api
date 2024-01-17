@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
-import { ONE_HOUR } from '@/common';
+import { ONE_HOUR, ONE_MINUTE } from '@/common';
 import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import type { User } from '@/types';
@@ -46,12 +46,12 @@ export class AccountController {
               description: 'Verify your Email',
               exp:
                 Math.floor(Date.now() / 1000) +
-                +process.env.OTP_EXP_OFFSET! * 60
+                +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
             OTP,
             {
               algorithm: JWT_ALGORITHM
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
             }
           );
 
@@ -67,7 +67,7 @@ export class AccountController {
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
-            maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000
+            maxAge: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE * 1000
           });
           break;
         case 'change-password':
@@ -109,12 +109,12 @@ export class AccountController {
               description: 'Change your password',
               exp:
                 Math.floor(Date.now() / 1000) +
-                +process.env.OTP_EXP_OFFSET! * 60
+                +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
             OTP,
             {
               algorithm: JWT_ALGORITHM
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * 60 + 's',
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
             }
           );
 
@@ -130,7 +130,7 @@ export class AccountController {
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
-            maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000
+            maxAge: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE * 1000
           });
 
           break;
@@ -164,7 +164,7 @@ export class AccountController {
             description: 'Change your email',
             exp:
               Math.floor(Date.now() / 1000) +
-              +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
+              +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
           });
 
           const clientUrl =
@@ -191,12 +191,12 @@ export class AccountController {
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
-            maxAge: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60 * 1000
+            maxAge: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE * 1000
           });
 
           return res.json({
             isSended: true,
-            exp_offset: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60,
+            exp_offset: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE,
             result: 'Send email successfully'
           });
 
@@ -218,7 +218,7 @@ export class AccountController {
 
         return res.json({
           isSended: true,
-          exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
+          exp_offset: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
           result: 'Send otp email successfully'
         });
       }
@@ -321,13 +321,13 @@ export class AccountController {
             jwtRedis.setRevokePrefix('user_token');
 
             await jwtRedis.sign(userToken, {
-              exp: +process.env.JWT_ACCESS_EXP_OFFSET! * 60 * 60
+              exp: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
             });
 
             jwtRedis.setRevokePrefix('chg_pwd_token');
 
             await jwtRedis.sign(verifyToken, {
-              exp: +process.env.OTP_EXP_OFFSET! * 60
+              exp: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             });
 
             const encoded = signUserToken({
@@ -591,7 +591,7 @@ export class AccountController {
       jwtRedis.setRevokePrefix('chg_email_token');
 
       await jwtRedis.sign(token, {
-        exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * 60
+        exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
       });
 
       const encoded = signUserToken({
@@ -766,7 +766,7 @@ export class AccountController {
       jwtRedis.setRevokePrefix('rst_pwd_token');
 
       await jwtRedis.sign(token, {
-        exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
+        exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
       });
 
       res.clearCookie('rst_pwd_token', {

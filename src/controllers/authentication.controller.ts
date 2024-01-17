@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ONE_HOUR, ONE_YEAR } from '@/common';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE } from '@/common';
 import { oauth2Client } from '@/config/google';
 import { RedisCache } from '@/config/redis';
 import { APP_TOKEN_SECRET } from '@/constants';
@@ -155,7 +155,7 @@ export class AuthController extends RedisCache {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_YEAR * 1000
+        maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
       });
 
       res.header('Authorization', encoded);
@@ -164,7 +164,7 @@ export class AuthController extends RedisCache {
       //   `user__${account.id}`,
       //   JSON.stringify([refreshToen]),
       //   {
-      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * 60 * 60
+      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_HOUR
       //   }
       // );
 
@@ -725,7 +725,7 @@ export class AuthController extends RedisCache {
       jwtRedis.setRevokePrefix('vrf_signup_token');
 
       await jwtRedis.sign(signupToken, {
-        exp: +process.env.OTP_EXP_OFFSET! * 60
+        exp: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
       });
 
       res.clearCookie('vrf_signup_token', {
@@ -800,12 +800,12 @@ export class AuthController extends RedisCache {
               description: 'Register new account',
               exp:
                 Math.floor(Date.now() / 1000) +
-                +process.env.OTP_EXP_OFFSET! * 60
+                +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
             OTP,
             {
               algorithm: JWT_ALGORITHM
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * 60,
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
             }
           );
 
@@ -824,12 +824,12 @@ export class AuthController extends RedisCache {
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
-            maxAge: +process.env.OTP_EXP_OFFSET! * 60 * 1000
+            maxAge: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE * 1000
           });
 
           return res.json({
             isSended: true,
-            exp_offset: +process.env.OTP_EXP_OFFSET! * 60,
+            exp_offset: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
             result: 'Send otp email successfully'
           });
 
@@ -876,7 +876,7 @@ export class AuthController extends RedisCache {
             description: 'Reset your password',
             exp:
               Math.floor(Date.now() / 1000) +
-              +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60
+              +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
           });
 
           const clientUrl =
@@ -904,12 +904,12 @@ export class AuthController extends RedisCache {
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
-            maxAge: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60 * 1000
+            maxAge: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE * 1000
           });
 
           return res.json({
             isSended: true,
-            exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * 60,
+            exp_offset: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE,
             result: 'Send email successfully'
           });
 
@@ -933,7 +933,7 @@ export class AuthController extends RedisCache {
       jwtRedis.setRevokePrefix('user_token');
 
       await jwtRedis.sign(userToken, {
-        exp: +process.env.JWT_ACCESS_EXP_OFFSET! * 60 * 60
+        exp: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
       });
 
       if (user.auth_type == 'google') {
