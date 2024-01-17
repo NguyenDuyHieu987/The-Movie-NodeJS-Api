@@ -182,7 +182,7 @@ export class AuthController extends RedisCache {
 
       const refreshToken = signRefreshToken(accountInfo);
 
-      AuthController.setRefreshToken(
+      await AuthController.setRefreshToken(
         refreshToken,
         account as User,
         req,
@@ -275,7 +275,7 @@ export class AuthController extends RedisCache {
 
         const refreshToken = signRefreshToken(accountInfo);
 
-        AuthController.setRefreshToken(
+        await AuthController.setRefreshToken(
           refreshToken,
           newAccount as User,
           req,
@@ -334,7 +334,7 @@ export class AuthController extends RedisCache {
 
         const refreshToken = signRefreshToken(accountInfo);
 
-        AuthController.setRefreshToken(
+        await AuthController.setRefreshToken(
           refreshToken,
           accountLogedIn as User,
           req,
@@ -482,7 +482,7 @@ export class AuthController extends RedisCache {
 
         const refreshToken = signRefreshToken(accountInfo);
 
-        AuthController.setRefreshToken(
+        await AuthController.setRefreshToken(
           refreshToken,
           newAccount as User,
           req,
@@ -524,7 +524,7 @@ export class AuthController extends RedisCache {
 
         const refreshToken = signRefreshToken(accountInfo);
 
-        AuthController.setRefreshToken(
+        await AuthController.setRefreshToken(
           refreshToken,
           account as User,
           req,
