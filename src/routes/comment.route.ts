@@ -5,8 +5,8 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
-router.get('/get-all/:movieType/:movieId', Comment.getParent);
-router.get('/get/:movieType/:movieId/:parentId', Comment.getChild);
+router.get('/get-parent/:movieType/:movieId', Comment.getParent);
+router.get('/get-child/:movieType/:movieId/:parentId', Comment.getChild);
 router.post(
   '/post/:movieType/:movieId',
   (...params) => authenticationHandler(...params, { required: true }),

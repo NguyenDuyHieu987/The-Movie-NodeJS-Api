@@ -20,7 +20,7 @@ export const authenticationHandler = async (
       req.cookies.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
 
-    console.log(req.headers['user-agent']);
+    // console.log(req.headers['user-agent']);
     // console.log(req.headers['x-forwarded-for']);
     // console.log(req.ip);
 
