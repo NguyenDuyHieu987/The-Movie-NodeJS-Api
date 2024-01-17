@@ -3,7 +3,8 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
-import { ONE_HOUR, ONE_MINUTE } from '@/common';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE } from '@/common';
+import { RedisCache } from '@/config/redis';
 import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import type { User } from '@/types';
@@ -11,18 +12,20 @@ import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
 import {
-  JWT_ALGORITHM,
   JWT_ALGORITHM_DEFAULT,
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
+  signRefreshToken,
   signUserToken,
   verifyDefaultToken
 } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 
-export class AccountController {
-  constructor() {}
+export class AccountController extends RedisCache {
+  constructor() {
+    super();
+  }
 
   async confirm(req: Request, res: Response, next: NextFunction) {
     try {
@@ -331,7 +334,9 @@ export class AccountController {
               EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             });
 
-            const encoded = signUserToken({
+            await RedisCache.client.del(`user_login__${user.id}`);
+
+            const accountInfo = {
               id: user.id,
               username: user.username,
               email: user.email,
@@ -340,7 +345,11 @@ export class AccountController {
               role: user.role,
               auth_type: user.auth_type,
               created_at: user.created_at
-            });
+            };
+
+            const encoded = signUserToken(accountInfo);
+
+            const refreshToken = await signRefreshToken(accountInfo);
 
             res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -350,6 +359,14 @@ export class AccountController {
               sameSite: req.session.cookie.sameSite,
               secure: true,
               maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+            });
+
+            res.cookie('refresh_token', refreshToken, {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true,
+              maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
             });
 
             res.header('Authorization', encoded);

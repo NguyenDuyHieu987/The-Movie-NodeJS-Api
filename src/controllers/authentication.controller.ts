@@ -17,7 +17,6 @@ import ValidateEmail from '@/utils/emailValidation';
 import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
 import {
-  JWT_ALGORITHM,
   JWT_ALGORITHM_DEFAULT,
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
