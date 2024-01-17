@@ -160,7 +160,37 @@ class CommentController {
             // dislike: -1,
           }
         },
-        ...likeDislike
+        ...likeDislike,
+        {
+          $lookup: {
+            from: 'accounts',
+            localField: 'user_id',
+            foreignField: 'id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        },
+        {
+          $project: {
+            root: '$$ROOT',
+            user_avatar: '$user.avatar'
+          }
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              $mergeObjects: ['$root', '$$ROOT']
+            }
+          }
+        },
+        {
+          $project: {
+            root: 0,
+            user: 0
+          }
+        }
       ]);
 
       const total = await Comment.countDocuments({
@@ -315,7 +345,37 @@ class CommentController {
             // dislike: -1,
           }
         },
-        ...likeDislike
+        ...likeDislike,
+        {
+          $lookup: {
+            from: 'accounts',
+            localField: 'user_id',
+            foreignField: 'id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        },
+        {
+          $project: {
+            root: '$$ROOT',
+            user_avatar: '$user.avatar'
+          }
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              $mergeObjects: ['$root', '$$ROOT']
+            }
+          }
+        },
+        {
+          $project: {
+            root: 0,
+            user: 0
+          }
+        }
       ]);
 
       return res.json({ results: comment });
@@ -378,7 +438,7 @@ class CommentController {
             content: commentForm.content,
             user_id: user.id,
             username: user.username,
-            user_avatar: user.avatar,
+            // user_avatar: user.avatar,
             movie_id: movieId,
             movie_type: movieType,
             parent_id: commentForm.parent_id,
@@ -417,7 +477,7 @@ class CommentController {
           content: commentForm.content,
           user_id: user.id,
           username: user.username,
-          user_avatar: user.avatar,
+          // user_avatar: user.avatar,
           movie_id: movieId,
           movie_type: movieType,
           type: commentForm?.type || 'parent',
