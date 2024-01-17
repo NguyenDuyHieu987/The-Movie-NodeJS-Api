@@ -19,6 +19,7 @@ import RedisCache from './config/redis';
 import route from './routes';
 import middleware, { errorHandler } from './middlewares';
 import { APP_TOKEN_SECRET } from './constants';
+import { ONE_HOUR } from './common';
 
 dotenv.config();
 
@@ -28,10 +29,10 @@ const redisCache = new RedisCache();
 
 const cookieConfig: CookieOptions = {
   httpOnly: false,
-  maxAge: +process.env.COOKIE_MAX_AGE! * 3600 * 1000,
+  maxAge: +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000,
   domain: '.' + process.env.CLIENT_DOMAIN,
   // expires: new Date(
-  //   Date.now() + +process.env.COOKIE_MAX_AGE! * 3600 * 1000
+  //   Date.now() + +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000
   // ),
   // signed: true,
   sameSite: 'lax',

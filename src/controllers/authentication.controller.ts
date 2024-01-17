@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ONE_HOUR, ONE_YEAR } from '@/common';
 import { oauth2Client } from '@/config/google';
 import RedisCache from '@/config/redis';
 import { APP_TOKEN_SECRET } from '@/constants';
@@ -154,7 +155,15 @@ class AuthController extends RedisCache {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+      });
+
+      res.cookie('refresh_token', encoded, {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true,
+        maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_YEAR * 1000
       });
 
       res.header('Authorization', encoded);
@@ -244,7 +253,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);
@@ -300,7 +309,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);
@@ -445,7 +454,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);
@@ -484,7 +493,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);
@@ -572,7 +581,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);
@@ -611,7 +620,7 @@ class AuthController extends RedisCache {
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
-          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
         res.header('Authorization', encoded);

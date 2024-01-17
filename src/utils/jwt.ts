@@ -2,6 +2,8 @@ import { ConversationsMessageFile } from '@sendinblue/client';
 import type { Algorithm } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 
+import { ONE_HOUR } from '@/common';
+
 export const JWT_SIGNATURE_SECRET: string =
   process.env.JWT_SIGNATURE_SECRET!.replace(/\\n/g, '\n');
 export const JWT_REFRESH_SECRET: string =
@@ -22,7 +24,7 @@ export function signDefaultToken(params: object | string) {
       algorithm: JWT_ALGORITHM
       // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! + 'h',
       /*  or */
-      // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! * 3600,
+      // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR,
     }
   );
 }
@@ -39,7 +41,7 @@ export function signUserToken(params: object) {
       ...params,
       exp:
         Math.floor(Date.now() / 1000) +
-        +process.env.JWT_ACCESS_EXP_OFFSET! * 3600
+        +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
     },
     JWT_SIGNATURE_SECRET,
     {

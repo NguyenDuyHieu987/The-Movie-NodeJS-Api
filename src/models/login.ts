@@ -5,7 +5,9 @@ const Login = new mongoose.Schema(
   {
     id: { type: String, default: uuidv4() },
     user_id: { type: String },
+    username: { type: String },
     user_ip: { type: String },
+    refresh_token: { type: String },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

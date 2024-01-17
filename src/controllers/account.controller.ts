@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
+import { ONE_HOUR } from '@/common';
 import { APP_TOKEN_SECRET } from '@/constants';
 import Account from '@/models/account';
 import type { User } from '@/types';
@@ -347,7 +348,7 @@ class AccountController {
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
-              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
             });
 
             res.header('Authorization', encoded);
@@ -418,7 +419,7 @@ class AccountController {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
       res.header('Authorization', encoded);
@@ -611,7 +612,7 @@ class AccountController {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * 3600 * 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
       res.clearCookie('chg_email_token', {
