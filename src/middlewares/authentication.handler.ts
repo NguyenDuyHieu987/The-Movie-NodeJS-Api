@@ -21,8 +21,10 @@ export const authenticationHandler = async (
       req.headers.authorization?.replace('Bearer ', '');
 
     // console.log(req.headers['user-agent']);
-    console.log(req.headers['x-forwarded-for'], req.socket.remoteAddress);
-    console.log(req.ips, req.ip);
+    console.log(req.headers['x-forwarded-for']);
+    console.log(req.socket.remoteAddress);
+    console.log(req.ips);
+    console.log(req.ip);
 
     let user = res.locals.user || null;
     const role = params.role || [];
