@@ -689,6 +689,10 @@ export class AuthController extends RedisCache {
     try {
       const signupToken = req.cookies?.vrf_signup_token || req.body.token;
 
+      if (!signupToken) {
+        return next(createHttpError.BadRequest('Token is required'));
+      }
+
       const signupUser = jwt.verify(signupToken, req.body.otp, {
         algorithms: JWT_ALLOWED_ALGORITHMS
       }) as SignupForm;

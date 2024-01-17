@@ -1,6 +1,7 @@
 import * as argon2 from 'argon2';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import type { JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE } from '@/common';
@@ -55,7 +56,6 @@ export class AccountController extends RedisCache {
             OTP,
             {
               algorithm: JWT_ALGORITHM_DEFAULT
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
             }
           );
 
@@ -109,7 +109,7 @@ export class AccountController extends RedisCache {
               email: user.email,
               auth_type: 'email',
               new_password: newPasswordEncrypted,
-              logout_all_device: formUser.logout_all_device,
+              logout_all_device: formUser.logout_all_device == 'true',
               description: 'Change your password',
               exp:
                 Math.floor(Date.now() / 1000) +
@@ -217,9 +217,6 @@ export class AccountController extends RedisCache {
           createHttpError.InternalServerError(`Verify account failed`)
         );
       } else {
-        // res.set('Access-Control-Expose-Headers', 'Authorization');
-        // res.header('Authorization', encoded);
-
         return res.json({
           isSended: true,
           exp_offset: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
@@ -238,11 +235,8 @@ export class AccountController extends RedisCache {
 
       const verifyToken = req.cookies?.chg_pwd_token || req.body.token;
 
-      if (verifyToken == undefined) {
-        return res.json({
-          isOTPExpired: true,
-          result: 'OTP is expired'
-        });
+      if (!verifyToken) {
+        return next(createHttpError.BadRequest('Token is required'));
       }
 
       const isAlive = await jwtRedis
@@ -255,14 +249,6 @@ export class AccountController extends RedisCache {
           result: 'Token is no longer active'
         });
       }
-
-      // const decodeChangePassword = jwt.verify(verify_token, req.body.otp, {
-      //   algorithms: JWT_ALLOWED_ALGORITHMS,
-      // }) as {
-      //   old_password: string;
-      //   new_password: string;
-      //   logout_all_device: string;
-      // };
 
       jwt.verify(
         verifyToken,
@@ -285,11 +271,7 @@ export class AccountController extends RedisCache {
             });
           }
 
-          const decodeChangePassword = decoded as {
-            old_password: string;
-            new_password: string;
-            logout_all_device: string;
-          };
+          const decodeChangePassword = decoded as JwtPayload;
 
           const result = await Account.updateOne(
             {
@@ -311,6 +293,12 @@ export class AccountController extends RedisCache {
             });
           }
 
+          jwtRedis.setRevokePrefix('chg_pwd_token');
+
+          await jwtRedis.sign(verifyToken, {
+            EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
+          });
+
           res.clearCookie('chg_pwd_token', {
             domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
@@ -318,20 +306,11 @@ export class AccountController extends RedisCache {
             secure: true
           });
 
-          const isLogOutAllDevice =
-            decodeChangePassword.logout_all_device == 'true';
-
-          if (isLogOutAllDevice) {
+          if (decodeChangePassword.logout_all_device) {
             jwtRedis.setRevokePrefix('user_token');
 
             await jwtRedis.sign(userToken, {
               EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
-            });
-
-            jwtRedis.setRevokePrefix('chg_pwd_token');
-
-            await jwtRedis.sign(verifyToken, {
-              EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             });
 
             await RedisCache.client.del(`user_login__${user.id}`);
@@ -374,7 +353,7 @@ export class AccountController extends RedisCache {
 
           return res.json({
             success: true,
-            logout_all_device: isLogOutAllDevice,
+            logout_all_device: decodeChangePassword.logout_all_device,
             result: 'Change password successfully'
           });
         }
@@ -458,6 +437,10 @@ export class AccountController extends RedisCache {
 
       const verify_token = req.cookies?.vrf_email_token || req.body.token;
 
+      if (!verify_token) {
+        return next(createHttpError.BadRequest('Token is required'));
+      }
+
       jwt.verify(
         verify_token,
         req.body.otp,
@@ -500,13 +483,10 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.query?.token || req.cookies.chg_email_token;
+      const token: string = req.cookies.chg_email_token || req.body.token;
 
       if (!token) {
-        return res.json({
-          isInvalidToken: true,
-          result: 'Token is invalid'
-        });
+        return next(createHttpError.BadRequest('Token is required'));
       }
 
       const isAlive = await jwtRedis
@@ -563,13 +543,10 @@ export class AccountController extends RedisCache {
 
   async changeEmail(req: Request, res: Response, next: NextFunction) {
     try {
-      const token: string = req.body?.token || req.cookies.chg_email_token;
+      const token: string = req.cookies.chg_email_token || req.body.token;
 
       if (!token) {
-        return res.json({
-          isInvalidToken: true,
-          result: 'Token is invalid'
-        });
+        return next(createHttpError.BadRequest('Token is required'));
       }
 
       const isAlive = await jwtRedis
@@ -671,13 +648,10 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.query?.token || req.cookies.rst_pwd_token;
+      const token: string = req.cookies.rst_pwd_token || req.body.token;
 
       if (!token) {
-        return res.json({
-          isInvalidToken: true,
-          result: 'Token is invalid'
-        });
+        return next(createHttpError.BadRequest('Token is required'));
       }
 
       const isAlive = await jwtRedis
@@ -736,13 +710,10 @@ export class AccountController extends RedisCache {
 
   async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const token: string = req.cookies?.rst_pwd_token || req.body.token;
+      const token: string = req.cookies.rst_pwd_token || req.body.token;
 
       if (!token) {
-        return res.json({
-          isInvalidToken: true,
-          result: 'Token is invalid'
-        });
+        return next(createHttpError.BadRequest('Token is required'));
       }
 
       const isAlive = await jwtRedis
@@ -793,6 +764,12 @@ export class AccountController extends RedisCache {
         sameSite: req.session.cookie.sameSite,
         secure: true
       });
+
+      const isLogOutAllDevice = req.body.logout_all_device == 'true';
+
+      if (isLogOutAllDevice) {
+        await RedisCache.client.del(`user_login__${resetPasswordInfo.id}`);
+      }
 
       return res.json({
         success: true,
