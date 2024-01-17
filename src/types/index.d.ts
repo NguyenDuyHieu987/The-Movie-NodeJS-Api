@@ -19,10 +19,10 @@ export declare type User = {
   role: RoleUser;
   avatar: string;
   auth_type: string | 'email' | 'facebook' | 'google';
-  created_at: NativeDate;
-  updated_at: NativeDate;
-  createdAt?: NativeDate;
-  updatedAt?: NativeDate;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export declare type SignupForm = {
@@ -34,10 +34,10 @@ export declare type SignupForm = {
   role: 'normal' | 'admin';
   avatar: string;
   auth_type: 'email' | 'facebook' | 'google';
-  created_at: string;
-  updated_at: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export declare type CommentForm = {
@@ -55,10 +55,10 @@ export declare type CommentForm = {
   dislike: number;
   childrens?: number;
   updated: boolean | false;
-  created_at: string;
-  updated_at: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';

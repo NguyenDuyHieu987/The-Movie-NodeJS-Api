@@ -74,6 +74,54 @@ export class AuthController extends RedisCache {
     return response;
   }
 
+  private static async setRefreshToken(
+    refreshToken: string,
+    account: User,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const oldRefreshToken = req.cookies?.refresh_token;
+
+    const listRefreshToken = await RedisCache.client.get(
+      `user_login__${account.id}`
+    );
+
+    if (listRefreshToken) {
+      let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+      if (oldRefreshToken && listRefreshTokenParse.includes(oldRefreshToken)) {
+        listRefreshTokenParse = listRefreshTokenParse?.filter(
+          (item) => item != oldRefreshToken
+        );
+      }
+
+      await RedisCache.client.set(
+        `user_login__${account.id}`,
+        JSON.stringify([...listRefreshTokenParse, refreshToken]),
+        {
+          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+        }
+      );
+    } else {
+      await RedisCache.client.set(
+        `user_login__${account.id}`,
+        JSON.stringify([refreshToken]),
+        {
+          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+        }
+      );
+    }
+
+    res.cookie('refresh_token', refreshToken, {
+      domain: req.hostname,
+      httpOnly: req.session.cookie.httpOnly,
+      sameSite: req.session.cookie.sameSite,
+      secure: true,
+      maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
+    });
+  }
+
   async logIn(req: Request, res: Response, next: NextFunction) {
     try {
       const account = await Account.findOne({
@@ -119,7 +167,7 @@ export class AuthController extends RedisCache {
         await account.save();
       }
 
-      const encoded = signUserToken({
+      const accountInfo = {
         id: account.id,
         username: account.username,
         email: account.email,
@@ -128,53 +176,19 @@ export class AuthController extends RedisCache {
         role: account.role,
         auth_type: account.auth_type,
         created_at: account.created_at
-      });
+      };
 
-      const refreshToken = signRefreshToken({
-        id: account.id,
-        username: account.username,
-        email: account.email,
-        full_name: account.full_name,
-        avatar: account.avatar,
-        role: account.role,
-        auth_type: account.auth_type,
-        created_at: account.created_at
-      });
+      const encoded = signUserToken(accountInfo);
 
-      const oldRefreshToken = req.cookies?.refresh_token;
+      const refreshToken = signRefreshToken(accountInfo);
 
-      const listRefreshToken = await RedisCache.client.get(
-        `user_login__${account.id}`
+      AuthController.setRefreshToken(
+        refreshToken,
+        account as User,
+        req,
+        res,
+        next
       );
-
-      if (listRefreshToken) {
-        let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
-
-        if (
-          oldRefreshToken &&
-          listRefreshTokenParse.includes(oldRefreshToken)
-        ) {
-          listRefreshTokenParse = listRefreshTokenParse?.filter(
-            (item) => item != oldRefreshToken
-          );
-        }
-
-        await RedisCache.client.set(
-          `user_login__${account.id}`,
-          JSON.stringify([...listRefreshTokenParse, refreshToken]),
-          {
-            EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-          }
-        );
-      } else {
-        await RedisCache.client.set(
-          `user_login__${account.id}`,
-          JSON.stringify([refreshToken]),
-          {
-            EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-          }
-        );
-      }
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -186,28 +200,11 @@ export class AuthController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      res.cookie('refresh_token', refreshToken, {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true,
-        maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
-      });
-
       res.header('Authorization', encoded);
 
       const response = await AuthController.getSubscription(account.id, {
         isLogin: true,
-        result: {
-          id: account.id,
-          username: account.username,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          email: account.email,
-          auth_type: account.auth_type,
-          role: account.role,
-          created_at: account.created_at
-        }
+        result: accountInfo
       });
 
       return res.json(response);
@@ -263,7 +260,7 @@ export class AuthController extends RedisCache {
           });
         }
 
-        const encoded = signUserToken({
+        const accountInfo = {
           id: newAccount.id,
           username: newAccount.username,
           email: newAccount.email,
@@ -272,7 +269,19 @@ export class AuthController extends RedisCache {
           role: newAccount.role,
           auth_type: newAccount.auth_type,
           created_at: newAccount.created_at
-        });
+        };
+
+        const encoded = signUserToken(accountInfo);
+
+        const refreshToken = signRefreshToken(accountInfo);
+
+        AuthController.setRefreshToken(
+          refreshToken,
+          newAccount as User,
+          req,
+          res,
+          next
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -288,16 +297,7 @@ export class AuthController extends RedisCache {
 
         const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
-          result: {
-            id: newAccount.id,
-            username: newAccount.username,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            email: newAccount.email,
-            auth_type: newAccount.auth_type,
-            role: newAccount.role,
-            created_at: newAccount.created_at
-          }
+          result: accountInfo
         });
 
         return res.json(response);
@@ -319,7 +319,7 @@ export class AuthController extends RedisCache {
           });
         }
 
-        const encoded = signUserToken({
+        const accountInfo = {
           id: accountLogedIn.id,
           username: accountLogedIn.username,
           email: accountLogedIn.email,
@@ -328,7 +328,19 @@ export class AuthController extends RedisCache {
           role: accountLogedIn.role,
           auth_type: accountLogedIn.auth_type,
           created_at: accountLogedIn.created_at
-        });
+        };
+
+        const encoded = signUserToken(accountInfo);
+
+        const refreshToken = signRefreshToken(accountInfo);
+
+        AuthController.setRefreshToken(
+          refreshToken,
+          accountLogedIn as User,
+          req,
+          res,
+          next
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -346,16 +358,7 @@ export class AuthController extends RedisCache {
           accountLogedIn.id,
           {
             isLogin: true,
-            result: {
-              id: accountLogedIn.id,
-              username: accountLogedIn.username,
-              full_name: accountLogedIn.full_name,
-              avatar: accountLogedIn.avatar,
-              email: accountLogedIn.email,
-              auth_type: accountLogedIn.auth_type,
-              role: accountLogedIn.role,
-              created_at: accountLogedIn.created_at
-            }
+            result: accountInfo
           }
         );
 
@@ -464,7 +467,7 @@ export class AuthController extends RedisCache {
           });
         }
 
-        const encoded = signUserToken({
+        const accountInfo = {
           id: newAccount.id,
           username: newAccount.username,
           email: newAccount.email,
@@ -473,7 +476,19 @@ export class AuthController extends RedisCache {
           role: newAccount.role,
           auth_type: newAccount.auth_type,
           created_at: newAccount.created_at
-        });
+        };
+
+        const encoded = signUserToken(accountInfo);
+
+        const refreshToken = signRefreshToken(accountInfo);
+
+        AuthController.setRefreshToken(
+          refreshToken,
+          newAccount as User,
+          req,
+          res,
+          next
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -489,21 +504,12 @@ export class AuthController extends RedisCache {
 
         const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
-          result: {
-            id: newAccount.id,
-            username: newAccount.username,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            email: newAccount.email,
-            auth_type: newAccount.auth_type,
-            role: newAccount.role,
-            created_at: newAccount.created_at
-          }
+          result: accountInfo
         });
 
         return res.json(response);
       } else {
-        const encoded = signUserToken({
+        const accountInfo = {
           id: account.id,
           username: account.username,
           email: account.email,
@@ -512,7 +518,19 @@ export class AuthController extends RedisCache {
           role: account.role,
           auth_type: account.auth_type,
           created_at: account.created_at
-        });
+        };
+
+        const encoded = signUserToken(accountInfo);
+
+        const refreshToken = signRefreshToken(accountInfo);
+
+        AuthController.setRefreshToken(
+          refreshToken,
+          account as User,
+          req,
+          res,
+          next
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -528,16 +546,7 @@ export class AuthController extends RedisCache {
 
         const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
-          result: {
-            id: account.id,
-            username: account.username,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            email: account.email,
-            auth_type: account.auth_type,
-            role: account.role,
-            created_at: account.created_at
-          }
+          result: accountInfo
         });
 
         return res.json(response);
@@ -967,7 +976,38 @@ export class AuthController extends RedisCache {
         // oauth2Client.revokeCredentials();
       }
 
+      const refreshToken = req.cookies.refresh_token;
+
+      const listRefreshToken = await RedisCache.client.get(
+        `user_login__${user.id}`
+      );
+
+      if (listRefreshToken) {
+        let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+        if (refreshToken && listRefreshTokenParse.includes(refreshToken)) {
+          listRefreshTokenParse = listRefreshTokenParse?.filter(
+            (item) => item != refreshToken
+          );
+
+          await RedisCache.client.set(
+            `user_login__${user.id}`,
+            JSON.stringify([...listRefreshTokenParse, refreshToken]),
+            {
+              EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+            }
+          );
+        }
+      }
+
       res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+
+      res.clearCookie('refresh_token', {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,

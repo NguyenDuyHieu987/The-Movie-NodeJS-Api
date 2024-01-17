@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import createHttpError from 'http-errors';
+import createHttpError, { HttpError } from 'http-errors';
 import jwt from 'jsonwebtoken';
 
 import type { RoleUser, User } from '@/types';
@@ -72,35 +72,30 @@ export const authenticationHandler = async (
 
     return next();
   } catch (error) {
+    if (error instanceof HttpError) {
+      const status = error?.statusCode || error?.status;
+
+      if (status == 401 || status == 403) {
+        res.clearCookie('user_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true
+        });
+        res.clearCookie('refresh_token', {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true
+        });
+      }
+    }
+
     if (error instanceof jwt.TokenExpiredError) {
-      res.clearCookie('refresh_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
-      res.clearCookie('user_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
       return next(createHttpError.Unauthorized('Token is expired'));
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      res.clearCookie('refresh_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
-      res.clearCookie('user_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
       return next(createHttpError.Unauthorized('Token is invalid'));
     }
 
