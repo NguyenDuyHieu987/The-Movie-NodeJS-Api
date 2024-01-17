@@ -45,10 +45,10 @@ export function verifyDefaultToken(token: string) {
   });
 }
 
-export function signUserToken(params: object) {
+export function signUserToken(account: object) {
   return jwt.sign(
     {
-      ...params,
+      ...account,
       exp:
         Math.floor(Date.now() / 1000) +
         +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
@@ -81,26 +81,14 @@ export async function verifyUserToken(
         if (err?.name == jwt.TokenExpiredError.name && !decoded) {
           const refreshToken = req.cookies?.refresh_token;
 
-          const decodedRefeshToken = verifyRefreshToken(refreshToken) as User;
+          const decodedRefeshToken = (await verifyRefreshToken(
+            refreshToken
+          )) as User;
 
           // const decodedExp = jwt.verify(token, JWT_SIGNATURE_SECRET, {
           //   algorithms: JWT_ALLOWED_ALGORITHMS,
           //   ignoreExpiration: true
           // }) as User;
-
-          const listRefreshToken = await RedisCache.client.get(
-            `user_login__${decodedRefeshToken.id}`
-          );
-
-          if (!listRefreshToken) {
-            throw createHttpError.Unauthorized('Token is no longer active');
-          }
-
-          const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
-
-          if (!listRefreshTokenParse.includes(refreshToken)) {
-            throw createHttpError.Unauthorized('Token is no longer active');
-          }
 
           const account = await Account.findOne({
             id: decodedRefeshToken.id
@@ -152,10 +140,10 @@ export async function verifyUserToken(
   });
 }
 
-export function signRefreshToken(params: object) {
-  return jwt.sign(
+export async function signRefreshToken(account: any, oldRefreshToken?: string) {
+  const refreshToken = jwt.sign(
     {
-      ...params
+      ...account
     },
     JWT_REFRESH_SECRET,
     {
@@ -163,10 +151,58 @@ export function signRefreshToken(params: object) {
       expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
     }
   );
+
+  const listRefreshToken = await RedisCache.client.get(
+    `user_login__${account.id}`
+  );
+
+  if (listRefreshToken) {
+    let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+    if (oldRefreshToken && listRefreshTokenParse.includes(oldRefreshToken)) {
+      listRefreshTokenParse = listRefreshTokenParse?.filter(
+        (item) => item != oldRefreshToken
+      );
+    }
+
+    await RedisCache.client.set(
+      `user_login__${account.id}`,
+      JSON.stringify([...listRefreshTokenParse, refreshToken]),
+      {
+        EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+      }
+    );
+  } else {
+    await RedisCache.client.set(
+      `user_login__${account.id}`,
+      JSON.stringify([refreshToken]),
+      {
+        EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+      }
+    );
+  }
+
+  return refreshToken;
 }
 
-export function verifyRefreshToken(token: string) {
-  return jwt.verify(token, JWT_REFRESH_SECRET, {
+export async function verifyRefreshToken(token: string) {
+  const decodedRefeshToken = jwt.verify(token, JWT_REFRESH_SECRET, {
     algorithms: JWT_ALLOWED_ALGORITHMS
-  });
+  }) as User;
+
+  const listRefreshToken = await RedisCache.client.get(
+    `user_login__${decodedRefeshToken.id}`
+  );
+
+  if (!listRefreshToken) {
+    throw createHttpError.Unauthorized('Token is no longer active');
+  }
+
+  const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+  if (!listRefreshTokenParse.includes(token)) {
+    throw createHttpError.Unauthorized('Token is no longer active');
+  }
+
+  return decodedRefeshToken;
 }

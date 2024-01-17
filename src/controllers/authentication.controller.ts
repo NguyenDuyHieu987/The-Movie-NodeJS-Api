@@ -74,54 +74,6 @@ export class AuthController extends RedisCache {
     return response;
   }
 
-  private static async setRefreshToken(
-    refreshToken: string,
-    account: User,
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    const oldRefreshToken = req.cookies?.refresh_token;
-
-    const listRefreshToken = await RedisCache.client.get(
-      `user_login__${account.id}`
-    );
-
-    if (listRefreshToken) {
-      let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
-
-      if (oldRefreshToken && listRefreshTokenParse.includes(oldRefreshToken)) {
-        listRefreshTokenParse = listRefreshTokenParse?.filter(
-          (item) => item != oldRefreshToken
-        );
-      }
-
-      await RedisCache.client.set(
-        `user_login__${account.id}`,
-        JSON.stringify([...listRefreshTokenParse, refreshToken]),
-        {
-          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-        }
-      );
-    } else {
-      await RedisCache.client.set(
-        `user_login__${account.id}`,
-        JSON.stringify([refreshToken]),
-        {
-          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-        }
-      );
-    }
-
-    res.cookie('refresh_token', refreshToken, {
-      domain: req.hostname,
-      httpOnly: req.session.cookie.httpOnly,
-      sameSite: req.session.cookie.sameSite,
-      secure: true,
-      maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
-    });
-  }
-
   async logIn(req: Request, res: Response, next: NextFunction) {
     try {
       const account = await Account.findOne({
@@ -180,15 +132,9 @@ export class AuthController extends RedisCache {
 
       const encoded = signUserToken(accountInfo);
 
-      const refreshToken = signRefreshToken(accountInfo);
+      const oldRefreshToken = req.cookies?.refresh_token;
 
-      await AuthController.setRefreshToken(
-        refreshToken,
-        account as User,
-        req,
-        res,
-        next
-      );
+      const refreshToken = await signRefreshToken(accountInfo, oldRefreshToken);
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -198,6 +144,14 @@ export class AuthController extends RedisCache {
         sameSite: req.session.cookie.sameSite,
         secure: true,
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true,
+        maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
       });
 
       res.header('Authorization', encoded);
@@ -273,14 +227,11 @@ export class AuthController extends RedisCache {
 
         const encoded = signUserToken(accountInfo);
 
-        const refreshToken = signRefreshToken(accountInfo);
+        const oldRefreshToken = req.cookies?.refresh_token;
 
-        await AuthController.setRefreshToken(
-          refreshToken,
-          newAccount as User,
-          req,
-          res,
-          next
+        const refreshToken = await signRefreshToken(
+          accountInfo,
+          oldRefreshToken
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -291,6 +242,14 @@ export class AuthController extends RedisCache {
           sameSite: req.session.cookie.sameSite,
           secure: true,
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
+
+        res.cookie('refresh_token', refreshToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
         res.header('Authorization', encoded);
@@ -332,14 +291,11 @@ export class AuthController extends RedisCache {
 
         const encoded = signUserToken(accountInfo);
 
-        const refreshToken = signRefreshToken(accountInfo);
+        const oldRefreshToken = req.cookies?.refresh_token;
 
-        await AuthController.setRefreshToken(
-          refreshToken,
-          accountLogedIn as User,
-          req,
-          res,
-          next
+        const refreshToken = await signRefreshToken(
+          accountInfo,
+          oldRefreshToken
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -350,6 +306,14 @@ export class AuthController extends RedisCache {
           sameSite: req.session.cookie.sameSite,
           secure: true,
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
+
+        res.cookie('refresh_token', refreshToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
         res.header('Authorization', encoded);
@@ -480,14 +444,11 @@ export class AuthController extends RedisCache {
 
         const encoded = signUserToken(accountInfo);
 
-        const refreshToken = signRefreshToken(accountInfo);
+        const oldRefreshToken = req.cookies?.refresh_token;
 
-        await AuthController.setRefreshToken(
-          refreshToken,
-          newAccount as User,
-          req,
-          res,
-          next
+        const refreshToken = await signRefreshToken(
+          accountInfo,
+          oldRefreshToken
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -498,6 +459,14 @@ export class AuthController extends RedisCache {
           sameSite: req.session.cookie.sameSite,
           secure: true,
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
+
+        res.cookie('refresh_token', refreshToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
         res.header('Authorization', encoded);
@@ -522,14 +491,11 @@ export class AuthController extends RedisCache {
 
         const encoded = signUserToken(accountInfo);
 
-        const refreshToken = signRefreshToken(accountInfo);
+        const oldRefreshToken = req.cookies?.refresh_token;
 
-        await AuthController.setRefreshToken(
-          refreshToken,
-          account as User,
-          req,
-          res,
-          next
+        const refreshToken = await signRefreshToken(
+          accountInfo,
+          oldRefreshToken
         );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
@@ -540,6 +506,14 @@ export class AuthController extends RedisCache {
           sameSite: req.session.cookie.sameSite,
           secure: true,
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
+
+        res.cookie('refresh_token', refreshToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
         res.header('Authorization', encoded);
