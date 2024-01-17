@@ -17,7 +17,7 @@ import multer from 'multer';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
 import route from './routes';
-import middleware from './middlewares';
+import middleware, { errorHandler } from './middlewares';
 import { APP_TOKEN_SECRET } from './constants';
 
 dotenv.config();
@@ -115,6 +115,7 @@ app.use(multer().any());
 
 middleware(app);
 route(app);
+app.use(errorHandler);
 
 const server = http.createServer(app);
 

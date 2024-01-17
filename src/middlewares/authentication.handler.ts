@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
 
 import type { RoleUser, User } from '@/types';
 import { verifyUserToken } from '@/utils/jwt';
@@ -60,6 +61,26 @@ export const authenticationHandler = async (
 
     return next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+      return next(createHttpError.Unauthorized('Token is expired'));
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+      return next(createHttpError.Unauthorized('Token is invalid'));
+    }
+
     return next(error);
   }
 };
