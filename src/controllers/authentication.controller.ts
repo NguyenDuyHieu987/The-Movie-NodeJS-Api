@@ -992,7 +992,7 @@ export class AuthController extends RedisCache {
 
           await RedisCache.client.set(
             `user_login__${user.id}`,
-            JSON.stringify([...listRefreshTokenParse, refreshToken]),
+            JSON.stringify(listRefreshTokenParse),
             {
               EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
             }
