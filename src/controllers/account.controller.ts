@@ -12,6 +12,7 @@ import { encryptPassword } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
 import {
   JWT_ALGORITHM,
+  JWT_ALGORITHM_DEFAULT,
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
   signUserToken,
@@ -50,7 +51,7 @@ export class AccountController {
             },
             OTP,
             {
-              algorithm: JWT_ALGORITHM
+              algorithm: JWT_ALGORITHM_DEFAULT
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
             }
           );
@@ -113,7 +114,7 @@ export class AccountController {
             },
             OTP,
             {
-              algorithm: JWT_ALGORITHM
+              algorithm: JWT_ALGORITHM_DEFAULT
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
             }
           );
@@ -321,13 +322,13 @@ export class AccountController {
             jwtRedis.setRevokePrefix('user_token');
 
             await jwtRedis.sign(userToken, {
-              exp: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+              EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
             });
 
             jwtRedis.setRevokePrefix('chg_pwd_token');
 
             await jwtRedis.sign(verifyToken, {
-              exp: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
+              EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             });
 
             const encoded = signUserToken({
@@ -591,7 +592,7 @@ export class AccountController {
       jwtRedis.setRevokePrefix('chg_email_token');
 
       await jwtRedis.sign(token, {
-        exp: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
+        EX: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
       });
 
       const encoded = signUserToken({
@@ -766,7 +767,7 @@ export class AccountController {
       jwtRedis.setRevokePrefix('rst_pwd_token');
 
       await jwtRedis.sign(token, {
-        exp: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
+        EX: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
       });
 
       res.clearCookie('rst_pwd_token', {

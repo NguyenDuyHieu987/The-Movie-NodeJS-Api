@@ -16,9 +16,11 @@ export const authenticationHandler = async (
   }
 ) => {
   try {
-    const userToken: string | undefined | null =
+    const userToken =
       req.cookies.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
+
+    const refreshToken = req.cookies.refresh_token;
 
     // console.log(req.headers['user-agent']);
     // console.log(req.headers['x-forwarded-for']);
@@ -30,11 +32,17 @@ export const authenticationHandler = async (
     const isUsedRole: boolean = role.length > 0;
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
-    if (isRequiredAuth && (!userToken || userToken.length == 0)) {
+    const isExistToken: boolean =
+      userToken &&
+      userToken.length > 0 &&
+      refreshToken &&
+      refreshToken.length > 0;
+
+    if (isRequiredAuth && !isExistToken) {
       throw createHttpError.BadRequest('Token is required');
     }
 
-    if (userToken && userToken.length > 0 && !user) {
+    if (isExistToken && !user) {
       const isAlive = await jwtRedis
         .setRevokePrefix('user_token')
         .verify(userToken);
@@ -43,9 +51,10 @@ export const authenticationHandler = async (
         throw createHttpError.Unauthorized('Token is no longer active');
       }
 
-      user = verifyUserToken(userToken) as User;
-
       res.locals.userToken = userToken;
+
+      user = (await verifyUserToken(userToken, req, res, next)) as User;
+
       res.locals.user = user;
     }
 

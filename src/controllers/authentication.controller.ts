@@ -18,6 +18,7 @@ import { encryptPassword, encryptPasswordOld } from '@/utils/encryptPassword';
 import GenerateOTP from '@/utils/generateOTP';
 import {
   JWT_ALGORITHM,
+  JWT_ALGORITHM_DEFAULT,
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
   signRefreshToken,
@@ -129,7 +130,7 @@ export class AuthController extends RedisCache {
         created_at: account.created_at
       });
 
-      const refreshToen = signRefreshToken({
+      const refreshToken = signRefreshToken({
         id: account.id,
         username: account.username,
         email: account.email,
@@ -139,6 +140,41 @@ export class AuthController extends RedisCache {
         auth_type: account.auth_type,
         created_at: account.created_at
       });
+
+      const oldRefreshToken = req.cookies?.refresh_token;
+
+      const listRefreshToken = await RedisCache.client.get(
+        `user_login__${account.id}`
+      );
+
+      if (listRefreshToken) {
+        let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+        if (
+          oldRefreshToken &&
+          listRefreshTokenParse.includes(oldRefreshToken)
+        ) {
+          listRefreshTokenParse = listRefreshTokenParse?.filter(
+            (item) => item != oldRefreshToken
+          );
+        }
+
+        await RedisCache.client.set(
+          `user_login__${account.id}`,
+          JSON.stringify([...listRefreshTokenParse, refreshToken]),
+          {
+            EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+          }
+        );
+      } else {
+        await RedisCache.client.set(
+          `user_login__${account.id}`,
+          JSON.stringify([refreshToken]),
+          {
+            EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+          }
+        );
+      }
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -150,7 +186,7 @@ export class AuthController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      res.cookie('refresh_token', refreshToen, {
+      res.cookie('refresh_token', refreshToken, {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
@@ -159,14 +195,6 @@ export class AuthController extends RedisCache {
       });
 
       res.header('Authorization', encoded);
-
-      // await RedisCache.client.set(
-      //   `user__${account.id}`,
-      //   JSON.stringify([refreshToen]),
-      //   {
-      //     EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_HOUR
-      //   }
-      // );
 
       const response = await AuthController.getSubscription(account.id, {
         isLogin: true,
@@ -677,7 +705,6 @@ export class AuthController extends RedisCache {
 
   async signUp(req: Request, res: Response, next: NextFunction) {
     try {
-      // const signupToken = req.headers.authorization!.replace('Bearer ', '');
       const signupToken = req.cookies?.vrf_signup_token || req.body.token;
 
       const signupUser = jwt.verify(signupToken, req.body.otp, {
@@ -725,7 +752,7 @@ export class AuthController extends RedisCache {
       jwtRedis.setRevokePrefix('vrf_signup_token');
 
       await jwtRedis.sign(signupToken, {
-        exp: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
+        EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
       });
 
       res.clearCookie('vrf_signup_token', {
@@ -804,7 +831,7 @@ export class AuthController extends RedisCache {
             },
             OTP,
             {
-              algorithm: JWT_ALGORITHM
+              algorithm: JWT_ALGORITHM_DEFAULT
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
             }
           );
@@ -933,7 +960,7 @@ export class AuthController extends RedisCache {
       jwtRedis.setRevokePrefix('user_token');
 
       await jwtRedis.sign(userToken, {
-        exp: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+        EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
       });
 
       if (user.auth_type == 'google') {
@@ -941,13 +968,6 @@ export class AuthController extends RedisCache {
       }
 
       res.clearCookie('user_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
-
-      res.clearCookie('refresh_token', {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,

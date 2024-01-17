@@ -19,10 +19,10 @@ export declare type User = {
   role: RoleUser;
   avatar: string;
   auth_type: string | 'email' | 'facebook' | 'google';
-  created_at: string;
-  updated_at: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at: NativeDate;
+  updated_at: NativeDate;
+  createdAt?: NativeDate;
+  updatedAt?: NativeDate;
 };
 
 export declare type SignupForm = {

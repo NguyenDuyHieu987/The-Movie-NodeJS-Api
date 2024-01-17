@@ -1,3 +1,5 @@
+import type { SetOptions } from 'redis';
+
 import { RedisCache } from '@/config/redis';
 
 export const REVOKE_TOKEN_PREFIX = 'revoke__';
@@ -28,13 +30,15 @@ export class JwtRedis extends RedisCache {
     return this;
   }
 
-  async sign(jwt: string, options: { exp: number }) {
+  async sign(jwt: string, options: SetOptions) {
     const key = this.initKey(jwt);
 
-    // await RedisCache.client.setEx(key, options.exp, JSON.stringify(true));
+    options.NX = true;
+
     await RedisCache.client.set(key, JSON.stringify(true), {
-      EX: options.exp,
-      NX: true
+      // EX: options.exp,
+      // NX: true,
+      ...options
     });
   }
 
