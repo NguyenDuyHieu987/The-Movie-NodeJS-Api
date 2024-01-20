@@ -78,7 +78,7 @@ export async function verifyUserToken(
       async (err, decoded) => {
         decodedUser = decoded;
 
-        if (err?.name == jwt.TokenExpiredError.name && !decoded) {
+        if (err?.name == jwt.TokenExpiredError.name) {
           const refreshToken = req.cookies?.refresh_token;
 
           const decodedRefeshToken = (await verifyRefreshToken(
@@ -95,7 +95,9 @@ export async function verifyUserToken(
           });
 
           if (!account) {
-            throw createHttpError.InternalServerError('Account is not exist');
+            return reject(
+              createHttpError.InternalServerError('Account is not exist')
+            );
           }
 
           const encoded = signUserToken({
@@ -127,14 +129,14 @@ export async function verifyUserToken(
         }
 
         if (err?.name == jwt.JsonWebTokenError.name) {
-          throw err;
+          return reject(err);
         }
 
         if (!decodedUser) {
-          throw createHttpError.Unauthorized();
+          return reject(createHttpError.Unauthorized());
         }
 
-        resolve(decodedUser as User);
+        return resolve(decodedUser as User);
       }
     );
   });
@@ -185,24 +187,45 @@ export async function signRefreshToken(account: any, oldRefreshToken?: string) {
   return refreshToken;
 }
 
-export async function verifyRefreshToken(token: string) {
-  const decodedRefeshToken = jwt.verify(token, JWT_REFRESH_SECRET, {
-    algorithms: JWT_ALLOWED_ALGORITHMS
-  }) as User;
+export async function verifyRefreshToken(token: string): Promise<User> {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      JWT_REFRESH_SECRET,
+      {
+        algorithms: JWT_ALLOWED_ALGORITHMS
+      },
+      async (err, decoded) => {
+        if (err) {
+          return reject(err);
+        }
 
-  const listRefreshToken = await RedisCache.client.get(
-    `user_login__${decodedRefeshToken.id}`
-  );
+        if (!decoded) {
+          return reject(createHttpError.Unauthorized());
+        }
 
-  if (!listRefreshToken) {
-    throw createHttpError.Unauthorized('Token is no longer active');
-  }
+        const decodedRefeshToken = decoded as User;
 
-  const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+        const listRefreshToken = await RedisCache.client.get(
+          `user_login__${decodedRefeshToken.id}`
+        );
 
-  if (!listRefreshTokenParse.includes(token)) {
-    throw createHttpError.Unauthorized('Token is no longer active');
-  }
+        if (!listRefreshToken) {
+          return reject(
+            createHttpError.Unauthorized('Token is no longer active')
+          );
+        }
 
-  return decodedRefeshToken;
+        const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+
+        if (!listRefreshTokenParse.includes(token)) {
+          return reject(
+            createHttpError.Unauthorized('Token is no longer active')
+          );
+        }
+
+        return resolve(decodedRefeshToken);
+      }
+    );
+  });
 }

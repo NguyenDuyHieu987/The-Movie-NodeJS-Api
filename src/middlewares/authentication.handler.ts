@@ -73,9 +73,9 @@ export const authenticationHandler = async (
     return next();
   } catch (error) {
     if (error instanceof HttpError) {
-      const status = error?.statusCode || error?.status;
+      const statusCode = error?.statusCode || error?.status;
 
-      if (status == 401 || status == 403) {
+      if (statusCode == 401 || statusCode == 403) {
         res.clearCookie('user_token', {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
