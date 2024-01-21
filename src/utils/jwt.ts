@@ -49,9 +49,10 @@ export function signUserToken(account: object) {
   return jwt.sign(
     {
       ...account,
-      exp:
-        Math.floor(Date.now() / 1000) +
-        +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+      // exp:
+      //   Math.floor(Date.now() / 1000) +
+      //   +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+      exp: Math.floor(Date.now() / 1000) + 1
     },
     JWT_SIGNATURE_SECRET,
     {
