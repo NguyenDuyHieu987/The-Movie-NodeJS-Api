@@ -84,8 +84,8 @@ dependencies:
     specifier: ^3.7.0
     version: 3.7.0
   stripe:
-    specifier: ^14.11.0
-    version: 14.12.0
+    specifier: ^14.13.0
+    version: 14.13.0
   tsconfig-paths:
     specifier: ^4.2.0
     version: 4.2.0
@@ -5773,8 +5773,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /stripe@14.12.0:
-    resolution: {integrity: sha512-3lze4QdO8fM6nh1vaRsnFpaoA0WV7DerYtjEprOwcwyfdF5LdesfQNZiT22LO1dFiYobBifDzEn8V51MXHPrPQ==}
+  /stripe@14.13.0:
+    resolution: {integrity: sha512-uLOfWtBUL1amJCTpKCXWrHntFOSaO2PWb/2hsxV/OlXLr0bz5MyU8IW1pFlmZqpw6hBqAW5Fad7Ty7xRxDYrzA==}
     engines: {node: '>=12.*'}
     dependencies:
       '@types/node': 20.11.5
