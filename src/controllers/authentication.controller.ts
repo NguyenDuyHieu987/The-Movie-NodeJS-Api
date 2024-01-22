@@ -21,7 +21,8 @@ import {
   JWT_ALLOWED_ALGORITHMS,
   signDefaultToken,
   signRefreshToken,
-  signUserToken
+  signUserToken,
+  verifyDefaultToken
 } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
@@ -129,7 +130,11 @@ export class AuthController extends RedisCache {
         created_at: account.created_at
       };
 
-      const encoded = signUserToken(accountInfo);
+      const oldUserToken =
+        req.cookies.user_token ||
+        req.headers.authorization?.replace('Bearer ', '');
+
+      const userToken = await signUserToken(accountInfo, oldUserToken);
 
       const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -137,7 +142,7 @@ export class AuthController extends RedisCache {
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', encoded, {
+      res.cookie('user_token', userToken, {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
@@ -153,7 +158,7 @@ export class AuthController extends RedisCache {
         maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
       });
 
-      res.header('Authorization', encoded);
+      res.header('Authorization', userToken);
 
       const response = await AuthController.getSubscription(account.id, {
         isLogin: true,
@@ -224,7 +229,11 @@ export class AuthController extends RedisCache {
           created_at: newAccount.created_at
         };
 
-        const encoded = signUserToken(accountInfo);
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(accountInfo, oldUserToken);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -235,7 +244,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -251,7 +260,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
@@ -288,7 +297,11 @@ export class AuthController extends RedisCache {
           created_at: accountLogedIn.created_at
         };
 
-        const encoded = signUserToken(accountInfo);
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(accountInfo, oldUserToken);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -299,7 +312,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -315,7 +328,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(
           accountLogedIn.id,
@@ -441,7 +454,11 @@ export class AuthController extends RedisCache {
           created_at: newAccount.created_at
         };
 
-        const encoded = signUserToken(accountInfo);
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(accountInfo, oldUserToken);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -452,7 +469,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -468,7 +485,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
@@ -488,7 +505,11 @@ export class AuthController extends RedisCache {
           created_at: account.created_at
         };
 
-        const encoded = signUserToken(accountInfo);
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(accountInfo, oldUserToken);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -499,7 +520,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -515,7 +536,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
@@ -573,20 +594,27 @@ export class AuthController extends RedisCache {
           });
         }
 
-        const encoded = signUserToken({
-          id: newAccount.id,
-          username: newAccount.username,
-          email: newAccount.email,
-          full_name: newAccount.full_name,
-          avatar: newAccount.avatar,
-          role: newAccount.role,
-          auth_type: newAccount.auth_type,
-          created_at: newAccount.created_at
-        });
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(
+          {
+            id: newAccount.id,
+            username: newAccount.username,
+            email: newAccount.email,
+            full_name: newAccount.full_name,
+            avatar: newAccount.avatar,
+            role: newAccount.role,
+            auth_type: newAccount.auth_type,
+            created_at: newAccount.created_at
+          },
+          oldUserToken
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -594,7 +622,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(newAccount.id, {
           isSignUp: true,
@@ -612,20 +640,27 @@ export class AuthController extends RedisCache {
 
         return res.json(response);
       } else {
-        const encoded = signUserToken({
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at
-        });
+        const oldUserToken =
+          req.cookies.user_token ||
+          req.headers.authorization?.replace('Bearer ', '');
+
+        const userToken = await signUserToken(
+          {
+            id: account.id,
+            username: account.username,
+            email: account.email,
+            full_name: account.full_name,
+            avatar: account.avatar,
+            role: account.role,
+            auth_type: account.auth_type,
+            created_at: account.created_at
+          },
+          oldUserToken
+        );
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', encoded, {
+        res.cookie('user_token', userToken, {
           domain: req.hostname,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
@@ -633,7 +668,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.header('Authorization', encoded);
+        res.header('Authorization', userToken);
 
         const response = await AuthController.getSubscription(account.id, {
           isLogin: true,
@@ -693,20 +728,10 @@ export class AuthController extends RedisCache {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const signupUser = jwt.verify(signupToken, req.body.otp, {
-        algorithms: JWT_ALLOWED_ALGORITHMS
-      }) as SignupForm;
-
-      const isAlive = await jwtRedis
-        .setPrefix('vrf_signup_token')
-        .verify(signupToken);
-
-      if (!isAlive) {
-        return res.json({
-          success: false,
-          result: 'Token is no longer active'
-        });
-      }
+      const signupUser = (await verifyDefaultToken(signupToken, {
+        signature: req.body.otp,
+        prefix: 'vrf_signup_token'
+      })) as SignupForm;
 
       const account = await Account.findOne({
         id: signupUser.id,
@@ -801,7 +826,9 @@ export class AuthController extends RedisCache {
             Math.floor(Math.random() * 10) + 1
           ).toString();
 
-          const encoded = jwt.sign(
+          const oldVrfSignupToken = req.cookies?.vrf_signup_token;
+
+          const encoded = await signDefaultToken(
             {
               username: formUser.username,
               password: passwordEncrypted,
@@ -815,10 +842,12 @@ export class AuthController extends RedisCache {
                 Math.floor(Date.now() / 1000) +
                 +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
-            OTP,
             {
-              algorithm: JWT_ALGORITHM_DEFAULT
-              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
+              signature: OTP,
+              algorithm: JWT_ALGORITHM_DEFAULT,
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
+              prefix: 'vrf_signup_token',
+              oldToken: oldVrfSignupToken
             }
           );
 
@@ -882,15 +911,20 @@ export class AuthController extends RedisCache {
             });
           }
 
-          const encoded = signDefaultToken({
-            id: account.id,
-            email: account.email,
-            auth_type: 'email',
-            description: 'Reset your password',
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
-          });
+          const oldRstPwdToken = req.cookies?.chg_email_token;
+
+          const encoded = await signDefaultToken(
+            {
+              id: account.id,
+              email: account.email,
+              auth_type: 'email',
+              description: 'Reset your password',
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
+            },
+            { prefix: 'rst_pwd_token', oldToken: oldRstPwdToken }
+          );
 
           const clientUrl =
             process.env.NODE_ENV == 'production'

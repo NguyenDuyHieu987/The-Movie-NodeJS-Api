@@ -43,14 +43,6 @@ export const authenticationHandler = async (
     }
 
     if (isExistToken && !user) {
-      const isAlive = await jwtRedis
-        .setRevokePrefix('user_token')
-        .verify(userToken);
-
-      if (!isAlive) {
-        throw createHttpError.Unauthorized('Token is no longer active');
-      }
-
       res.locals.userToken = userToken;
 
       user = (await verifyUserToken(userToken, req, res, next)) as User;

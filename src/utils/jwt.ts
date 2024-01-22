@@ -1,17 +1,25 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
-import type { Algorithm } from 'jsonwebtoken';
+import type { Algorithm, JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 
 import { ONE_DAY, ONE_HOUR } from '@/common';
 import { RedisCache } from '@/config/redis';
 import Account from '@/models/account';
 import { User } from '@/types';
+import jwtRedis from '@/utils/jwtRedis';
 
 export const JWT_SIGNATURE_SECRET: string =
   process.env.JWT_SIGNATURE_SECRET!.replace(/\\n/g, '\n');
+
+export const JWT_SIGNATURE_SECRET_VERIFY: string =
+  process.env.JWT_SIGNATURE_SECRET_VERIFY!.replace(/\\n/g, '\n');
+
 export const JWT_REFRESH_SECRET: string =
   process.env.JWT_REFRESH_SECRET!.replace(/\\n/g, '\n');
+
+export const JWT_REFRESH_SECRET_VERIFY: string =
+  process.env.JWT_REFRESH_SECRET_VERIFY!.replace(/\\n/g, '\n');
 
 export const JWT_ALGORITHM: Algorithm = 'ES512';
 export const JWT_ALLOWED_ALGORITHMS: Algorithm[] = [
@@ -22,16 +30,32 @@ export const JWT_ALLOWED_ALGORITHMS: Algorithm[] = [
 ];
 export const JWT_ALGORITHM_DEFAULT: Algorithm = 'HS512';
 
-export function signDefaultToken(params: object | string) {
+export async function signDefaultToken(
+  payload: object | string,
+  option?: {
+    signature?: string;
+    algorithm?: Algorithm;
+    prefix: string;
+    oldToken: string;
+  }
+) {
+  if (option && option.prefix && option.oldToken) {
+    jwtRedis.setRevokePrefix(option.prefix);
+
+    await jwtRedis.sign(option.oldToken, {
+      EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+    });
+  }
+
   return jwt.sign(
-    params instanceof Object
+    payload instanceof Object
       ? {
-          ...params
+          ...payload
         }
-      : params,
-    JWT_SIGNATURE_SECRET,
+      : payload,
+    option?.signature || JWT_SIGNATURE_SECRET,
     {
-      algorithm: JWT_ALGORITHM
+      algorithm: option?.algorithm || JWT_ALGORITHM
       // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! + 'h',
       /*  or */
       // expiresIn: process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR,
@@ -39,13 +63,52 @@ export function signDefaultToken(params: object | string) {
   );
 }
 
-export function verifyDefaultToken(token: string) {
-  return jwt.verify(token, JWT_SIGNATURE_SECRET, {
-    algorithms: JWT_ALLOWED_ALGORITHMS
+export async function verifyDefaultToken(
+  token: string,
+  option: {
+    signature?: string;
+    prefix: string;
+  }
+): Promise<JwtPayload | string> {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      option?.signature || JWT_SIGNATURE_SECRET_VERIFY,
+      {
+        algorithms: JWT_ALLOWED_ALGORITHMS
+      },
+      async (err, decoded) => {
+        if (err) return reject(err);
+
+        if (!decoded) {
+          return reject(createHttpError.Unauthorized());
+        }
+
+        if (decoded) {
+          const isAlive = await jwtRedis
+            .setRevokePrefix(option.prefix)
+            .verify(token);
+
+          if (!isAlive) {
+            reject(createHttpError.Unauthorized('Token is no longer active'));
+          }
+        }
+
+        return resolve(decoded as JwtPayload | string);
+      }
+    );
   });
 }
 
-export function signUserToken(account: object) {
+export async function signUserToken(account: object, oldUserToken?: string) {
+  if (oldUserToken) {
+    jwtRedis.setRevokePrefix('user_token');
+
+    await jwtRedis.sign(oldUserToken, {
+      EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+    });
+  }
+
   return jwt.sign(
     {
       ...account,
@@ -71,24 +134,31 @@ export async function verifyUserToken(
 
     jwt.verify(
       token,
-      JWT_SIGNATURE_SECRET,
+      JWT_SIGNATURE_SECRET_VERIFY,
       {
         algorithms: JWT_ALLOWED_ALGORITHMS
       },
       async (err, decoded) => {
+        if (decoded) {
+          const isAlive = await jwtRedis
+            .setRevokePrefix('user_token')
+            .verify(token);
+
+          if (!isAlive) {
+            return reject(
+              createHttpError.Unauthorized('Token is no longer active')
+            );
+          }
+        }
+
         decodedUser = decoded;
 
         if (err?.name == jwt.TokenExpiredError.name) {
-          const refreshToken = req.cookies?.refresh_token;
+          const oldRefreshToken = req.cookies?.refresh_token;
 
           const decodedRefeshToken = (await verifyRefreshToken(
-            refreshToken
+            oldRefreshToken
           )) as User;
-
-          // const decodedExp = jwt.verify(token, JWT_SIGNATURE_SECRET, {
-          //   algorithms: JWT_ALLOWED_ALGORITHMS,
-          //   ignoreExpiration: true
-          // }) as User;
 
           const account = await Account.findOne({
             id: decodedRefeshToken.id
@@ -100,7 +170,7 @@ export async function verifyUserToken(
             );
           }
 
-          const encoded = signUserToken({
+          const accountInfo = {
             id: account.id,
             username: account.username,
             email: account.email,
@@ -109,13 +179,20 @@ export async function verifyUserToken(
             role: account.role,
             auth_type: account.auth_type,
             created_at: account.created_at
-          });
+          };
 
-          res.locals.userToken = encoded;
+          const userToken = await signUserToken(accountInfo);
+
+          const refreshToken = await signRefreshToken(
+            accountInfo,
+            oldRefreshToken
+          );
+
+          res.locals.userToken = userToken;
 
           res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          res.cookie('user_token', encoded, {
+          res.cookie('user_token', userToken, {
             domain: req.hostname,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
@@ -123,7 +200,15 @@ export async function verifyUserToken(
             maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
           });
 
-          res.header('Authorization', encoded);
+          res.cookie('refresh_token', refreshToken, {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true,
+            maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
+          });
+
+          res.header('Authorization', userToken);
 
           decodedUser = account;
         }
@@ -191,7 +276,7 @@ export async function verifyRefreshToken(token: string): Promise<User> {
   return new Promise((resolve, reject) => {
     jwt.verify(
       token,
-      JWT_REFRESH_SECRET,
+      JWT_REFRESH_SECRET_VERIFY,
       {
         algorithms: JWT_ALLOWED_ALGORITHMS
       },

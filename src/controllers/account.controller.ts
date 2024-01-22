@@ -43,7 +43,9 @@ export class AccountController extends RedisCache {
 
       switch (req.params.type) {
         case 'email':
-          encoded = jwt.sign(
+          const vrfEmailToken = req.cookies?.vrf_email_token;
+
+          encoded = await signDefaultToken(
             {
               id: user.id,
               email: user.email,
@@ -53,9 +55,12 @@ export class AccountController extends RedisCache {
                 Math.floor(Date.now() / 1000) +
                 +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
-            OTP,
             {
-              algorithm: JWT_ALGORITHM_DEFAULT
+              signature: OTP,
+              algorithm: JWT_ALGORITHM_DEFAULT,
+              // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
+              prefix: 'vrf_email_token',
+              oldToken: vrfEmailToken
             }
           );
 
@@ -103,7 +108,9 @@ export class AccountController extends RedisCache {
             formUser.new_password
           );
 
-          encoded = jwt.sign(
+          const oldChgPwdToken = req.cookies?.chg_pwd_token;
+
+          encoded = await signDefaultToken(
             {
               id: user.id,
               email: user.email,
@@ -115,10 +122,12 @@ export class AccountController extends RedisCache {
                 Math.floor(Date.now() / 1000) +
                 +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
             },
-            OTP,
             {
-              algorithm: JWT_ALGORITHM_DEFAULT
+              signature: OTP,
+              algorithm: JWT_ALGORITHM_DEFAULT,
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
+              prefix: 'chg_pwd_token',
+              oldToken: oldChgPwdToken
             }
           );
 
@@ -160,16 +169,21 @@ export class AccountController extends RedisCache {
             });
           }
 
-          encoded = signDefaultToken({
-            id: user.id,
-            email: user.email,
-            auth_type: 'email',
-            new_email: formUser.new_email,
-            description: 'Change your email',
-            exp:
-              Math.floor(Date.now() / 1000) +
-              +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
-          });
+          const oldChgEmailToken = req.cookies?.chg_email_token;
+
+          encoded = await signDefaultToken(
+            {
+              id: user.id,
+              email: user.email,
+              auth_type: 'email',
+              new_email: formUser.new_email,
+              description: 'Change your email',
+              exp:
+                Math.floor(Date.now() / 1000) +
+                +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
+            },
+            { prefix: 'chg_email_token', oldToken: oldChgEmailToken }
+          );
 
           const clientUrl =
             process.env.NODE_ENV == 'production'
@@ -212,7 +226,7 @@ export class AccountController extends RedisCache {
           );
       }
 
-      if (encoded.length == 0) {
+      if (!encoded) {
         return next(
           createHttpError.InternalServerError(`Verify account failed`)
         );
@@ -239,126 +253,103 @@ export class AccountController extends RedisCache {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const isAlive = await jwtRedis
-        .setPrefix('revoke__chg_pwd_token')
-        .verify(verifyToken);
+      const decodeChangePassword = (await verifyDefaultToken(verifyToken, {
+        signature: req.body.otp,
+        prefix: 'chg_pwd_token'
+      })) as JwtPayload;
 
-      if (!isAlive) {
+      const result = await Account.updateOne(
+        {
+          id: user.id,
+          email: user.email,
+          auth_type: 'email'
+        },
+        {
+          $set: {
+            password: decodeChangePassword.new_password
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
         return res.json({
           success: false,
-          result: 'Token is no longer active'
+          result: 'Change password failed'
         });
       }
 
-      jwt.verify(
-        verifyToken,
-        req.body.otp,
-        {
-          algorithms: JWT_ALLOWED_ALGORITHMS
-        },
-        async (err, decoded) => {
-          if (err instanceof jwt.TokenExpiredError) {
-            return res.json({
-              isOTPExpired: true,
-              result: 'OTP is expired'
-            });
-          }
+      jwtRedis.setRevokePrefix('chg_pwd_token');
 
-          if (err instanceof jwt.JsonWebTokenError) {
-            return res.json({
-              isInvalidOTP: true,
-              result: 'OTP is invalid'
-            });
-          }
+      await jwtRedis.sign(verifyToken, {
+        EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
+      });
 
-          const decodeChangePassword = decoded as JwtPayload;
+      res.clearCookie('chg_pwd_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
 
-          const result = await Account.updateOne(
-            {
-              id: user.id,
-              email: user.email,
-              auth_type: 'email'
-            },
-            {
-              $set: {
-                password: decodeChangePassword.new_password
-              }
-            }
-          );
+      if (decodeChangePassword.logout_all_device) {
+        await RedisCache.client.del(`user_login__${user.id}`);
 
-          if (result.modifiedCount != 1) {
-            return res.json({
-              success: false,
-              result: 'Change password failed'
-            });
-          }
+        const accountInfo = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          full_name: user.full_name,
+          avatar: user.avatar,
+          role: user.role,
+          auth_type: user.auth_type,
+          created_at: user.created_at
+        };
 
-          jwtRedis.setRevokePrefix('chg_pwd_token');
+        const newUserToken = await signUserToken(accountInfo, userToken);
 
-          await jwtRedis.sign(verifyToken, {
-            EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
-          });
+        const newRefreshToken = await signRefreshToken(accountInfo);
 
-          res.clearCookie('chg_pwd_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
+        res.set('Access-Control-Expose-Headers', 'Authorization');
 
-          if (decodeChangePassword.logout_all_device) {
-            jwtRedis.setRevokePrefix('user_token');
+        res.cookie('user_token', newUserToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
 
-            await jwtRedis.sign(userToken, {
-              EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
-            });
+        res.cookie('refresh_token', newRefreshToken, {
+          domain: req.hostname,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
+        });
 
-            await RedisCache.client.del(`user_login__${user.id}`);
+        res.header('Authorization', newUserToken);
+      }
 
-            const accountInfo = {
-              id: user.id,
-              username: user.username,
-              email: user.email,
-              full_name: user.full_name,
-              avatar: user.avatar,
-              role: user.role,
-              auth_type: user.auth_type,
-              created_at: user.created_at
-            };
-
-            const encoded = signUserToken(accountInfo);
-
-            const refreshToken = await signRefreshToken(accountInfo);
-
-            res.set('Access-Control-Expose-Headers', 'Authorization');
-
-            res.cookie('user_token', encoded, {
-              domain: req.hostname,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
-            });
-
-            res.cookie('refresh_token', refreshToken, {
-              domain: req.hostname,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
-            });
-
-            res.header('Authorization', encoded);
-          }
-
-          return res.json({
-            success: true,
-            logout_all_device: decodeChangePassword.logout_all_device,
-            result: 'Change password successfully'
-          });
-        }
-      );
+      return res.json({
+        success: true,
+        logout_all_device: decodeChangePassword.logout_all_device,
+        result: 'Change password successfully'
+      });
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({
+          isOTPExpired: true,
+          result: 'OTP is expired'
+        });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({
+          isInvalidOTP: true,
+          result: 'OTP is invalid'
+        });
+      }
+
       return next(error);
     }
   }
@@ -398,20 +389,23 @@ export class AccountController extends RedisCache {
         });
       }
 
-      const encoded = signUserToken({
-        id: account.id,
-        username: account.username,
-        email: account.email,
-        full_name: account.full_name,
-        avatar: account.avatar,
-        role: account.role,
-        auth_type: account.auth_type,
-        created_at: account.created_at
-      });
+      const newUserToken = await signUserToken(
+        {
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        },
+        userToken
+      );
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', encoded, {
+      res.cookie('user_token', newUserToken, {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
@@ -419,7 +413,7 @@ export class AccountController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      res.header('Authorization', encoded);
+      res.header('Authorization', newUserToken);
 
       return res.json({
         success: true,
@@ -435,44 +429,40 @@ export class AccountController extends RedisCache {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      const verify_token = req.cookies?.vrf_email_token || req.body.token;
+      const verifyToken = req.cookies?.vrf_email_token || req.body.token;
 
-      if (!verify_token) {
+      if (!verifyToken) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      jwt.verify(
-        verify_token,
-        req.body.otp,
-        {
-          algorithms: JWT_ALLOWED_ALGORITHMS
-        },
-        async (err, decoded) => {
-          if (err instanceof jwt.TokenExpiredError) {
-            return res.json({
-              isOTPExpired: true,
-              result: 'OTP is expired'
-            });
-          }
+      const decoded = await verifyDefaultToken(verifyToken, {
+        signature: req.body.otp,
+        prefix: 'vrf_email_token'
+      });
 
-          if (err instanceof jwt.JsonWebTokenError) {
-            return res.json({
-              isInvalidOTP: true,
-              result: 'OTP is invalid'
-            });
-          }
+      res.clearCookie('vrf_email_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
 
-          res.clearCookie('vrf_email_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
-
-          return res.json({ success: true });
-        }
-      );
+      return res.json({ success: true });
     } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.json({
+          isOTPExpired: true,
+          result: 'OTP is expired'
+        });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.json({
+          isInvalidOTP: true,
+          result: 'OTP is invalid'
+        });
+      }
+
       return next(error);
     }
   }
@@ -489,18 +479,9 @@ export class AccountController extends RedisCache {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const isAlive = await jwtRedis
-        .setRevokePrefix('chg_email_token')
-        .verify(token);
-
-      if (!isAlive) {
-        return res.json({
-          success: false,
-          result: 'Token is no longer active'
-        });
-      }
-
-      const changeEmailInfo: any = verifyDefaultToken(token);
+      const changeEmailInfo = (await verifyDefaultToken(token, {
+        prefix: 'chg_email_token'
+      })) as JwtPayload;
 
       const account = await Account.findOne({
         id: changeEmailInfo.id,
@@ -543,24 +524,17 @@ export class AccountController extends RedisCache {
 
   async changeEmail(req: Request, res: Response, next: NextFunction) {
     try {
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
       const token: string = req.cookies.chg_email_token || req.body.token;
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const isAlive = await jwtRedis
-        .setRevokePrefix('chg_email_token')
-        .verify(token);
-
-      if (!isAlive) {
-        return res.json({
-          success: false,
-          result: 'Token is no longer active'
-        });
-      }
-
-      const changeEmailInfo: any = verifyDefaultToken(token);
+      const changeEmailInfo = (await verifyDefaultToken(token, {
+        prefix: 'chg_email_token'
+      })) as JwtPayload;
 
       const account = await Account.findOneAndUpdate(
         {
@@ -589,20 +563,23 @@ export class AccountController extends RedisCache {
         EX: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
       });
 
-      const encoded = signUserToken({
-        id: account.id,
-        username: account.username,
-        email: account.email,
-        full_name: account.full_name,
-        avatar: account.avatar,
-        role: account.role,
-        auth_type: account.auth_type,
-        created_at: account.created_at
-      });
+      const newUserToken = await signUserToken(
+        {
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        },
+        userToken
+      );
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', encoded, {
+      res.cookie('user_token', newUserToken, {
         domain: req.hostname,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
@@ -617,7 +594,7 @@ export class AccountController extends RedisCache {
         secure: true
       });
 
-      res.header('Authorization', encoded);
+      res.header('Authorization', newUserToken);
 
       return res.json({
         success: true,
@@ -654,18 +631,9 @@ export class AccountController extends RedisCache {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const isAlive = await jwtRedis
-        .setRevokePrefix('rst_pwd_token')
-        .verify(token);
-
-      if (!isAlive) {
-        return res.json({
-          success: false,
-          result: 'Token is no longer active'
-        });
-      }
-
-      const resetPasswordInfo: any = verifyDefaultToken(token);
+      const resetPasswordInfo = (await verifyDefaultToken(token, {
+        prefix: 'rst_pwd_token'
+      })) as JwtPayload;
 
       const account = await Account.findOne({
         id: resetPasswordInfo.id,
@@ -716,18 +684,9 @@ export class AccountController extends RedisCache {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
-      const isAlive = await jwtRedis
-        .setRevokePrefix('rst_pwd_token')
-        .verify(token);
-
-      if (!isAlive) {
-        return res.json({
-          success: false,
-          result: 'Token is no longer active'
-        });
-      }
-
-      const resetPasswordInfo: any = verifyDefaultToken(token);
+      const resetPasswordInfo = (await verifyDefaultToken(token, {
+        prefix: 'rst_pwd_token'
+      })) as JwtPayload;
 
       const newPasswordEncrypted = await encryptPassword(req.body.new_password);
 
