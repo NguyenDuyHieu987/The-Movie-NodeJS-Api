@@ -26,7 +26,6 @@ import sortOptionRouter from './sortby.route';
 import subscriptionRouter from './subscription.route';
 import trendingRouter from './trending.route';
 import tvRouter from './tv.route';
-import updateViewRouter from './updateView.route';
 import videoRouter from './video.route';
 import yearRouter from './year.route';
 
@@ -58,7 +57,6 @@ export default function route(app: Application) {
   app.use('/invoice', invoiceRouter);
   app.use('/subscription', subscriptionRouter);
   app.use('/ranks', ranRouter);
-  app.use('/update-view', updateViewRouter);
   app.use('/notification', notificationRouter);
   app.all('*', (req: Request, res: Response, next: NextFunction) => {
     return next(

@@ -298,6 +298,33 @@ export class MovieController {
       return next(error);
     }
   }
+
+  async updateView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const movieId: string = req.params.movieId;
+
+      const movie = await Movie.updateOne(
+        { id: movieId },
+        {
+          $inc: { views: 1 }
+        }
+      );
+
+      if (movie.modifiedCount == 1) {
+        return res.json({
+          success: false,
+          result: 'Update views movie failed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        result: 'Update views movie successfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 export default new MovieController();

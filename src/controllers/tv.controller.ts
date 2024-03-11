@@ -372,6 +372,33 @@ export class TVController {
       return next(error);
     }
   }
+
+  async updateView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const movieId: string = req.params.movieId;
+
+      const tv = await TV.updateOne(
+        { id: movieId },
+        {
+          $inc: { views: 1 }
+        }
+      );
+
+      if (tv.modifiedCount == 1) {
+        return res.json({
+          success: false,
+          result: 'Update views tv failed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        result: 'Update views tv successfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 export default new TVController();

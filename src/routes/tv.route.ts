@@ -6,6 +6,7 @@ import TvSlug from '@/controllers/tvSlug.controller';
 const router = express.Router();
 
 router.get('/detail/:id', TV.get);
+router.get('/update-view/:id', TV.updateView);
 router.get('/:slug', TvSlug.getSlug);
 router.get('/discover/:slug', TvSlug.filter);
 
