@@ -130,9 +130,8 @@ export class AuthController extends RedisCache {
         created_at: account.created_at
       };
 
-      const oldUserToken =
-        req.cookies.user_token ||
-        req.headers.authorization?.replace('Bearer ', '');
+      const oldUserToken = req.cookies.user_token;
+      // || req.headers.authorization?.replace('Bearer ', '');
 
       const userToken = await signUserToken(accountInfo, oldUserToken);
 
@@ -229,9 +228,8 @@ export class AuthController extends RedisCache {
           created_at: newAccount.created_at
         };
 
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(accountInfo, oldUserToken);
 
@@ -297,9 +295,8 @@ export class AuthController extends RedisCache {
           created_at: accountLogedIn.created_at
         };
 
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(accountInfo, oldUserToken);
 
@@ -454,9 +451,8 @@ export class AuthController extends RedisCache {
           created_at: newAccount.created_at
         };
 
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(accountInfo, oldUserToken);
 
@@ -505,9 +501,8 @@ export class AuthController extends RedisCache {
           created_at: account.created_at
         };
 
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(accountInfo, oldUserToken);
 
@@ -594,9 +589,8 @@ export class AuthController extends RedisCache {
           });
         }
 
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(
           {
@@ -640,9 +634,8 @@ export class AuthController extends RedisCache {
 
         return res.json(response);
       } else {
-        const oldUserToken =
-          req.cookies.user_token ||
-          req.headers.authorization?.replace('Bearer ', '');
+        const oldUserToken = req.cookies.user_token;
+        // || req.headers.authorization?.replace('Bearer ', '');
 
         const userToken = await signUserToken(
           {

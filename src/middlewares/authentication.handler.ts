@@ -3,8 +3,8 @@ import createHttpError, { HttpError } from 'http-errors';
 import jwt from 'jsonwebtoken';
 
 import type { RoleUser, User } from '@/types';
+import { isStringEmpty } from '@/utils';
 import { verifyUserToken } from '@/utils/jwt';
-import jwtRedis from '@/utils/jwtRedis';
 
 export const authenticationHandler = async (
   req: Request,
@@ -16,9 +16,8 @@ export const authenticationHandler = async (
   }
 ) => {
   try {
-    const userToken =
-      req.cookies.user_token ||
-      req.headers.authorization?.replace('Bearer ', '');
+    const userToken = req.cookies.user_token;
+    // || req.headers.authorization?.replace('Bearer ', '');
 
     const refreshToken = req.cookies.refresh_token;
 
@@ -33,10 +32,7 @@ export const authenticationHandler = async (
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
     const isExistToken: boolean =
-      userToken &&
-      userToken.length > 0 &&
-      refreshToken &&
-      refreshToken.length > 0;
+      !isStringEmpty(userToken) && !isStringEmpty(refreshToken);
 
     if (isRequiredAuth && !isExistToken) {
       throw createHttpError.BadRequest('Token is required');
@@ -74,21 +70,23 @@ export const authenticationHandler = async (
           sameSite: req.session.cookie.sameSite,
           secure: true
         });
-        res.clearCookie('refresh_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
       }
     }
 
     if (error instanceof jwt.TokenExpiredError) {
-      return next(createHttpError.Unauthorized('Token is expired'));
+      return next(
+        createHttpError.Unauthorized(
+          error?.message || error.name || 'Token is expired'
+        )
+      );
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      return next(createHttpError.Unauthorized('Token is invalid'));
+      return next(
+        createHttpError.Unauthorized(
+          error?.message || error.name || 'Token is invalid'
+        )
+      );
     }
 
     return next(error);

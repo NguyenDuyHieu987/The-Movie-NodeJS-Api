@@ -17,7 +17,7 @@ import multer from 'multer';
 import MongoDB from './config/db';
 import RedisCache from './config/redis';
 import route from './routes';
-import middleware, { errorHandler } from './middlewares';
+import middleware from './middlewares';
 import { APP_TOKEN_SECRET } from './constants';
 import { ONE_HOUR } from './common';
 
@@ -112,9 +112,9 @@ app.use(
 );
 app.use(multer().any());
 
-middleware(app);
-route(app);
-app.use(errorHandler);
+middleware(app, () => {
+  route(app);
+});
 
 const server = http.createServer(app);
 

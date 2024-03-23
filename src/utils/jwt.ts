@@ -157,7 +157,9 @@ export async function verifyUserToken(
           const oldRefreshToken = req.cookies?.refresh_token;
 
           const decodedRefeshToken = (await verifyRefreshToken(
-            oldRefreshToken
+            oldRefreshToken,
+            req,
+            res
           )) as User;
 
           const account = await Account.findOne({
@@ -272,7 +274,11 @@ export async function signRefreshToken(account: any, oldRefreshToken?: string) {
   return refreshToken;
 }
 
-export async function verifyRefreshToken(token: string): Promise<User> {
+export async function verifyRefreshToken(
+  token: string,
+  req: Request,
+  res: Response
+): Promise<User> {
   return new Promise((resolve, reject) => {
     jwt.verify(
       token,
@@ -282,6 +288,15 @@ export async function verifyRefreshToken(token: string): Promise<User> {
       },
       async (err, decoded) => {
         if (err) {
+          if (err?.name == jwt.JsonWebTokenError.name) {
+            res.clearCookie('refresh_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+          }
+
           return reject(err);
         }
 

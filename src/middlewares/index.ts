@@ -1,8 +1,11 @@
 import type { Application } from 'express';
-import { authenticationHandler } from './authentication.handler';
 
-export default function middleware(app: Application) {
+import { authenticationHandler, errorHandler } from '@/middlewares';
+
+export default function middleware(app: Application, callback: () => void) {
   app.use(authenticationHandler);
+  callback();
+  app.use(errorHandler);
 }
 
 export * from './authentication.handler';
