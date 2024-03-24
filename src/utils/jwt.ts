@@ -288,7 +288,10 @@ export async function verifyRefreshToken(
       },
       async (err, decoded) => {
         if (err) {
-          if (err?.name == jwt.JsonWebTokenError.name) {
+          if (
+            err?.name == jwt.JsonWebTokenError.name &&
+            err?.name != jwt.TokenExpiredError.name
+          ) {
             res.clearCookie('refresh_token', {
               domain: req.hostname,
               httpOnly: req.session.cookie.httpOnly,
