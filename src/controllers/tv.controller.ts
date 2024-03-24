@@ -190,7 +190,11 @@ export class TVController {
         rate: []
       };
 
-      if (req.headers?.authorization || req.cookies?.user_token) {
+      if (
+        // req.headers?.authorization ||
+        req.cookies?.user_token ||
+        res.locals.user
+      ) {
         const userToken = res.locals.userToken;
         const user = res.locals.user as User;
 
