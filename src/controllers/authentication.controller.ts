@@ -92,10 +92,10 @@ export class AuthController extends RedisCache {
       if (account.password!.startsWith('$argon2id$')) {
         const isCorrectPassword = await argon2.verify(
           account.password!,
-          req.body.password,
-          {
-            // secret: Buffer.from(APP_TOKEN_SECRET),
-          }
+          req.body.password
+          // {
+          //   secret: Buffer.from(APP_TOKEN_SECRET)
+          // }
         );
 
         if (!isCorrectPassword) {
