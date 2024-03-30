@@ -25,7 +25,7 @@ export const authenticationHandler = async (
     // console.log(req.headers['x-forwarded-for']);
     // console.log(req.ip);
 
-    const user = res.locals.user || null;
+    let user = res.locals.user || null;
     const role = params.role || [];
 
     const isUsedRole: boolean = role.length > 0;
@@ -35,11 +35,15 @@ export const authenticationHandler = async (
       !isStringEmpty(userToken) && !isStringEmpty(refreshToken);
 
     if (isRequiredAuth && !isExistToken) {
-      // throw createHttpError.BadRequest('Token is required');
-      return res.json({
-        statusCode: 401,
-        message: 'You need authorized to perform this action'
-      });
+      throw createHttpError.BadRequest('Token is required');
+    }
+
+    if (isExistToken && !user) {
+      res.locals.userToken = userToken;
+
+      user = (await verifyUserToken(userToken, req, res, next)) as User;
+
+      res.locals.user = user;
     }
 
     if (isRequiredAuth && !user) {
@@ -59,17 +63,24 @@ export const authenticationHandler = async (
     if (error instanceof HttpError) {
       const statusCode = error?.statusCode || error?.status;
 
-      if (statusCode == 401 || statusCode == 403) {
-        res.clearCookie('user_token', {
-          domain: req.hostname,
-          httpOnly: req.session.cookie.httpOnly,
-          sameSite: req.session.cookie.sameSite,
-          secure: true
-        });
-      }
+      // if (statusCode == 401 || statusCode == 403) {
+      //   res.clearCookie('user_token', {
+      //     domain: req.hostname,
+      //     httpOnly: req.session.cookie.httpOnly,
+      //     sameSite: req.session.cookie.sameSite,
+      //     secure: true
+      //   });
+      // }
     }
 
     if (error instanceof jwt.TokenExpiredError) {
+      res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+
       return next(
         createHttpError.Unauthorized(
           error?.message || error.name || 'Token is expired'
