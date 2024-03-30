@@ -25,7 +25,7 @@ export const authenticationHandler = async (
     // console.log(req.headers['x-forwarded-for']);
     // console.log(req.ip);
 
-    let user = res.locals.user || null;
+    const user = res.locals.user || null;
     const role = params.role || [];
 
     const isUsedRole: boolean = role.length > 0;
@@ -35,15 +35,11 @@ export const authenticationHandler = async (
       !isStringEmpty(userToken) && !isStringEmpty(refreshToken);
 
     if (isRequiredAuth && !isExistToken) {
-      throw createHttpError.BadRequest('Token is required');
-    }
-
-    if (isExistToken && !user) {
-      res.locals.userToken = userToken;
-
-      user = (await verifyUserToken(userToken, req, res, next)) as User;
-
-      res.locals.user = user;
+      // throw createHttpError.BadRequest('Token is required');
+      return res.json({
+        statusCode: 401,
+        message: 'You need authorized to perform this action'
+      });
     }
 
     if (isRequiredAuth && !user) {
