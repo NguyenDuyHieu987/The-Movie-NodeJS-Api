@@ -74,13 +74,6 @@ export const authenticationHandler = async (
     }
 
     if (error instanceof jwt.TokenExpiredError) {
-      res.clearCookie('user_token', {
-        domain: req.hostname,
-        httpOnly: req.session.cookie.httpOnly,
-        sameSite: req.session.cookie.sameSite,
-        secure: true
-      });
-
       return next(
         createHttpError.Unauthorized(
           error?.message || error.name || 'Token is expired'

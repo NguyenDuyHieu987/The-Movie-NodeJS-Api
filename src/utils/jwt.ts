@@ -216,6 +216,20 @@ export async function verifyUserToken(
         }
 
         if (err?.name == jwt.JsonWebTokenError.name) {
+          res.clearCookie('user_token', {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true
+          });
+
+          res.clearCookie('refresh_token', {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true
+          });
+
           return reject(err);
         }
 
