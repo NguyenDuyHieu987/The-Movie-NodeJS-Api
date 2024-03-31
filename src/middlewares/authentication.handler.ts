@@ -34,7 +34,11 @@ export const authenticationHandler = async (
     const isExistToken: boolean = !isStringEmpty(refreshToken);
 
     if (isRequiredAuth && !isExistToken) {
-      throw createHttpError.BadRequest('Token is required');
+      return res.json({
+        statusCode: 401,
+        message: 'Token is required'
+      });
+      // throw createHttpError.BadRequest('Token is required');
     }
 
     if (isExistToken && !user) {

@@ -260,7 +260,7 @@ export async function signRefreshToken(account: any, oldRefreshToken?: string) {
     `user_login__${account.id}`
   );
 
-  if (listRefreshToken) {
+  if (listRefreshToken?.length) {
     let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
 
     if (oldRefreshToken && listRefreshTokenParse.includes(oldRefreshToken)) {
