@@ -153,7 +153,10 @@ export async function verifyUserToken(
 
         decodedUser = decoded;
 
-        if (err?.name == jwt.TokenExpiredError.name) {
+        if (
+          err?.name == jwt.TokenExpiredError.name ||
+          jwt.JsonWebTokenError.name
+        ) {
           const oldRefreshToken = req.cookies?.refresh_token;
 
           const decodedRefeshToken = (await verifyRefreshToken(
@@ -216,20 +219,6 @@ export async function verifyUserToken(
         }
 
         if (err?.name == jwt.JsonWebTokenError.name) {
-          res.clearCookie('user_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
-
-          res.clearCookie('refresh_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
-
           return reject(err);
         }
 

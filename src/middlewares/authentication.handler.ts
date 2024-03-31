@@ -31,8 +31,7 @@ export const authenticationHandler = async (
     const isUsedRole: boolean = role.length > 0;
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
-    const isExistToken: boolean =
-      !isStringEmpty(userToken) && !isStringEmpty(refreshToken);
+    const isExistToken: boolean = !isStringEmpty(refreshToken);
 
     if (isRequiredAuth && !isExistToken) {
       throw createHttpError.BadRequest('Token is required');
