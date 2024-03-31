@@ -90,7 +90,9 @@ export async function verifyDefaultToken(
             .verify(token);
 
           if (!isAlive) {
-            reject(createHttpError.Unauthorized('Token is no longer active'));
+            return reject(
+              createHttpError.Unauthorized('Token is no longer active')
+            );
           }
         }
 
