@@ -218,9 +218,9 @@ export async function verifyUserToken(
           decodedUser = account;
         }
 
-        if (err?.name == jwt.JsonWebTokenError.name) {
-          return reject(err);
-        }
+        // if (err?.name == jwt.JsonWebTokenError.name) {
+        //   return reject(err);
+        // }
 
         if (!decodedUser) {
           return reject(createHttpError.Unauthorized());
