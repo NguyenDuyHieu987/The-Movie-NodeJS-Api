@@ -155,10 +155,7 @@ export async function verifyUserToken(
 
         decodedUser = decoded;
 
-        if (
-          err?.name == jwt.TokenExpiredError.name ||
-          jwt.JsonWebTokenError.name
-        ) {
+        if (err?.name == jwt.TokenExpiredError.name) {
           const oldRefreshToken = req.cookies?.refresh_token;
 
           const decodedRefeshToken = (await verifyRefreshToken(
@@ -220,9 +217,22 @@ export async function verifyUserToken(
           decodedUser = account;
         }
 
-        // if (err?.name == jwt.JsonWebTokenError.name) {
-        //   return reject(err);
-        // }
+        if (err?.name == jwt.JsonWebTokenError.name) {
+          res.clearCookie('user_token', {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true
+          });
+
+          res.clearCookie('refresh_token', {
+            domain: req.hostname,
+            httpOnly: req.session.cookie.httpOnly,
+            sameSite: req.session.cookie.sameSite,
+            secure: true
+          });
+          return reject(err);
+        }
 
         if (!decodedUser) {
           return reject(createHttpError.Unauthorized());
