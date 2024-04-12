@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
+    // "noEmit": true,
+    // "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "target": "ESNext",
@@ -42,7 +42,7 @@
   ],
   "ts-node": {
     "esm": true,
-    "experimentalSpecifierResolution": "node",
+    // "experimentalSpecifierResolution": "node",
     "require": [
       "tsconfig-paths/register"
     ]
