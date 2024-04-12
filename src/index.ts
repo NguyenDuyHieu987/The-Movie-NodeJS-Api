@@ -1,11 +1,8 @@
 import 'module-alias/register';
 import { addAliases } from 'module-alias';
 addAliases({
-  '@': `${__dirname}`
+  '@': ` ${process.env.NODE_ENV == 'production' ? 'build' : __dirname}`
 });
-// "_moduleAliases": {
-//   "@": "build"
-// }
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import MongoStore from 'connect-mongo';
