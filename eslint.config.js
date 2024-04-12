@@ -97,5 +97,12 @@ module.exports = {
       }
     }
   ],
-  ignorePatterns: ['node_modules/*', 'build/*', 'coverage/*', 'src/index.ts']
+  ignorePatterns: [
+    'eslint.config.js',
+    'lint-staged.config.js',
+    'node_modules/*',
+    'build/*',
+    'coverage/*',
+    'src/index.ts'
+  ]
 };
