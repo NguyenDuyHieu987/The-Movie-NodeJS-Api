@@ -1,0 +1,101 @@
+module.exports = {
+  // root: true,
+  env: {
+    browser: true,
+    node: true,
+    jest: true
+  },
+  extends: [
+    'standard',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended'
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module'
+  },
+  plugins: ['prettier', '@typescript-eslint', 'simple-import-sort', 'jest'],
+  rules: {
+    indent: ['off', 2],
+    'no-console': [
+      'warn',
+      {
+        allow: ['warn', 'error']
+      }
+    ],
+    'consistent-return': 'warn',
+    semi: 'off',
+    'prefer-const': 'warn',
+    camelcase: 'off',
+    eqeqeq: 0,
+    'no-redeclare': 'off',
+    'no-unused-vars': [
+      'off',
+      {
+        vars: 'all',
+        args: 'after-used',
+        ignoreRestSiblings: false
+      }
+    ],
+    'no-undef': 'off',
+    'no-use-before-define': 'error',
+    'no-useless-constructor': 'off',
+    'no-case-declarations': 'off',
+    'prefer-regex-literals': 'off',
+    'line-comment-position': [
+      'warn',
+      {
+        position: 'above'
+      }
+    ],
+    'multiline-comment-style': ['off', 'starred-block'],
+    'func-call-spacing': 'off',
+    'prettier/prettier': [
+      'off',
+      {
+        endOfLine: 'auto'
+      }
+    ],
+    '@typescript-eslint/no-use-before-define': ['error', {}],
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/semi': 'off',
+    'simple-import-sort/imports': [
+      'warn',
+      {
+        groups: [
+          [
+            // Side effect imports.
+            '^\\u0000',
+            // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
+            '^@?\\w',
+            // Internal packages.
+            '^(src|config|models|controllers|routes|types|utils)(/.*|$)',
+            // Parent imports. Put `..` last.
+            '^\\.\\.(?!/?$)',
+            '^\\.\\./?$',
+            // Other relative imports. Put same-folder imports and `.` last.
+            '^\\./(?=.*/)(?!/?$)',
+            '^\\.(?!/?$)',
+            '^\\./?$'
+          ]
+        ]
+      }
+    ],
+    'simple-import-sort/exports': 'warn'
+  },
+  overrides: [
+    {
+      env: {
+        node: true
+      },
+      files: ['*.{js,cjs}'],
+      parserOptions: {
+        sourceType: 'script'
+      }
+    }
+  ],
+  ignorePatterns: ['node_modules/*', 'build/*', 'coverage/*', 'src/index.ts']
+};

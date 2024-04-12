@@ -3,6 +3,9 @@ import { addAliases } from 'module-alias';
 addAliases({
   '@': `${__dirname}`
 });
+// "_moduleAliases": {
+//   "@": "build"
+// }
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import MongoStore from 'connect-mongo';

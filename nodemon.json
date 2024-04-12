@@ -1,6 +1,6 @@
 {
   "ignore": [".git", "node_modules", "build"],
   "watch": ["src"],
-  "exec": "ts-node",
+  "exec": "tsx",
   "ext": "js ts json"
 }
