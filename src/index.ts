@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import { addAliases } from 'module-alias';
 addAliases({
-  '@': ` ${process.env.NODE_ENV == 'production' ? './build' : __dirname}`
+  '@': `${process.env.NODE_ENV == 'production' ? './build' : __dirname}`
 });
 import bodyParser from 'body-parser';
 import compression from 'compression';
