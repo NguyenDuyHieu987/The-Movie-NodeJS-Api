@@ -31,7 +31,7 @@ export class DiscoverController extends RedisCache {
         (req.query?.with_original_language as string) || '';
 
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
-        if (date_gte != '') {
+        if (date_gte != '' && data_lte != '') {
           return {
             release_date: {
               $gte: date_gte,
@@ -42,13 +42,19 @@ export class DiscoverController extends RedisCache {
           return {
             release_date: {
               $lte: data_lte
+            }
+          };
+        } else if (date_gte != '' && data_lte == '') {
+          return {
+            release_date: {
+              $gte: date_gte
             }
           };
         } else return {};
       };
 
       const convertFirstAirDate = (date_gte: string, data_lte: string) => {
-        if (date_gte != '') {
+        if (date_gte != '' && data_lte != '') {
           return {
             first_air_date: {
               $gte: date_gte,
@@ -59,6 +65,12 @@ export class DiscoverController extends RedisCache {
           return {
             first_air_date: {
               $lte: data_lte
+            }
+          };
+        } else if (date_gte != '' && data_lte == '') {
+          return {
+            first_air_date: {
+              $gte: date_gte
             }
           };
         } else return {};

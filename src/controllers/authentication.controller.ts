@@ -177,7 +177,7 @@ export class AuthController extends RedisCache {
         ''
       );
 
-      const facebookUser = await fetch(
+      const facebookUser: any = await fetch(
         `${process.env.FACEBOOK_API_URL}/me?access_token=${accessToken}&fields=id,name,email,picture`
       )
         .then((response) => response.json())
@@ -190,7 +190,7 @@ export class AuthController extends RedisCache {
       }
 
       const account = await Account.findOne({
-        facebook_user_id: facebookUser!.id,
+        facebook_user_id: facebookUser.id,
         auth_type: 'facebook'
       });
 

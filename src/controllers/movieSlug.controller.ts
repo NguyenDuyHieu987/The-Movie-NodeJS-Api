@@ -67,7 +67,6 @@ export class MovieSlugController extends RedisCache {
               `Movies with slug: ${req.params.slug} is not found!`
             )
           );
-          break;
       }
 
       const response = {
@@ -114,7 +113,7 @@ export class MovieSlugController extends RedisCache {
         (req.query?.with_original_language as string) || '';
 
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
-        if (date_gte != '') {
+        if (date_gte != '' && data_lte != '') {
           return {
             release_date: {
               $gte: date_gte,
@@ -125,6 +124,12 @@ export class MovieSlugController extends RedisCache {
           return {
             release_date: {
               $lte: data_lte
+            }
+          };
+        } else if (date_gte != '' && data_lte == '') {
+          return {
+            release_date: {
+              $gte: date_gte
             }
           };
         } else return {};
@@ -225,7 +230,6 @@ export class MovieSlugController extends RedisCache {
                   `Discover movie with sort by: ${sortBy} is not found!`
                 )
               );
-              break;
           }
 
           result.total = await Movie.countDocuments({
@@ -282,7 +286,6 @@ export class MovieSlugController extends RedisCache {
               `Movies with slug: ${req.params.slug} is not found!`
             )
           );
-          break;
       }
 
       await RedisCache.client.setEx(
