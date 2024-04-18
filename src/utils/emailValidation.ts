@@ -21,7 +21,7 @@ export default async function ValidateEmail(email: string): Promise<boolean> {
 
   /// /   Abstractapi
 
-  const isValid = emailValidateResponse.is_smtp_valid.value == true;
+  const isValid = emailValidateResponse.is_smtp_valid?.value == true;
 
   /// / Mailbite
   // isValid = (
