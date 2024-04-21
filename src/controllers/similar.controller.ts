@@ -43,7 +43,7 @@ export class SimilarController extends RedisCache {
               { original_language: { $regex: country } },
               {
                 genres: {
-                  $elemMatch: { $or: [...genre] }
+                  $elemMatch: genre.length > 0 ? { $or: [...genre] } : {}
                 }
               }
             ]
@@ -71,7 +71,7 @@ export class SimilarController extends RedisCache {
               { original_language: { $regex: country1 } },
               {
                 genres: {
-                  $elemMatch: { $or: [...genre1] }
+                  $elemMatch: genre1.length > 0 ? { $or: [...genre1] } : {}
                 }
               }
             ]
