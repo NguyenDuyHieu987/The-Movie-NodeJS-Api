@@ -65,6 +65,54 @@ export class BillController extends RedisCache {
       return next(error);
     }
   }
+
+  async get(req: Request, res: Response, next: NextFunction) {
+    try {
+      const skip: number = +req.query.skip! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
+
+      const invoice = await Invoice.aggregate()
+        .match({
+          id: req.params.id,
+          account_id: user.id
+        })
+        .project({
+          id: 1,
+          description: 1,
+          unit_amount: 1,
+          quantity: 1,
+          amount_total: 1,
+          amount_due: 1,
+          amount_paid: 1,
+          amount_remaining: 1,
+          amount_discount: 1,
+          amount_tax: 1,
+          currency: 1,
+          status: 1,
+          payment_status: 1,
+          payment_method: 1,
+          period_start: 1,
+          period_end: 1,
+          created_at: 1,
+          updated_at: 1
+        })
+        .skip(skip * limit)
+        .limit(limit)
+        .sort({
+          created_at: -1
+        });
+
+      return res.json({
+        success: true,
+        result: invoice[0]
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 export default new BillController();

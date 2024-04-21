@@ -2,7 +2,6 @@ import cryptoJs from 'crypto-js';
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import moment from 'moment';
-import fetch from 'node-fetch';
 import qs from 'qs';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
@@ -322,7 +321,8 @@ export class PlanController extends RedisCache {
 
             return res.json({
               success: true,
-              url: session.url
+              url: session.url,
+              invoice_id: invoiceId
             });
           default:
             return next(
@@ -524,13 +524,15 @@ export class PlanController extends RedisCache {
 
             await invoice.save();
 
-            return res.json({
-              success: true,
-              result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
-              // session,
-              // subscription: stripeSubscription,
-              // invoice: stripeInvoice
-            });
+            // return res.json({
+            //   success: true,
+            //   result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
+            //   // session,
+            //   // subscription: stripeSubscription,
+            //   // invoice: stripeInvoice
+            // });
+
+            return res.send('<script>window.close();</script>');
           } else {
             if (invoice.payment_status != 'paid') {
               invoice.payment_status = 'paid';
@@ -538,13 +540,15 @@ export class PlanController extends RedisCache {
               await invoice.save();
             }
 
-            return res.json({
-              success: true,
-              result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
-              // session,
-              // subscription: stripeSubscription,
-              // invoice: stripeInvoice
-            });
+            // return res.json({
+            //   success: true,
+            //   result: `You have successfully registered for subscription: '${stripeSubscription.description}'`
+            //   // session,
+            //   // subscription: stripeSubscription,
+            //   // invoice: stripeInvoice
+            // });
+
+            return res.send('<script>window.close();</script>');
           }
 
         default:

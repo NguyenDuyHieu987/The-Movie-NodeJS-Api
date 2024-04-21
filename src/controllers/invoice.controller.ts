@@ -10,12 +10,6 @@ export class InvoiceController extends RedisCache {
     try {
       const skip: number = +req.query.skip! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
-      const key: string = req.originalUrl;
-      const dataCache: any = await RedisCache.client.get(key);
-
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
 
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
@@ -43,13 +37,34 @@ export class InvoiceController extends RedisCache {
         account_id: user.id
       });
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(result)
-      );
-
       return res.json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async get(req: Request, res: Response, next: NextFunction) {
+    try {
+      const skip: number = +req.query.skip! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
+
+      const invoice = await Invoice.findOne({
+        id: req.params.id,
+        account_id: user.id
+      })
+        .skip(skip * limit)
+        .limit(limit)
+        .sort({
+          created_at: -1
+        });
+
+      return res.json({
+        success: true,
+        result: invoice
+      });
     } catch (error) {
       return next(error);
     }
