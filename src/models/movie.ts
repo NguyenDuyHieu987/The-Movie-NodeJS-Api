@@ -41,6 +41,7 @@ const Movie = new mongoose.Schema(
     dominant_backdrop_color: { type: Array },
     dominant_poster_color: { type: Array },
     views: { type: Number },
+    vip: { type: Number },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

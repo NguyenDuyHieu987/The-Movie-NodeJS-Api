@@ -10,6 +10,8 @@ export class EpisodeController extends RedisCache {
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
       // const seasonNumber: number = +req.params.seasonNumber;
+      const skip: number = +req.query.skip! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
@@ -17,23 +19,42 @@ export class EpisodeController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
+      const result: {
+        skip: number;
+        results: any[];
+        limit: number;
+        total: number;
+      } = {
+        skip: skip + 1,
+        results: [],
+        limit,
+        total: 0
+      };
+
       const episodes = await Episode.find({
         movie_id: movieId,
         season_id: seasonId
         // season_number: seasonNumber,
       });
 
+      const total = await Episode.countDocuments({
+        movie_id: movieId,
+        season_id: seasonId
+        // season_number: seasonNumber,
+      });
+
+      result.results = episodes;
+      result.total = total;
+
       if (episodes.length > 0) {
         await RedisCache.client.setEx(
           key,
           +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify({ results: episodes })
+          JSON.stringify(result)
         );
-
-        return res.json({ results: episodes });
-      } else {
-        throw createHttpError.NotFound(`Episodes is not exist`);
       }
+
+      return res.json(result);
     } catch (error) {
       return next(error);
     }
@@ -65,11 +86,9 @@ export class EpisodeController extends RedisCache {
           +process.env.REDIS_CACHE_TIME!,
           JSON.stringify(episode)
         );
-
-        return res.json(episode);
-      } else {
-        throw createHttpError.NotFound(`Episode is not exist`);
       }
+
+      return res.json(episode);
     } catch (error) {
       return next(error);
     }

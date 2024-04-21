@@ -18,6 +18,7 @@ const Season = new mongoose.Schema(
     vote_count: { type: Number },
     crew: { type: Array },
     guest_stars: { type: Array },
+    vip: { type: Number },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },
