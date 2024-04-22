@@ -226,8 +226,8 @@ export class PlanController extends RedisCache {
             const session = await stripe.checkout.sessions.create({
               payment_method_types: ['card'],
               mode: 'subscription',
-              customer: 'cus_PGTNwWCwjCoxnU',
-              // customer_email: user.email,
+              // customer: 'cus_PGTNwWCwjCoxnU',
+              customer_email: user.email,
               line_items: [
                 {
                   price_data: {
