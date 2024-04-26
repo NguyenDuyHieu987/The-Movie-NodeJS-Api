@@ -16,10 +16,10 @@ export const authenticationHandler = async (
   }
 ) => {
   try {
-    const userToken = req.cookies.user_token;
+    const userToken = req.cookies?.user_token;
     // || req.headers.authorization?.replace('Bearer ', '');
 
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies?.refresh_token;
 
     // console.log(req.headers['user-agent']);
     // console.log(req.headers['x-forwarded-for']);
@@ -31,7 +31,8 @@ export const authenticationHandler = async (
     const isUsedRole: boolean = role.length > 0;
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
-    const isExistToken: boolean = !isStringEmpty(refreshToken);
+    const isExistToken: boolean =
+      !isStringEmpty(refreshToken) && refreshToken != undefined;
 
     if (isRequiredAuth && !isExistToken) {
       return res.json({
