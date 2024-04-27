@@ -146,8 +146,7 @@ export class AuthController extends RedisCache {
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
-        // maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
-        maxAge: 1000
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
       res.cookie('refresh_token', refreshToken, {
