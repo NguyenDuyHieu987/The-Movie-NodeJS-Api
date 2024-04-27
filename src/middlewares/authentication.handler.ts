@@ -35,6 +35,13 @@ export const authenticationHandler = async (
       !isStringEmpty(refreshToken) && refreshToken != undefined;
 
     if (isRequiredAuth && !isExistToken) {
+      res.clearCookie('user_token', {
+        domain: req.hostname,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true
+      });
+
       return res.json({
         statusCode: 401,
         message: 'Token is required'
