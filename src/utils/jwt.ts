@@ -156,9 +156,9 @@ export async function verifyUserToken(
         decodedUser = decoded;
 
         if (
-          err?.name == jwt.TokenExpiredError.name &&
-          !JWT_SIGNATURE_SECRET_VERIFY &&
-          err?.name == jwt.JsonWebTokenError.name
+          err?.name == jwt.TokenExpiredError.name ||
+          (!JWT_SIGNATURE_SECRET_VERIFY &&
+            err?.name == jwt.JsonWebTokenError.name)
         ) {
           const oldRefreshToken = req.cookies?.refresh_token;
 
