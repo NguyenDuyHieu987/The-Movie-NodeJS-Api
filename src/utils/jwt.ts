@@ -132,118 +132,122 @@ export async function verifyUserToken(
   next: NextFunction
 ): Promise<User> {
   return new Promise((resolve, reject) => {
-    let decodedUser = null;
+    try {
+      let decodedUser = null;
 
-    jwt.verify(
-      token,
-      JWT_SIGNATURE_SECRET_VERIFY,
-      {
-        algorithms: JWT_ALLOWED_ALGORITHMS
-      },
-      async (err, decoded) => {
-        if (decoded) {
-          const isAlive = await jwtRedis
-            .setRevokePrefix('user_token')
-            .verify(token);
+      jwt.verify(
+        token,
+        JWT_SIGNATURE_SECRET_VERIFY,
+        {
+          algorithms: JWT_ALLOWED_ALGORITHMS
+        },
+        async (err, decoded) => {
+          if (decoded) {
+            const isAlive = await jwtRedis
+              .setRevokePrefix('user_token')
+              .verify(token);
 
-          if (!isAlive) {
-            return reject(
-              createHttpError.Unauthorized('Token is no longer active')
-            );
-          }
-        }
-
-        decodedUser = decoded;
-
-        if (
-          err?.name == jwt.TokenExpiredError.name ||
-          (!token && err?.name == jwt.JsonWebTokenError.name)
-        ) {
-          const oldRefreshToken = req.cookies?.refresh_token;
-
-          const decodedRefeshToken = (await verifyRefreshToken(
-            oldRefreshToken,
-            req,
-            res
-          )) as User;
-
-          const account = await Account.findOne({
-            id: decodedRefeshToken.id
-          });
-
-          if (!account) {
-            return reject(
-              createHttpError.InternalServerError('Account is not exist')
-            );
+            if (!isAlive) {
+              return reject(
+                createHttpError.Unauthorized('Token is no longer active')
+              );
+            }
           }
 
-          const accountInfo = {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at
-          };
+          decodedUser = decoded;
 
-          const userToken = await signUserToken(accountInfo);
+          if (
+            err?.name == jwt.TokenExpiredError.name ||
+            (!token && err?.name == jwt.JsonWebTokenError.name)
+          ) {
+            const oldRefreshToken = req.cookies?.refresh_token;
 
-          const refreshToken = await signRefreshToken(
-            accountInfo,
-            oldRefreshToken
-          );
+            const decodedRefeshToken = (await verifyRefreshToken(
+              oldRefreshToken,
+              req,
+              res
+            )) as User;
 
-          res.locals.userToken = userToken;
+            const account = await Account.findOne({
+              id: decodedRefeshToken.id
+            });
 
-          res.set('Access-Control-Expose-Headers', 'Authorization');
+            if (!account) {
+              return reject(
+                createHttpError.InternalServerError('Account is not exist')
+              );
+            }
 
-          res.cookie('user_token', userToken, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
-          });
+            const accountInfo = {
+              id: account.id,
+              username: account.username,
+              email: account.email,
+              full_name: account.full_name,
+              avatar: account.avatar,
+              role: account.role,
+              auth_type: account.auth_type,
+              created_at: account.created_at
+            };
 
-          res.cookie('refresh_token', refreshToken, {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true,
-            maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
-          });
+            const userToken = await signUserToken(accountInfo);
 
-          res.header('Authorization', userToken);
+            const refreshToken = await signRefreshToken(
+              accountInfo,
+              oldRefreshToken
+            );
 
-          decodedUser = account;
+            res.locals.userToken = userToken;
+
+            res.set('Access-Control-Expose-Headers', 'Authorization');
+
+            res.cookie('user_token', userToken, {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true,
+              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+            });
+
+            res.cookie('refresh_token', refreshToken, {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true,
+              maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
+            });
+
+            res.header('Authorization', userToken);
+
+            decodedUser = account;
+          }
+
+          if (err?.name == jwt.JsonWebTokenError.name && !!token) {
+            res.clearCookie('user_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+
+            res.clearCookie('refresh_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+            return reject(err);
+          }
+
+          if (!decodedUser) {
+            return reject(createHttpError.Unauthorized());
+          }
+
+          return resolve(decodedUser as User);
         }
-
-        if (err?.name == jwt.JsonWebTokenError.name && !!token) {
-          res.clearCookie('user_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
-
-          res.clearCookie('refresh_token', {
-            domain: req.hostname,
-            httpOnly: req.session.cookie.httpOnly,
-            sameSite: req.session.cookie.sameSite,
-            secure: true
-          });
-          return reject(err);
-        }
-
-        if (!decodedUser) {
-          return reject(createHttpError.Unauthorized());
-        }
-
-        return resolve(decodedUser as User);
-      }
-    );
+      );
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
@@ -347,7 +351,9 @@ export async function verifyRefreshToken(
         const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
 
         if (!listRefreshTokenParse.includes(token)) {
-          return createHttpError.Unauthorized('Token is no longer active');
+          return reject(
+            createHttpError.Unauthorized('Token is no longer active')
+          );
         }
 
         return resolve(decodedRefeshToken);
