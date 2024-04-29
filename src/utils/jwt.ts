@@ -132,16 +132,16 @@ export async function verifyUserToken(
   next: NextFunction
 ): Promise<User> {
   return new Promise((resolve, reject) => {
-    try {
-      let decodedUser = null;
+    let decodedUser = null;
 
-      jwt.verify(
-        token,
-        JWT_SIGNATURE_SECRET_VERIFY,
-        {
-          algorithms: JWT_ALLOWED_ALGORITHMS
-        },
-        async (err, decoded) => {
+    jwt.verify(
+      token,
+      JWT_SIGNATURE_SECRET_VERIFY,
+      {
+        algorithms: JWT_ALLOWED_ALGORITHMS
+      },
+      async (err, decoded) => {
+        try {
           if (decoded) {
             const isAlive = await jwtRedis
               .setRevokePrefix('user_token')
@@ -166,9 +166,7 @@ export async function verifyUserToken(
               oldRefreshToken,
               req,
               res
-            ).catch((error) => {
-              return reject(error);
-            })) as User;
+            )) as User;
 
             const account = await Account.findOne({
               id: decodedRefeshToken.id
@@ -245,11 +243,11 @@ export async function verifyUserToken(
           }
 
           return resolve(decodedUser as User);
+        } catch (err) {
+          reject(err);
         }
-      );
-    } catch (err) {
-      reject(err);
-    }
+      }
+    );
   });
 }
 
@@ -304,14 +302,14 @@ export async function verifyRefreshToken(
   res: Response
 ): Promise<User> {
   return new Promise((resolve, reject) => {
-    try {
-      jwt.verify(
-        token,
-        JWT_REFRESH_SECRET_VERIFY,
-        {
-          algorithms: JWT_ALLOWED_ALGORITHMS
-        },
-        async (err, decoded) => {
+    jwt.verify(
+      token,
+      JWT_REFRESH_SECRET_VERIFY,
+      {
+        algorithms: JWT_ALLOWED_ALGORITHMS
+      },
+      async (err, decoded) => {
+        try {
           if (err) {
             if (
               err?.name == jwt.JsonWebTokenError.name &&
@@ -360,10 +358,10 @@ export async function verifyRefreshToken(
           }
 
           return resolve(decodedRefeshToken);
+        } catch (err) {
+          reject(err);
         }
-      );
-    } catch (err) {
-      reject(err);
-    }
+      }
+    );
   });
 }
