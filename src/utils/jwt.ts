@@ -347,9 +347,7 @@ export async function verifyRefreshToken(
         const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
 
         if (!listRefreshTokenParse.includes(token)) {
-          return reject(
-            createHttpError.Unauthorized('Token is no longer active')
-          );
+          return createHttpError.Unauthorized('Token is no longer active');
         }
 
         return resolve(decodedRefeshToken);
