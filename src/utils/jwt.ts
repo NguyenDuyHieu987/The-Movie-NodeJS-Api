@@ -344,6 +344,20 @@ export async function verifyRefreshToken(
           );
 
           if (!listRefreshToken) {
+            res.clearCookie('user_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+
+            res.clearCookie('refresh_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+
             return reject(
               createHttpError.Unauthorized('Token is no longer active')
             );
@@ -352,6 +366,20 @@ export async function verifyRefreshToken(
           const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
 
           if (!listRefreshTokenParse.includes(token)) {
+            res.clearCookie('user_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+
+            res.clearCookie('refresh_token', {
+              domain: req.hostname,
+              httpOnly: req.session.cookie.httpOnly,
+              sameSite: req.session.cookie.sameSite,
+              secure: true
+            });
+
             return reject(
               createHttpError.Unauthorized('Token is no longer active')
             );
