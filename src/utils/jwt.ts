@@ -166,7 +166,9 @@ export async function verifyUserToken(
               oldRefreshToken,
               req,
               res
-            ).catch((error) => reject(error))) as User;
+            ).catch((error) => {
+              return reject(error);
+            })) as User;
 
             const account = await Account.findOne({
               id: decodedRefeshToken.id
