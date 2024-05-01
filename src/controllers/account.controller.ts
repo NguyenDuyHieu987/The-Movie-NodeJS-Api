@@ -473,7 +473,7 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.cookies.chg_email_token || req.body.token;
+      const token: string = req.cookies.chg_email_token || req.params.token;
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
@@ -625,7 +625,7 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.cookies.rst_pwd_token || req.body.token;
+      const token: string = req.cookies.rst_pwd_token || req.params.token;
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
