@@ -160,7 +160,7 @@ export class AccountController extends RedisCache {
             });
           }
 
-          if (!(await ValidateEmail(formUser.email))) {
+          if (!(await ValidateEmail(formUser.new_email))) {
             // if (true) {
 
             return res.json({

@@ -21,7 +21,6 @@ export default async function ValidateEmail(email: string): Promise<boolean> {
 
   /// /   Abstractapi
   const isValid = emailValidateResponse.is_smtp_valid?.value == true;
-  console.log(emailValidateResponse);
 
   /// / Mailbite
   // const isValid =
@@ -34,9 +33,5 @@ export default async function ValidateEmail(email: string): Promise<boolean> {
   /// // WhoisXML
   // const isValid = emailValidateResponse?.smtpCheck == 'true';
 
-  if (isValid) {
-    return true;
-  } else {
-    return false;
-  }
+  return isValid;
 }
