@@ -197,7 +197,7 @@ export class AccountController extends RedisCache {
           emailResponse = await sendinblueEmail.VerificationLink({
             to: formUser.new_email,
             title: 'Thay đổi email của bạn',
-            subject: 'Hoàn thành yêu cầu đặt thay đổi email',
+            subject: 'Hoàn tất yêu cầu thay đổi email',
             nameLink: 'Thay đổi email',
             linkVerify: changeEmailLink,
             note1: 'Truy cập dường liên kết sau đây để thay đổi email của bạn:',
