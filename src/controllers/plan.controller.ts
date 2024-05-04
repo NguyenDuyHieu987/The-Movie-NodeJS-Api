@@ -298,6 +298,7 @@ export class PlanController extends RedisCache {
               id: invoiceId,
               account_id: session.client_reference_id,
               session_id: session.id,
+              plan_id: plan.id,
               session,
               description: `Nâng cấp tài khoản gói: ${plan.name}`,
               quantity: 1,

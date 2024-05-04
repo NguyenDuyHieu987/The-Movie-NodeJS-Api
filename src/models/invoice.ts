@@ -8,6 +8,7 @@ const Invoice = new mongoose.Schema(
     session_id: { type: String },
     customer_id: { type: String },
     subscription_id: { type: String },
+    plan_id: { type: String },
     invoice_id: { type: String },
     description: { type: String },
     session: { type: Object },
