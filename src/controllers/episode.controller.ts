@@ -89,6 +89,71 @@ export class EpisodeController extends RedisCache {
     }
   }
 
+  async getLatest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const movieId: string = req.params.movieId;
+      const seasonId: string = req.params.seasonId;
+      // const seasonNumber: number = +req.params.seasonNumber;
+      const limit: number = +req.query.limit! || 7;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const result: {
+        results: any[];
+        limit: number;
+        total: number;
+        total_episode: number;
+      } = {
+        results: [],
+        limit: limit,
+        total: 0,
+        total_episode: 0
+      };
+
+      const episodes = await Episode.find({
+        movie_id: movieId,
+        season_id: seasonId
+        // season_number: seasonNumber,
+      })
+        .sort({ episode_number: -1 })
+        .limit(limit);
+
+      const total = await Episode.countDocuments({
+        movie_id: movieId,
+        season_id: seasonId
+        // season_number: seasonNumber,
+      })
+        .sort({ episode_number: -1 })
+        .limit(limit);
+
+      const total_episode = await Episode.countDocuments({
+        movie_id: movieId,
+        season_id: seasonId
+        // season_number: seasonNumber,
+      });
+
+      result.results = episodes;
+      result.total = total;
+      result.total_episode = total_episode;
+
+      if (episodes.length > 0) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(result)
+        );
+      }
+
+      return res.json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const movieId: string = req.params.movieId;
