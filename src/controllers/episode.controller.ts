@@ -10,8 +10,10 @@ export class EpisodeController extends RedisCache {
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
       // const seasonNumber: number = +req.params.seasonNumber;
-      const skip: number = +req.query.skip! - 1 || 0;
-      const limit: number = +req.query.limit! || 20;
+      const skip: number = +req.query.skip! || 1;
+      const limit: number = +req.query.limit! || 30;
+      const from: number = +req.query.from! || 1;
+      const to: number = +req.query.to! || 30;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
@@ -20,31 +22,58 @@ export class EpisodeController extends RedisCache {
       }
 
       const result: {
-        skip: number;
+        skip?: number;
+        from?: number;
+        to?: number;
         results: any[];
-        limit: number;
+        limit?: number;
         total: number;
+        total_episode: number;
       } = {
-        skip: skip + 1,
         results: [],
-        limit,
-        total: 0
+        total: 0,
+        total_episode: 0
       };
 
       const episodes = await Episode.find({
         movie_id: movieId,
-        season_id: seasonId
+        season_id: seasonId,
         // season_number: seasonNumber,
+        episode_number: {
+          $gte: req.query?.from ? from : skip,
+          $lte: req.query?.to ? to : limit + skip - 1
+        }
       });
 
       const total = await Episode.countDocuments({
+        movie_id: movieId,
+        season_id: seasonId,
+        // season_number: seasonNumber,
+        episode_number: {
+          $gte: req.query?.from ? from : skip,
+          $lte: req.query?.to ? to : limit + skip - 1
+        }
+      });
+
+      const total_episode = await Episode.countDocuments({
         movie_id: movieId,
         season_id: seasonId
         // season_number: seasonNumber,
       });
 
+      if (req.query?.skip || (!req.query?.skip && !req.query?.from)) {
+        result.skip = skip;
+        result.limit = limit;
+      }
+
+      if (req.query?.from) {
+        result.from = from;
+        result.to = to;
+      }
+
       result.results = episodes;
       result.total = total;
+      result.total_episode = total_episode;
 
       if (episodes.length > 0) {
         await RedisCache.client.setEx(
