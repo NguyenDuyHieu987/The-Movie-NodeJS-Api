@@ -86,7 +86,7 @@ app.use(
       process.env.NODE_ENV != 'production' && process.env.CLIENT_DEV_URL!,
       process.env.NODE_ENV != 'production' && 'http://localhost:8080',
       'https://' + process.env.CLIENT_DOMAIN,
-      'https://test.' + process.env.CLIENT_DOMAIN,
+      'https://proxy.' + process.env.CLIENT_DOMAIN,
       'https://dash.' + process.env.CLIENT_DOMAIN,
       'https://dashboard.' + process.env.CLIENT_DOMAIN,
       // www
