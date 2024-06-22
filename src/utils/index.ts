@@ -77,6 +77,18 @@ export function removeVietnameseTones(str: string) {
   return str;
 }
 
+export function serialize(obj: object | any): string | null {
+  if (!obj) return null;
+  // var str = [];
+  // for (var p in obj)
+  //   if (obj.hasOwnProperty(p)) {
+  //     str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
+  //   }
+  // return str.join('&');
+
+  return new URLSearchParams(obj).toString();
+}
+
 export * from './emailValidation';
 export * from './encryptPassword';
 export * from './generateOTP';
