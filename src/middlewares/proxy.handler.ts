@@ -6,14 +6,14 @@ const proxyHandler = (req: Request, res: Response, next: NextFunction) => {
   const requestIP = req.ip || req.connection.remoteAddress;
   console.log(requestIP);
 
-  //   if (
-  //     proxyAuthHeader !== 'my-proxy-key'
-  //     // apiKey !== validApiKey ||
-  //     // requestIP !== allowedProxyIP
-  //     // process.env.NODE_ENV == 'production'
-  //   ) {
-  //     return res.status(403).send('Forbidden: Access is denined.');
-  //   }
+  if (
+    proxyAuthHeader !== 'my-proxy-key'
+    // apiKey !== validApiKey ||
+    // requestIP !== allowedProxyIP
+    // process.env.NODE_ENV == 'production'
+  ) {
+    return res.status(403).send('Forbidden: Access is denined.');
+  }
 
   next();
 };
