@@ -11,7 +11,7 @@ class MongoDB {
       const mongo_uri: string =
         process.env.NODE_ENV == 'production'
           ? process.env.MONGODB_URI!
-          : 'mongodb://127.0.0.1:27017/Phimhay247_DB';
+          : process.env.MONGODB_URI_DEV!;
 
       console.log(process.env.NODE_ENV);
 
