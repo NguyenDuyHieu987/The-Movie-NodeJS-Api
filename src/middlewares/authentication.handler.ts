@@ -6,7 +6,7 @@ import type { RoleUser, User } from '@/types';
 import { isStringEmpty } from '@/utils';
 import { verifyUserToken } from '@/utils/jwt';
 
-export const authenticationHandler = async (
+const authenticationHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -103,3 +103,5 @@ export const authenticationHandler = async (
     return next(error);
   }
 };
+
+export { authenticationHandler };
