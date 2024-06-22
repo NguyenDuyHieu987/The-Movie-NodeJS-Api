@@ -12,7 +12,7 @@ const proxyHandler = (req: Request, res: Response, next: NextFunction) => {
     // requestIP !== allowedProxyIP
     // process.env.NODE_ENV == 'production'
   ) {
-    return res.status(403).send('Forbidden: Access is denined.');
+    return res.status(403).send('Forbidden: Access is denied.');
   }
 
   next();
