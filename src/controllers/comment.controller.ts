@@ -29,7 +29,7 @@ export class CommentController {
       let likeDislike: any[] = [];
 
       if (
-        // req.headers?.authorization ||
+        req.headers?.authorization ||
         req.cookies?.user_token ||
         res.locals.user
       ) {
@@ -230,7 +230,7 @@ export class CommentController {
       let likeDislike: any[] = [];
 
       if (
-        // req.headers?.authorization ||
+        req.headers?.authorization ||
         req.cookies?.user_token ||
         res.locals.user
       ) {

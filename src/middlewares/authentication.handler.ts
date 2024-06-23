@@ -16,8 +16,9 @@ const authenticationHandler = async (
   }
 ) => {
   try {
-    const userToken = req.cookies?.user_token;
-    // || req.headers.authorization?.replace('Bearer ', '');
+    const userToken =
+      req.cookies?.user_token ||
+      req.headers.authorization?.replace('Bearer ', '');
 
     const refreshToken = req.cookies?.refresh_token;
 
@@ -45,7 +46,7 @@ const authenticationHandler = async (
 
       return res.json({
         statusCode: 401,
-        message: 'Token is required'
+        message: 'Token is required.'
       });
       // throw createHttpError.BadRequest('Token is required');
     }
@@ -60,13 +61,13 @@ const authenticationHandler = async (
 
     if (isRequiredAuth && !user) {
       throw createHttpError.Unauthorized(
-        'You need authorized to perform this action'
+        'You need authorized to perform this action.'
       );
     }
 
     if (isRequiredAuth && isUsedRole && user && !role.includes(user.role)) {
       throw createHttpError.Forbidden(
-        'You do not have permission to perform this action'
+        'You do not have permission to perform this action.'
       );
     }
 
@@ -102,7 +103,7 @@ const authenticationHandler = async (
       );
     }
 
-    return next(error);
+    next(error);
   }
 };
 

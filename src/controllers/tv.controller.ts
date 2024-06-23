@@ -191,7 +191,7 @@ export class TVController {
       };
 
       if (
-        // req.headers?.authorization ||
+        req.headers?.authorization ||
         req.cookies?.user_token ||
         res.locals.user
       ) {
