@@ -29,7 +29,10 @@ const app = express();
 const cookieConfig: CookieOptions = {
   httpOnly: false,
   maxAge: +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000,
-  domain: '.' + process.env.CLIENT_DOMAIN,
+  domain:
+    process.env.NODE_ENV == 'production'
+      ? '.' + process.env.CLIENT_DOMAIN
+      : 'localhost',
   // expires: new Date(
   //   Date.now() + +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000
   // ),
