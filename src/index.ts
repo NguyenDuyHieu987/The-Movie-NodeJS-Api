@@ -27,8 +27,8 @@ dotenv.config();
 const app = express();
 
 const cookieConfig: CookieOptions = {
-  httpOnly: false,
-  maxAge: +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000,
+  httpOnly: true,
+  // maxAge: +process.env.COOKIE_MAX_AGE! * ONE_HOUR * 1000,
   domain:
     process.env.NODE_ENV == 'production'
       ? '.' + process.env.CLIENT_DOMAIN
@@ -38,7 +38,8 @@ const cookieConfig: CookieOptions = {
   // ),
   // signed: true,
   sameSite: 'lax',
-  secure: true
+  secure: true,
+  priority: 'high'
 };
 
 const sessionConfig: SessionOptions = {

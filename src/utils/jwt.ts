@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import type { Algorithm, JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
@@ -201,7 +201,8 @@ export async function verifyUserToken(
             res.set('Access-Control-Expose-Headers', 'Authorization');
 
             res.cookie('user_token', userToken, {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
@@ -209,7 +210,8 @@ export async function verifyUserToken(
             });
 
             res.cookie('refresh_token', refreshToken, {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true,
@@ -223,14 +225,16 @@ export async function verifyUserToken(
 
           if (err?.name == jwt.JsonWebTokenError.name && !!token) {
             res.clearCookie('user_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true
             });
 
             res.clearCookie('refresh_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true
@@ -316,14 +320,16 @@ export async function verifyRefreshToken(
               err?.name != jwt.TokenExpiredError.name
             ) {
               res.clearCookie('user_token', {
-                domain: req.hostname,
+                ...(req.session.cookie as CookieOptions),
+                domain: req.session.cookie.domain,
                 httpOnly: req.session.cookie.httpOnly,
                 sameSite: req.session.cookie.sameSite,
                 secure: true
               });
 
               res.clearCookie('refresh_token', {
-                domain: req.hostname,
+                ...(req.session.cookie as CookieOptions),
+                domain: req.session.cookie.domain,
                 httpOnly: req.session.cookie.httpOnly,
                 sameSite: req.session.cookie.sameSite,
                 secure: true
@@ -345,14 +351,16 @@ export async function verifyRefreshToken(
 
           if (!listRefreshToken) {
             res.clearCookie('user_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true
             });
 
             res.clearCookie('refresh_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true
@@ -367,14 +375,16 @@ export async function verifyRefreshToken(
 
           if (!listRefreshTokenParse.includes(token)) {
             res.clearCookie('user_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true
             });
 
             res.clearCookie('refresh_token', {
-              domain: req.hostname,
+              ...(req.session.cookie as CookieOptions),
+              domain: req.session.cookie.domain,
               httpOnly: req.session.cookie.httpOnly,
               sameSite: req.session.cookie.sameSite,
               secure: true

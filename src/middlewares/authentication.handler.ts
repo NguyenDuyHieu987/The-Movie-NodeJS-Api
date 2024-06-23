@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import createHttpError, { HttpError } from 'http-errors';
 import jwt from 'jsonwebtoken';
 
@@ -36,7 +36,8 @@ const authenticationHandler = async (
 
     if (isRequiredAuth && !isExistToken) {
       res.clearCookie('user_token', {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true
@@ -76,7 +77,8 @@ const authenticationHandler = async (
 
       // if (statusCode == 401 || statusCode == 403) {
       //   res.clearCookie('user_token', {
-      //     domain: req.hostname,
+      //     ...(req.session.cookie as CookieOptions),
+      //     domain: req.session.cookie.domain,
       //     httpOnly: req.session.cookie.httpOnly,
       //     sameSite: req.session.cookie.sameSite,
       //     secure: true

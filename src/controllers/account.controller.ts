@@ -1,5 +1,5 @@
 import * as argon2 from 'argon2';
-import type { NextFunction, Request, Response } from 'express';
+import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import type { JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
@@ -72,7 +72,8 @@ export class AccountController extends RedisCache {
           });
 
           res.cookie('vrf_email_token', encoded, {
-            domain: req.hostname,
+            ...(req.session.cookie as CookieOptions),
+            domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -139,7 +140,8 @@ export class AccountController extends RedisCache {
           });
 
           res.cookie('chg_pwd_token', encoded, {
-            domain: req.hostname,
+            ...(req.session.cookie as CookieOptions),
+            domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -205,7 +207,8 @@ export class AccountController extends RedisCache {
           });
 
           res.cookie('chg_email_token', encoded, {
-            domain: req.hostname,
+            ...(req.session.cookie as CookieOptions),
+            domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
             sameSite: req.session.cookie.sameSite,
             secure: true,
@@ -285,7 +288,8 @@ export class AccountController extends RedisCache {
       });
 
       res.clearCookie('chg_pwd_token', {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true
@@ -312,7 +316,8 @@ export class AccountController extends RedisCache {
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
         res.cookie('user_token', newUserToken, {
-          domain: req.hostname,
+          ...(req.session.cookie as CookieOptions),
+          domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -320,7 +325,8 @@ export class AccountController extends RedisCache {
         });
 
         res.cookie('refresh_token', newRefreshToken, {
-          domain: req.hostname,
+          ...(req.session.cookie as CookieOptions),
+          domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
           sameSite: req.session.cookie.sameSite,
           secure: true,
@@ -406,7 +412,8 @@ export class AccountController extends RedisCache {
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
       res.cookie('user_token', newUserToken, {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
@@ -441,7 +448,8 @@ export class AccountController extends RedisCache {
       });
 
       res.clearCookie('vrf_email_token', {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true
@@ -580,7 +588,8 @@ export class AccountController extends RedisCache {
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
       res.cookie('user_token', newUserToken, {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true,
@@ -588,7 +597,8 @@ export class AccountController extends RedisCache {
       });
 
       res.clearCookie('chg_email_token', {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true
@@ -718,7 +728,8 @@ export class AccountController extends RedisCache {
       });
 
       res.clearCookie('rst_pwd_token', {
-        domain: req.hostname,
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
         sameSite: req.session.cookie.sameSite,
         secure: true
