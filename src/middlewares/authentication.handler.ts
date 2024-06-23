@@ -20,7 +20,7 @@ const authenticationHandler = async (
       req.cookies?.user_token ||
       req.headers.authorization?.replace('Bearer ', '');
 
-    const refreshToken = req.cookies?.refresh_token;
+    const refreshToken: string | null | undefined = req.cookies?.refresh_token;
 
     // console.log(req.headers['user-agent']);
     // console.log(req.headers['x-forwarded-for']);
@@ -33,7 +33,7 @@ const authenticationHandler = async (
     const isRequiredAuth: boolean = params.required || isUsedRole;
 
     const isExistToken: boolean =
-      !isStringEmpty(refreshToken) && refreshToken != undefined;
+      !isStringEmpty(refreshToken?.trim()) && refreshToken != undefined;
 
     if (isRequiredAuth && !isExistToken) {
       res.clearCookie('user_token', {
