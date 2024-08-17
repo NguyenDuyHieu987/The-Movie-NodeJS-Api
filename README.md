@@ -3,11 +3,11 @@
 
 ### Scripts
 
-Install dependencies 
+Install dependencies
 
 #### `pnpm install` or `npm install`
 
-Starts the app in development 
+Starts the app in development
 
 #### `npm start`
 
