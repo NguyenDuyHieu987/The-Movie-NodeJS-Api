@@ -43,7 +43,10 @@ export class SendiblueEmail {
   }) {
     this.sendSmtpEmail = {
       subject: 'Mã xác thực email của bạn',
-      sender: { name: 'Phimhay247', email: 'account@phimhay247.online' },
+      sender: {
+        name: 'Phimhay247',
+        email: `account@${process.env.CLIENT_DOMAIN}`
+      },
       to: [
         {
           email: to
@@ -90,7 +93,10 @@ export class SendiblueEmail {
   }) {
     this.sendSmtpEmail = {
       subject,
-      sender: { name: 'Phimhay247', email: 'account@phimhay247.online' },
+      sender: {
+        name: 'Phimhay247',
+        email: `account@${process.env.CLIENT_DOMAIN}`
+      },
       to: [
         {
           email: to
