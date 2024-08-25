@@ -276,7 +276,7 @@ export class MovieController {
 
       const data = await Movie.aggregate([
         {
-          $match: { id: req.params.id }
+          $match: { id: req.params.id, media_type: req.params.type }
         },
         ...extraValue.images!,
         ...extraValue.videos!,
@@ -308,7 +308,7 @@ export class MovieController {
       const movieId: string = req.params.movieId;
 
       const movie = await Movie.updateOne(
-        { id: movieId },
+        { id: req.params.id, media_type: req.params.type },
         {
           $inc: { views: 1 }
         }

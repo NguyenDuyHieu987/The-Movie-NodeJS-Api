@@ -226,199 +226,96 @@ export class HistoryController {
       const percent: number = Number(req.body.percent);
       const seconds: number = Number(req.body.seconds);
 
-      switch (mediaType) {
-        case 'movie':
-          const movie = await Movie.findOne({ id: movieId });
+      const movie = await Movie.findOne({ id: movieId, media_type: mediaType });
 
-          if (movie == null) {
-            throw createHttpError.NotFound('Movie is not exists');
-          }
+      if (movie == null) {
+        throw createHttpError.NotFound('Movie is not exists');
+      }
 
-          const itemHistory = await History.findOne({
-            user_id: user.id,
-            movie_id: movieId,
-            media_type: 'movie'
-          });
+      const itemHistory = await History.findOne({
+        user_id: user.id,
+        movie_id: movieId,
+        media_type: 'movie'
+      });
 
-          if (itemHistory == null) {
-            await History.create({
-              id: idItemHistory,
-              user_id: user.id,
-              movie_id: movieId,
-              name: movie.name,
-              original_name: movie.original_name,
-              original_language: movie.original_language,
-              media_type: 'movie',
-              genres: movie.genres,
-              backdrop_path: movie.backdrop_path,
-              poster_path: movie.poster_path,
-              dominant_backdrop_color: movie.dominant_backdrop_color,
-              dominant_poster_color: movie.dominant_poster_color,
-              duration,
-              percent,
-              seconds,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
+      if (itemHistory == null) {
+        await History.create({
+          id: idItemHistory,
+          user_id: user.id,
+          movie_id: movieId,
+          name: movie.name,
+          original_name: movie.original_name,
+          original_language: movie.original_language,
+          media_type: mediaType,
+          genres: movie.genres,
+          backdrop_path: movie.backdrop_path,
+          poster_path: movie.poster_path,
+          dominant_backdrop_color: movie.dominant_backdrop_color,
+          dominant_poster_color: movie.dominant_poster_color,
+          duration,
+          percent,
+          seconds,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
 
-            return res.json({
-              success: true,
-              results: 'Add item to history suucessfully'
-            });
-          } else {
-            const oldDuration: number = itemHistory.duration!;
-            const oldSeconds: number = itemHistory.seconds!;
-            const oldPercent: number = itemHistory.percent!;
+        return res.json({
+          success: true,
+          results: 'Add item to history suucessfully'
+        });
+      } else {
+        const oldDuration: number = itemHistory.duration!;
+        const oldSeconds: number = itemHistory.seconds!;
+        const oldPercent: number = itemHistory.percent!;
 
-            if (seconds > oldSeconds && percent > oldPercent) {
-              // await History.updateOne(
-              //   {
-              //     user_id: user.id,
-              //     movie_id: movieId,
-              //     media_type: 'movie',
-              //   },
-              //   {
-              //     $set: {
-              //       percent: percent,
-              //       seconds: seconds,
-              //       updated_at: new Date().toISOString(),
-              //     },
-              //   }
-              // );
+        if (seconds > oldSeconds && percent > oldPercent) {
+          // await History.updateOne(
+          //   {
+          //     user_id: user.id,
+          //     movie_id: movieId,
+          //     media_type: 'movie',
+          //   },
+          //   {
+          //     $set: {
+          //       percent: percent,
+          //       seconds: seconds,
+          //       updated_at: new Date().toISOString(),
+          //     },
+          //   }
+          // );
 
-              itemHistory.percent = percent;
-              itemHistory.seconds = seconds;
-              itemHistory.updated_at = new Date();
+          itemHistory.percent = percent;
+          itemHistory.seconds = seconds;
+          itemHistory.updated_at = new Date();
 
-              await itemHistory.save();
-            } else {
-              // await History.updateOne(
-              //   {
-              //     user_id: user.id,
-              //     movie_id: movieId,
-              //     media_type: 'movie',
-              //   },
-              //   {
-              //     $set: {
-              //       percent: percent,
-              //       seconds: seconds,
-              //       updated_at: new Date().toISOString(),
-              //     },
-              //   }
-              // );
+          await itemHistory.save();
+        } else {
+          // await History.updateOne(
+          //   {
+          //     user_id: user.id,
+          //     movie_id: movieId,
+          //     media_type: 'movie',
+          //   },
+          //   {
+          //     $set: {
+          //       percent: percent,
+          //       seconds: seconds,
+          //       updated_at: new Date().toISOString(),
+          //     },
+          //   }
+          // );
 
-              itemHistory.percent = percent;
-              itemHistory.seconds = seconds;
-              itemHistory.updated_at = new Date();
+          itemHistory.percent = percent;
+          itemHistory.seconds = seconds;
+          itemHistory.updated_at = new Date();
 
-              await itemHistory.save();
-            }
+          await itemHistory.save();
+        }
 
-            return res.json({
-              success: true,
-              results: 'Add item to history suucessfully'
-            });
-          }
-
-        case 'tv':
-          const tv = await TV.findOne({ id: movieId });
-
-          if (tv == null) {
-            throw createHttpError.NotFound('Movie is not exists');
-          }
-
-          const itemHistory1 = await History.findOne({
-            user_id: user.id,
-            movie_id: movieId,
-            media_type: 'tv'
-          });
-
-          if (itemHistory1 == null) {
-            await History.create({
-              id: idItemHistory,
-              user_id: user.id,
-              movie_id: movieId,
-              name: tv.name,
-              original_name: tv.original_name,
-              original_language: tv.original_language,
-              media_type: 'tv',
-              genres: tv.genres,
-              backdrop_path: tv.backdrop_path,
-              poster_path: tv.poster_path,
-              dominant_backdrop_color: tv.dominant_backdrop_color,
-              dominant_poster_color: tv.dominant_poster_color,
-              duration,
-              percent,
-              seconds,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-
-            return res.json({
-              success: true,
-              results: 'Add item to history suucessfully'
-            });
-          } else {
-            const oldDuration: number = itemHistory1.duration!;
-            const oldSeconds: number = itemHistory1.seconds!;
-            const oldPercent: number = itemHistory1.percent!;
-
-            if (seconds > oldSeconds && percent > oldPercent) {
-              // await History.updateOne(
-              //   {
-              //     user_id: user.id,
-              //     movie_id: movieId,
-              //     media_type: 'tv',
-              //   },
-              //   {
-              //     $set: {
-              //       percent: percent,
-              //       seconds: seconds,
-              //       updated_at: new Date().toISOString(),
-              //     },
-              //   }
-              // );
-
-              itemHistory1.percent = percent;
-              itemHistory1.seconds = seconds;
-              itemHistory1.updated_at = new Date();
-
-              await itemHistory1.save();
-            } else {
-              // await History.updateOne(
-              //   {
-              //     user_id: user.id,
-              //     movie_id: movieId,
-              //     media_type: 'tv',
-              //   },
-              //   {
-              //     $set: {
-              //       percent: percent,
-              //       seconds: seconds,
-              //       updated_at: new Date().toISOString(),
-              //     },
-              //   }
-              // );
-
-              itemHistory1.percent = percent;
-              itemHistory1.seconds = seconds;
-              itemHistory1.updated_at = new Date();
-
-              await itemHistory1.save();
-            }
-
-            return res.json({
-              success: true,
-              results: 'Add item to history suucessfully'
-            });
-          }
-
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${mediaType} is not found`
-            )
-          );
+        return res.json({
+          success: true,
+          results: 'Add item to history suucessfully'
+        });
       }
     } catch (error) {
       return next(error);

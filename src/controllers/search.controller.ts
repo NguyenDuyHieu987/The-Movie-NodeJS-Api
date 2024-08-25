@@ -45,6 +45,7 @@ export class SearchController extends RedisCache {
       switch (req.params.type) {
         case 'all':
           const movie = await Movie.find({
+            media_type: 'movie',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -54,7 +55,8 @@ export class SearchController extends RedisCache {
             .limit(limit / 2)
             .sort({ views: -1 });
 
-          const tv = await TV.find({
+          const tv = await Movie.find({
+            media_type: 'tv',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -67,13 +69,15 @@ export class SearchController extends RedisCache {
           result.results = movie.concat(tv);
 
           const totalMovie = await Movie.countDocuments({
+            media_type: 'movie',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
             ]
           });
 
-          const totalTv = await TV.countDocuments({
+          const totalTv = await Movie.countDocuments({
+            media_type: 'tv',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -88,6 +92,7 @@ export class SearchController extends RedisCache {
           break;
         case 'movie':
           result.results = await Movie.find({
+            media_type: 'movie',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -98,6 +103,7 @@ export class SearchController extends RedisCache {
             .sort({ views: -1 });
 
           result.total = await Movie.countDocuments({
+            media_type: 'movie',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -105,7 +111,8 @@ export class SearchController extends RedisCache {
           });
           break;
         case 'tv':
-          result.results = await TV.find({
+          result.results = await Movie.find({
+            media_type: 'tv',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -115,7 +122,8 @@ export class SearchController extends RedisCache {
             .limit(limit)
             .sort({ views: -1 });
 
-          result.total = await TV.countDocuments({
+          result.total = await Movie.countDocuments({
+            media_type: 'tv',
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
@@ -304,22 +312,10 @@ export class SearchController extends RedisCache {
       const searchQuery: string = req.body.query;
 
       if (movieId && movieType) {
-        let movie: any = null;
-
-        switch (movieType) {
-          case 'movie':
-            movie = await Movie.findOne({ id: movieId });
-            break;
-          case 'tv':
-            movie = await TV.findOne({ id: movieId });
-            break;
-          default:
-            return next(
-              createHttpError.NotFound(
-                `Movie with type: ${movieType} is not found`
-              )
-            );
-        }
+        const movie = await Movie.findOne({
+          id: movieId,
+          media_type: movieType
+        });
 
         if (movie == null) {
           throw createHttpError.NotFound('Movie is not exists');
@@ -421,9 +417,7 @@ export class SearchController extends RedisCache {
             result: 'Update search successfully'
           });
         } else {
-          let movie1: any = null;
-
-          movie1 = await Movie.findOne({
+          const movie1 = await Movie.findOne({
             $or: [
               { name: { $regex: searchQuery, $options: 'i' } },
               { original_name: { $regex: searchQuery, $options: 'i' } }
@@ -432,18 +426,6 @@ export class SearchController extends RedisCache {
             .skip(0)
             .limit(1)
             .sort({ views: -1 });
-
-          if (movie1 == null) {
-            movie1 = await TV.findOne({
-              $or: [
-                { name: { $regex: searchQuery, $options: 'i' } },
-                { original_name: { $regex: searchQuery, $options: 'i' } }
-              ]
-            })
-              .skip(0)
-              .limit(1)
-              .sort({ views: -1 });
-          }
 
           if (movie1 != null) {
             const itemSearch = await Search.findOne({

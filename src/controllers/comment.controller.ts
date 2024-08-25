@@ -400,22 +400,8 @@ export class CommentController {
       const movieId: string = req.params.movieId;
       const movieType: string = req.params.movieType;
 
-      let isExistMovies = false;
-
-      switch (movieType) {
-        case 'movie':
-          isExistMovies = (await Movie.findOne({ id: movieId })) != null;
-          break;
-        case 'tv':
-          isExistMovies = (await TV.findOne({ id: movieId })) != null;
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-      }
+      const isExistMovies =
+        (await Movie.findOne({ id: movieId, media_type: movieType })) != null;
 
       if (!isExistMovies) {
         throw createHttpError.NotFound('Movie is not exists');
@@ -535,22 +521,8 @@ export class CommentController {
       const movieId: string = req.params.movieId;
       const movieType: string = req.params.movieType;
 
-      let isExistMovies = false;
-
-      switch (movieType) {
-        case 'movie':
-          isExistMovies = (await Movie.findOne({ id: movieId })) != null;
-          break;
-        case 'tv':
-          isExistMovies = (await TV.findOne({ id: movieId })) != null;
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-      }
+      const isExistMovies =
+        (await Movie.findOne({ id: movieId, media_type: movieType })) != null;
 
       if (!isExistMovies) {
         throw createHttpError.NotFound('Movie is not exists');
@@ -594,22 +566,8 @@ export class CommentController {
       const movieId: string = req.params.movieId;
       const movieType: string = req.params.movieType;
 
-      let isExistMovies = false;
-
-      switch (movieType) {
-        case 'movie':
-          isExistMovies = (await Movie.findOne({ id: movieId })) != null;
-          break;
-        case 'tv':
-          isExistMovies = (await TV.findOne({ id: movieId })) != null;
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-      }
+      const isExistMovies =
+        (await Movie.findOne({ id: movieId, media_type: movieType })) != null;
 
       if (!isExistMovies) {
         throw createHttpError.NotFound('Movie is not exists');

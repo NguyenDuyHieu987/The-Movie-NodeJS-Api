@@ -1,6 +1,7 @@
 import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import accountRouter from './account.route';
+import modRouter from './mod.route';
 import authRouter from './authentication.route';
 import billRouter from './bill.route';
 import commentRouter from './comment.route';
@@ -25,15 +26,16 @@ import similarRouter from './similar.route';
 import sortOptionRouter from './sortby.route';
 import subscriptionRouter from './subscription.route';
 import trendingRouter from './trending.route';
-import tvRouter from './tv.route';
+// import tvRouter from './tv.route';
 import videoRouter from './video.route';
 import yearRouter from './year.route';
 
 export default function route(app: Application) {
   app.use('/auth', authRouter);
   app.use('/account', accountRouter);
+  app.use('/mod', modRouter);
   app.use('/movie', movieRouter);
-  app.use('/tv', tvRouter);
+  // app.use('/tv', tvRouter);
   app.use('/season', seasonRouter);
   app.use('/episode', episodeRouter);
   app.use('/search', searchRouter);

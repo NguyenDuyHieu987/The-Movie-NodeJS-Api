@@ -6,9 +6,9 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
-router.get('/detail/:id', Movie.get);
+router.get('/detail/:type/:id', Movie.get);
 router.post(
-  '/update-view/:id',
+  '/update-view/:type/:id',
   (...params) => authenticationHandler(...params, { required: true }),
   Movie.updateView
 );

@@ -216,100 +216,45 @@ export class ListController {
       const mediaType: string = req.body.media_type;
       const idItemList: string = uuidv4();
 
-      switch (mediaType) {
-        case 'movie':
-          const movie = await Movie.findOne({ id: movieId });
+      const movie = await Movie.findOne({ id: movieId, media_type: mediaType });
 
-          if (movie == null) {
-            throw createHttpError.NotFound('Movie is not exists');
-          }
-
-          const itemList = await List.findOne({
-            user_id: user.id,
-            movie_id: movieId,
-            media_type: 'movie'
-          });
-
-          if (itemList != null) {
-            return next(
-              createHttpError.InternalServerError(
-                'Movie is already exist in list'
-              )
-            );
-          }
-
-          await List.create({
-            id: idItemList,
-            user_id: user.id,
-            movie_id: movieId,
-            name: movie.name,
-            original_name: movie.original_name,
-            original_language: movie.original_language,
-            media_type: 'movie',
-            genres: movie.genres,
-            backdrop_path: movie.backdrop_path,
-            poster_path: movie.poster_path,
-            dominant_backdrop_color: movie.dominant_backdrop_color,
-            dominant_poster_color: movie.dominant_poster_color,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-          return res.json({
-            success: true,
-            results: 'Add item to list suucessfully'
-          });
-
-        case 'tv':
-          const tv = await TV.findOne({ id: movieId });
-
-          if (tv == null) {
-            throw createHttpError.NotFound('Movie is not exists');
-          }
-
-          const itemList1 = await List.findOne({
-            user_id: user.id,
-            movie_id: movieId,
-            media_type: 'tv'
-          });
-
-          if (itemList1 != null) {
-            return next(
-              createHttpError.InternalServerError(
-                'Movie is already exist in list'
-              )
-            );
-          }
-
-          await List.create({
-            id: idItemList,
-            user_id: user.id,
-            movie_id: movieId,
-            name: tv.name,
-            original_name: tv.original_name,
-            original_language: tv.original_language,
-            media_type: 'tv',
-            genres: tv.genres,
-            backdrop_path: tv.backdrop_path,
-            poster_path: tv.poster_path,
-            dominant_backdrop_color: tv.dominant_backdrop_color,
-            dominant_poster_color: tv.dominant_poster_color,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-          return res.json({
-            success: true,
-            results: 'Add item to list suucessfully'
-          });
-
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${mediaType} is not found`
-            )
-          );
+      if (movie == null) {
+        throw createHttpError.NotFound('Movie is not exists');
       }
+
+      const itemList = await List.findOne({
+        user_id: user.id,
+        movie_id: movieId,
+        media_type: 'movie'
+      });
+
+      if (itemList != null) {
+        return next(
+          createHttpError.InternalServerError('Movie is already exist in list')
+        );
+      }
+
+      await List.create({
+        id: idItemList,
+        user_id: user.id,
+        movie_id: movieId,
+        name: movie.name,
+        original_name: movie.original_name,
+        original_language: movie.original_language,
+        media_type: mediaType,
+        genres: movie.genres,
+        backdrop_path: movie.backdrop_path,
+        poster_path: movie.poster_path,
+        dominant_backdrop_color: movie.dominant_backdrop_color,
+        dominant_poster_color: movie.dominant_poster_color,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      return res.json({
+        success: true,
+        results: 'Add item to list suucessfully'
+      });
     } catch (error) {
       return next(error);
     }

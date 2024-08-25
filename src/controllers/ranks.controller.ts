@@ -1336,22 +1336,7 @@ export class RankController extends RedisCache {
       const movieId: string = req.body.movie_id;
       const movieType: string = req.body.media_type;
 
-      let movie: any = null;
-
-      switch (movieType) {
-        case 'movie':
-          movie = await Movie.findOne({ id: movieId });
-          break;
-        case 'tv':
-          movie = await TV.findOne({ id: movieId });
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-      }
+      const movie = await Movie.findOne({ id: movieId, media_type: movieType });
 
       if (movie == null) {
         throw createHttpError.NotFound('Movie is not exists');
@@ -1425,22 +1410,10 @@ export class RankController extends RedisCache {
       const searchQuery: string = req.body.query;
 
       if (movieId && movieType) {
-        let movie: any = null;
-
-        switch (movieType) {
-          case 'movie':
-            movie = await Movie.findOne({ id: movieId });
-            break;
-          case 'tv':
-            movie = await TV.findOne({ id: movieId });
-            break;
-          default:
-            return next(
-              createHttpError.NotFound(
-                `Movie with type: ${movieType} is not found`
-              )
-            );
-        }
+        const movie = await Movie.findOne({
+          id: movieId,
+          media_type: movieType
+        });
 
         if (movie == null) {
           throw createHttpError.NotFound('Movie is not exists');
@@ -1505,9 +1478,7 @@ export class RankController extends RedisCache {
           result: 'Add rank search successfully'
         });
       } else {
-        let movie1: any = null;
-
-        movie1 = await Movie.findOne({
+        const movie1 = await Movie.findOne({
           $or: [
             { name: { $regex: searchQuery, $options: 'i' } },
             { original_name: { $regex: searchQuery, $options: 'i' } }
@@ -1516,18 +1487,6 @@ export class RankController extends RedisCache {
           .skip(0)
           .limit(1)
           .sort({ views: -1 });
-
-        if (movie1 == null) {
-          movie1 = await TV.findOne({
-            $or: [
-              { name: { $regex: searchQuery, $options: 'i' } },
-              { original_name: { $regex: searchQuery, $options: 'i' } }
-            ]
-          })
-            .skip(0)
-            .limit(1)
-            .sort({ views: -1 });
-        }
 
         if (movie1 != null) {
           const idSearch: string = uuidv4();
@@ -1604,22 +1563,7 @@ export class RankController extends RedisCache {
       const movieType: string = req.body.media_type;
       const rateValue: number = req.body.rate_value;
 
-      let movie: any = null;
-
-      switch (movieType) {
-        case 'movie':
-          movie = await Movie.findOne({ id: movieId });
-          break;
-        case 'tv':
-          movie = await TV.findOne({ id: movieId });
-          break;
-        default:
-          return next(
-            createHttpError.NotFound(
-              `Movie with type: ${movieType} is not found`
-            )
-          );
-      }
+      const movie = await Movie.findOne({ id: movieId, media_type: movieType });
 
       if (movie == null) {
         throw createHttpError.NotFound('Movie is not exists');
