@@ -26,7 +26,7 @@ import similarRouter from './similar.route';
 import sortOptionRouter from './sortby.route';
 import subscriptionRouter from './subscription.route';
 import trendingRouter from './trending.route';
-// import tvRouter from './tv.route';
+import tvRouter from './tv.route';
 import videoRouter from './video.route';
 import yearRouter from './year.route';
 
@@ -35,7 +35,7 @@ export default function route(app: Application) {
   app.use('/account', accountRouter);
   app.use('/mod', modRouter);
   app.use('/movie', movieRouter);
-  // app.use('/tv', tvRouter);
+  app.use('/tv', tvRouter);
   app.use('/season', seasonRouter);
   app.use('/episode', episodeRouter);
   app.use('/search', searchRouter);
