@@ -7,7 +7,7 @@ import {
 } from '@/middlewares';
 
 export default function middleware(app: Application, callback: () => void) {
-  app.use(proxyHandler);
+  // app.use(proxyHandler);
   app.use(authenticationHandler);
   callback();
   app.use(errorHandler);
