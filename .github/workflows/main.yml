@@ -66,7 +66,7 @@ jobs:
         run: |
           rsync -r --update --delete-after ./build ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
 
-          rsync -r --update --delete-after ./src/public ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
+          rsync -r --update --delete-after ./src/public ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}/build
 
           rsync -r --update --delete-after ./.env ${{ secrets.PHIMHAY247_USERNAME }}@${{ secrets.PHIMHAY247_IP }}:${{secrets.TARGET}}
 
