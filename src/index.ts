@@ -21,6 +21,7 @@ import middleware from './middlewares';
 import { APP_TOKEN_SECRET } from './constants';
 import { ONE_HOUR } from './common';
 import path from 'path';
+import favicon from 'serve-favicon';
 // import WebSocket from 'ws';
 
 dotenv.config();
@@ -85,7 +86,7 @@ process.on('exit', () => {
 
 MongoDB.connect();
 
-app.use(express.static(path.join(__dirname, 'src/public')));
+app.use(favicon(path.join(__dirname, 'src/public', 'favicon.ico')));
 app.use(
   cors({
     origin: [
