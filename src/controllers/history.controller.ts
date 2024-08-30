@@ -116,7 +116,7 @@ export class HistoryController {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          result.total = await Movie.countDocuments({
+          result.total = await History.countDocuments({
             user_id: user.id,
             $or: [
               { name: { $regex: query, $options: 'i' } },
@@ -137,7 +137,7 @@ export class HistoryController {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          result.total = await Movie.countDocuments({
+          result.total = await History.countDocuments({
             user_id: user.id,
             media_type: 'movie',
             $or: [
@@ -159,7 +159,7 @@ export class HistoryController {
             .limit(limit)
             .sort({ created_at: -1 });
 
-          result.total = await Movie.countDocuments({
+          result.total = await History.countDocuments({
             user_id: user.id,
             media_type: 'tv',
             $or: [
