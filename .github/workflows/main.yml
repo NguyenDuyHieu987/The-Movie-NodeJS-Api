@@ -42,9 +42,11 @@ jobs:
         with:
           version: latest
 
+      # npm install --legacy-peer-deps --no-save
       - name: Install Dependencies and Build
         run: |
-          pnpm install
+          npm install --legacy-peer-deps
+          npm list --depth=0
           npm run build
         env:
           CI: false
