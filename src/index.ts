@@ -20,6 +20,7 @@ import route from './routes';
 import middleware from './middlewares';
 import { APP_TOKEN_SECRET } from './constants';
 import { ONE_HOUR } from './common';
+import path from 'path';
 // import WebSocket from 'ws';
 
 dotenv.config();
@@ -84,6 +85,7 @@ process.on('exit', () => {
 
 MongoDB.connect();
 
+app.use(express.static(path.join(__dirname, 'src/public')));
 app.use(
   cors({
     origin: [
