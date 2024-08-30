@@ -5,7 +5,6 @@ import { RedisCache } from '@/config/redis';
 import History from '@/models/history';
 import List from '@/models/list';
 import Movie from '@/models/movie';
-import TV from '@/models/tv';
 import { User } from '@/types';
 
 export class RecommendController extends RedisCache {
@@ -90,37 +89,15 @@ export class RecommendController extends RedisCache {
           }
         ]
       })
-        .skip(page * (limit / 2))
-        .limit(limit / 2)
+        .skip(page * limit)
+        .limit(limit)
         .sort({ views: -1 });
 
-      const tv = await TV.find({
-        $or: [
-          {
-            original_language: {
-              $in: countries
-            }
-          },
-          {
-            genres: {
-              $elemMatch: {
-                $or: genres
-              }
-            }
-          }
-        ]
-      })
-        .skip(page * (limit / 2))
-        .limit(limit / 2)
-        .sort({ views: -1 });
-
-      const result = movie.concat(tv);
+      const result = movie;
 
       const response = {
         page: page + 1,
         results: result,
-        movie,
-        tv,
         page_size: limit
       };
 

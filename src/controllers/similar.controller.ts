@@ -3,7 +3,6 @@ import createHttpError from 'http-errors';
 
 import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
-import TV from '@/models/tv';
 
 export class SimilarController extends RedisCache {
   constructor() {
@@ -25,8 +24,10 @@ export class SimilarController extends RedisCache {
       }
 
       switch (mediaType) {
-        case 'movie':
-          const movie = await Movie.findOne({ id: movieId });
+        case 'all':
+          const movie = await Movie.findOne({
+            id: movieId
+          });
 
           if (movie == null) {
             throw createHttpError.NotFound(`Movie is not exist`);
@@ -53,25 +54,58 @@ export class SimilarController extends RedisCache {
             .sort({ views: -1 });
 
           break;
-        case 'tv':
-          const tv = await TV.findOne({ id: movieId });
+        case 'movie':
+          const movie1 = await Movie.findOne({
+            id: movieId,
+            media_type: 'movie'
+          });
 
-          if (tv == null) {
+          if (movie1 == null) {
             throw createHttpError.NotFound(`Movie is not exist`);
           }
 
-          const genre1: any[] = tv.genres;
-          const country1: string = tv.original_language!;
+          const genre1: any[] = movie1.genres;
+          const country1: string = movie1.original_language!;
 
-          similar = await TV.find({
+          similar = await Movie.find({
             id: {
               $nin: [movieId]
             },
+            media_type: 'movie',
             $or: [
               { original_language: { $regex: country1 } },
               {
                 genres: {
                   $elemMatch: genre1.length > 0 ? { $or: [...genre1] } : {}
+                }
+              }
+            ]
+          })
+            .skip(page * limit)
+            .limit(limit)
+            .sort({ views: -1 });
+
+          break;
+        case 'tv':
+          const tv = await Movie.findOne({ id: movieId, media_type: 'tv' });
+
+          if (tv == null) {
+            throw createHttpError.NotFound(`Movie is not exist`);
+          }
+
+          const genre2: any[] = tv.genres;
+          const country2: string = tv.original_language!;
+
+          similar = await Movie.find({
+            id: {
+              $nin: [movieId]
+            },
+            media_type: 'tv',
+            $or: [
+              { original_language: { $regex: country2 } },
+              {
+                genres: {
+                  $elemMatch: genre2.length > 0 ? { $or: [...genre2] } : {}
                 }
               }
             ]
