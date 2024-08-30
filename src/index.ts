@@ -86,7 +86,6 @@ process.on('exit', () => {
 
 MongoDB.connect();
 
-app.use(favicon(path.join(__dirname, 'src/public', 'favicon.ico')));
 app.use(
   cors({
     origin: [
@@ -102,6 +101,7 @@ app.use(
     credentials: true
   })
 );
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(session(sessionConfig));
 app.use(cookieParser());
 app.use(limiter);
