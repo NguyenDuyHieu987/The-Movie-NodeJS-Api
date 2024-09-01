@@ -98,7 +98,7 @@ export class ModController extends RedisCache {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
       const page: number = +req.query.page! - 1 || 0;
-      const limit: number = +req.query.limit! || 3;
+      const limit: number = +req.query.limit! || 20;
 
       // if (dataCache != null) {
       //   return res.json(JSON.parse(dataCache));
@@ -144,7 +144,35 @@ export class ModController extends RedisCache {
         } else return {};
       };
 
+      const convertFirstAirDate = (date_gte: string, data_lte: string) => {
+        if (date_gte != '' && data_lte != '') {
+          return {
+            first_air_date: {
+              $gte: date_gte,
+              $lte: data_lte
+            }
+          };
+        } else if (date_gte == '' && data_lte != '') {
+          return {
+            first_air_date: {
+              $lte: data_lte
+            }
+          };
+        } else if (date_gte != '' && data_lte == '') {
+          return {
+            first_air_date: {
+              $gte: date_gte
+            }
+          };
+        } else return {};
+      };
+
       const releaseDate = convertReleaseDate(
+        primaryReleaseDateGte,
+        primaryReleaseDateLte
+      );
+
+      const firstAirDate = convertFirstAirDate(
         primaryReleaseDateGte,
         primaryReleaseDateLte
       );
@@ -183,105 +211,143 @@ export class ModController extends RedisCache {
         total: 0
       };
 
+      const replaceRoot = {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              {
+                modData: '$modData'
+              },
+              '$movieData'
+            ]
+          }
+        }
+      };
+
       switch (type) {
         case 'all':
+          const options = [
+            {
+              $lookup: {
+                from: 'mods',
+                localField: 'modId',
+                foreignField: 'id',
+                as: 'modData'
+              }
+            },
+            {
+              $unwind: '$modData'
+            },
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                'modData.type': slug,
+                $or: [
+                  { $and: [releaseDate, genres, originalLanguage] },
+                  { $and: [firstAirDate, genres, originalLanguage] }
+                ]
+              }
+            }
+          ];
+
           switch (sortBy) {
             case 'views_desc':
-              result.results = await Movie.find({
-                $and: [releaseDate, genres, originalLanguage]
-              })
-                .skip(page * limit)
-                .limit(limit)
-                .sort({ views: -1 });
-
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { views: -1 }
+                }
+              ]);
               break;
             case 'release_date_desc':
-              // result.results = await Movie.find({
-              //   $and: [releaseDate, genres, originalLanguage]
-              // })
-              //   .skip(page * limit)
-              //   .limit(limit)
-              //   .sort({ release_date: -1 });
-
-              result.results = await ModList.find({})
-                .skip(page * limit)
-                .limit(limit);
-
-              // result.results = await ModList.aggregate([
-              //   {
-              //     $lookup: {
-              //       from: 'mods',
-              //       localField: 'modId',
-              //       foreignField: 'id',
-              //       // pipeline: [
-              //       //   {
-              //       //     $match: {
-              //       //       type: slug
-              //       //     }
-              //       //   }
-              //       // ],
-              //       as: 'modData'
-              //     }
-              //   }
-              //   // {
-              //   // //   $unwind: '$modData'
-              //   // // },
-              //   // {
-              //   //   $match: {
-              //   //     // 'modData.type': slug
-              //   //     modId: 'fe39f012-7b4e-4ee3-b381-325bb1a7ef1d'
-              //   //   }
-              //   // }
-              //   // {
-              //   //   $lookup: {
-              //   //     from: 'movies',
-              //   //     localField: 'id',
-              //   //     foreignField: 'id',
-              //   //     as: 'movieData'
-              //   //   }
-              //   // },
-              //   // {
-              //   //   $unwind: '$movieData'
-              //   // }
-              //   // {
-              //   //   $project: {
-              //   //     modId: 1,
-              //   //     modData: 1,
-              //   //     movieData: 1
-              //   //   }
-              //   // }
-              // ]);
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { release_date: -1 }
+                }
+              ]);
               break;
             case 'revenue_desc':
-              result.results = await Movie.find({
-                $and: [releaseDate, genres, originalLanguage]
-              })
-                .skip(page * limit)
-                .limit(limit)
-                .sort({ revenue: -1 });
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { revenue: -1 }
+                }
+              ]);
               break;
             case 'vote_average_desc':
-              result.results = await Movie.find({
-                $and: [releaseDate, genres, originalLanguage]
-              })
-                .skip(page * limit)
-                .limit(limit)
-                .sort({ vote_average: -1 });
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_average: -1 }
+                }
+              ]);
               break;
             case 'vote_count_desc':
-              result.results = await Movie.find({
-                $and: [releaseDate, genres, originalLanguage]
-              })
-                .skip(page * limit)
-                .limit(limit)
-                .sort({ vote_count: -1 });
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_count: -1 }
+                }
+              ]);
+
               break;
             case '':
-              result.results = await Movie.find({
-                $and: [releaseDate, genres, originalLanguage]
-              })
-                .skip(page * limit)
-                .limit(limit);
+              result.results = await ModList.aggregate([
+                ...options,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                }
+              ]);
               break;
             default:
               return next(
@@ -291,53 +357,290 @@ export class ModController extends RedisCache {
               );
           }
 
-          result.total = await Movie.countDocuments({
-            $and: [releaseDate, genres, originalLanguage]
-          });
-          break;
-        case 'nowplaying':
-          result.results = await MovieSlug.NowPlaying.find({
-            $and: [releaseDate, genres, originalLanguage]
-          })
-            .skip(page * limit)
-            .limit(limit);
+          const total: any[] = await ModList.aggregate([
+            ...options,
+            {
+              $count: 'totalCount'
+            }
+          ]);
 
-          result.total = await MovieSlug.NowPlaying.countDocuments({
-            $and: [releaseDate, genres, originalLanguage]
-          });
+          result.total = total[0].totalCount;
           break;
-        case 'upcoming':
-          result.results = await MovieSlug.UpComing.find({
-            $and: [releaseDate, genres, originalLanguage]
-          })
-            .skip(page * limit)
-            .limit(limit);
+        case 'movie':
+          const optionsMovie = [
+            {
+              $lookup: {
+                from: 'mods',
+                localField: 'modId',
+                foreignField: 'id',
+                as: 'modData'
+              }
+            },
+            {
+              $unwind: '$modData'
+            },
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                'modData.type': slug,
+                'movieData.media_type': type,
+                $and: [releaseDate, genres, originalLanguage]
+              }
+            }
+          ];
+          switch (sortBy) {
+            case 'views_desc':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { views: -1 }
+                }
+              ]);
+              break;
+            case 'release_date_desc':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { release_date: -1 }
+                }
+              ]);
+              break;
+            case 'revenue_desc':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { revenue: -1 }
+                }
+              ]);
+              break;
+            case 'vote_average_desc':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_average: -1 }
+                }
+              ]);
+              break;
+            case 'vote_count_desc':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_count: -1 }
+                }
+              ]);
 
-          result.total = await MovieSlug.UpComing.countDocuments({
-            $and: [releaseDate, genres, originalLanguage]
-          });
+              break;
+            case '':
+              result.results = await ModList.aggregate([
+                ...optionsMovie,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                }
+              ]);
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover movie with sort by: ${sortBy} is not found!`
+                )
+              );
+          }
+
+          const totalMovie: any[] = await ModList.aggregate([
+            ...optionsMovie,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalMovie[0].totalCount;
           break;
-        case 'popular':
-          result.results = await MovieSlug.Popular.find({
-            $and: [releaseDate, genres, originalLanguage]
-          })
-            .skip(page * limit)
-            .limit(limit);
+        case 'tv':
+          const optionsTV = [
+            {
+              $lookup: {
+                from: 'mods',
+                localField: 'modId',
+                foreignField: 'id',
+                as: 'modData'
+              }
+            },
+            {
+              $unwind: '$modData'
+            },
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                'modData.type': slug,
+                'movieData.media_type': type,
+                $and: [firstAirDate, genres, originalLanguage]
+              }
+            }
+          ];
+          switch (sortBy) {
+            case 'views_desc':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { views: -1 }
+                }
+              ]);
+              break;
+            case 'release_date_desc':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { release_date: -1 }
+                }
+              ]);
+              break;
+            case 'revenue_desc':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { revenue: -1 }
+                }
+              ]);
+              break;
+            case 'vote_average_desc':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_average: -1 }
+                }
+              ]);
+              break;
+            case 'vote_count_desc':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                },
+                {
+                  $sort: { vote_count: -1 }
+                }
+              ]);
 
-          result.total = await MovieSlug.Popular.countDocuments({
-            $and: [releaseDate, genres, originalLanguage]
-          });
-          break;
-        case 'toprated':
-          result.results = await MovieSlug.TopRated.find({
-            $and: [releaseDate, genres, originalLanguage]
-          })
-            .skip(page * limit)
-            .limit(limit);
+              break;
+            case '':
+              result.results = await ModList.aggregate([
+                ...optionsTV,
+                replaceRoot,
+                {
+                  $skip: page * limit
+                },
+                {
+                  $limit: limit
+                }
+              ]);
+              break;
+            default:
+              return next(
+                createHttpError.NotFound(
+                  `Discover movie with sort by: ${sortBy} is not found!`
+                )
+              );
+          }
 
-          result.total = await MovieSlug.TopRated.countDocuments({
-            $and: [releaseDate, genres, originalLanguage]
-          });
+          const totalTV: any[] = await ModList.aggregate([
+            ...optionsTV,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalTV[0].totalCount;
           break;
         default:
           return next(

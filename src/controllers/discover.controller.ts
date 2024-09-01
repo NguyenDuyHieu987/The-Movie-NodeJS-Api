@@ -121,14 +121,15 @@ export class DiscoverController extends RedisCache {
 
       switch (req.params.slug) {
         case 'all':
+          const options = {
+            $or: [
+              { $and: [releaseDate, genres, originalLanguage] },
+              { $and: [firstAirDate, genres, originalLanguage] }
+            ]
+          };
           switch (sortBy) {
             case 'views_desc':
-              const movie1 = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie1 = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ views: -1 });
@@ -136,12 +137,7 @@ export class DiscoverController extends RedisCache {
               result.results = movie1;
               break;
             case 'release_date_desc':
-              const movie2 = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie2 = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ release_date: -1 });
@@ -149,12 +145,7 @@ export class DiscoverController extends RedisCache {
               result.results = movie2;
               break;
             case 'revenue_desc':
-              const movie3 = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie3 = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ revenue: -1 });
@@ -162,12 +153,7 @@ export class DiscoverController extends RedisCache {
               result.results = movie3;
               break;
             case 'vote_average_desc':
-              const movie4 = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie4 = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_average: -1 });
@@ -175,12 +161,7 @@ export class DiscoverController extends RedisCache {
               result.results = movie4;
               break;
             case 'vote_count_desc':
-              const movie5 = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie5 = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_count: -1 });
@@ -188,12 +169,7 @@ export class DiscoverController extends RedisCache {
               result.results = movie5;
               break;
             case '':
-              const movie = await Movie.find({
-                $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
-                ]
-              })
+              const movie = await Movie.find(options)
                 .skip(page * limit)
                 .limit(limit);
 
@@ -207,66 +183,47 @@ export class DiscoverController extends RedisCache {
               );
           }
 
-          result.total = await Movie.countDocuments({
-            $or: [
-              { $and: [releaseDate, genres, originalLanguage] },
-              { $and: [firstAirDate, genres, originalLanguage] }
-            ]
-          });
+          result.total = await Movie.countDocuments(options);
           break;
 
         case 'movie':
+          const optionsMovie = {
+            media_type: 'movie',
+            $and: [releaseDate, genres, originalLanguage]
+          };
           switch (sortBy) {
             case 'views_desc':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ views: -1 });
               break;
             case 'release_date_desc':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ release_date: -1 });
               break;
             case 'revenue_desc':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ revenue: -1 });
               break;
             case 'vote_average_desc':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_average: -1 });
               break;
             case 'vote_count_desc':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_count: -1 });
               break;
             case '':
-              result.results = await Movie.find({
-                media_type: 'movie',
-                $and: [releaseDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsMovie)
                 .skip(page * limit)
                 .limit(limit);
               break;
@@ -278,63 +235,47 @@ export class DiscoverController extends RedisCache {
               );
           }
 
-          result.total = await Movie.countDocuments({
-            media_type: 'movie',
-            $and: [releaseDate, genres, originalLanguage]
-          });
+          result.total = await Movie.countDocuments(optionsMovie);
           break;
+
         case 'tv':
+          const optionsTV = {
+            media_type: 'tv',
+            $and: [firstAirDate, genres, originalLanguage]
+          };
           switch (sortBy) {
             case 'views_desc':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ views: -1 });
               break;
             case 'release_date_desc':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ first_air_date: -1 });
               break;
             case 'revenue_desc':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ revenue: -1 });
               break;
             case 'vote_average_desc':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_average: -1 });
               break;
             case 'vote_count_desc':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit)
                 .sort({ vote_count: -1 });
               break;
             case '':
-              result.results = await Movie.find({
-                media_type: 'tv',
-                $and: [firstAirDate, genres, originalLanguage]
-              })
+              result.results = await Movie.find(optionsTV)
                 .skip(page * limit)
                 .limit(limit);
               break;
@@ -346,16 +287,11 @@ export class DiscoverController extends RedisCache {
               );
           }
 
-          result.total = await Movie.countDocuments({
-            media_type: 'tv',
-            $and: [firstAirDate, genres, originalLanguage]
-          });
+          result.total = await Movie.countDocuments(optionsTV);
           break;
         default:
           return next(
-            createHttpError.NotFound(
-              `Not found with slug: ${req.params.slug} !`
-            )
+            createHttpError.NotFound(`Not found with slug: ${req.params.slug}!`)
           );
       }
 
@@ -364,8 +300,6 @@ export class DiscoverController extends RedisCache {
         +process.env.REDIS_CACHE_TIME!,
         JSON.stringify(result)
       );
-
-      return res.json(result);
     } catch (error) {
       return next(error);
     }
