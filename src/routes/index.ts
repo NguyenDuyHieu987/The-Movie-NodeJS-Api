@@ -2,6 +2,7 @@ import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import accountRouter from './account.route';
 import modRouter from './mod.route';
+import modListRouter from './modList.route';
 import authRouter from './authentication.route';
 import billRouter from './bill.route';
 import commentRouter from './comment.route';
@@ -34,6 +35,7 @@ export default function route(app: Application) {
   app.use('/auth', authRouter);
   app.use('/account', accountRouter);
   app.use('/mod', modRouter);
+  app.use('/modlist', modListRouter);
   app.use('/movie', movieRouter);
   app.use('/tv', tvRouter);
   app.use('/season', seasonRouter);
