@@ -264,7 +264,7 @@ export class ModListController extends RedisCache {
             default:
               return next(
                 createHttpError.NotFound(
-                  `Discover movie with sort by: ${sortBy} is not found!`
+                  `Filter modlist with sort by: ${sortBy} is not found!`
                 )
               );
           }
@@ -402,7 +402,7 @@ export class ModListController extends RedisCache {
             default:
               return next(
                 createHttpError.NotFound(
-                  `Discover movie with sort by: ${sortBy} is not found!`
+                  `Filter modlist with sort by: ${sortBy} is not found!`
                 )
               );
           }
@@ -540,7 +540,7 @@ export class ModListController extends RedisCache {
             default:
               return next(
                 createHttpError.NotFound(
-                  `Discover movie with sort by: ${sortBy} is not found!`
+                  `Filter modlist with sort by: ${sortBy} is not found!`
                 )
               );
           }
@@ -557,7 +557,7 @@ export class ModListController extends RedisCache {
         default:
           return next(
             createHttpError.NotFound(
-              `Movies with slug: ${req.params.slug} is not found!`
+              `Modlist with slug: ${req.params.slug} is not found!`
             )
           );
       }
