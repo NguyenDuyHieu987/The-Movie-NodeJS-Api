@@ -142,9 +142,9 @@ export class ModController extends RedisCache {
       const limit: number = +req.query.limit! || 3;
       const listCount: number = +req.query.list_count! || 20;
 
-      // if (dataCache != null) {
-      //   return res.json(JSON.parse(dataCache));
-      // }
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
 
       const type: string = (req.params?.type as string) || 'all';
 
