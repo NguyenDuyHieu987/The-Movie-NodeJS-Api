@@ -29,44 +29,195 @@ export class ListController {
 
       switch (req.params.slug) {
         case 'all':
-          result.results = await List.find({
-            user_id: user.id
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const options = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
+          // result.results = await List.find({
+          //   user_id: user.id
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
 
-          result.total = await List.countDocuments({
-            user_id: user.id
-          });
+          result.results = await List.aggregate([
+            ...options,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id
+          // });
+
+          const total: any[] = await List.aggregate([
+            ...options,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = total[0].totalCount;
           break;
         case 'movie':
-          result.results = await List.find({
-            user_id: user.id,
-            media_type: 'movie'
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const optionsMovie = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id,
+                'movieData.media_type': 'movie'
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
 
-          result.total = await List.countDocuments({
-            user_id: user.id,
-            media_type: 'movie'
-          });
+          // result.results = await List.find({
+          //   user_id: user.id,
+          //   media_type: 'movie'
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
+
+          result.results = await List.aggregate([
+            ...optionsMovie,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id,
+          //   media_type: 'movie'
+          // });
+
+          const totalMovie: any[] = await List.aggregate([
+            ...optionsMovie,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalMovie[0].totalCount;
           break;
         case 'tv':
-          result.results = await List.find({
-            user_id: user.id,
-            media_type: 'tv'
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const optionsTV = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id,
+                'movieData.media_type': 'tv'
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
 
-          result.total = await List.countDocuments({
-            user_id: user.id,
-            media_type: 'tv'
-          });
+          // result.results = await List.find({
+          //   user_id: user.id,
+          //   media_type: 'tv'
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
+
+          result.results = await List.aggregate([
+            ...optionsTV,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id,
+          //   media_type: 'tv'
+          // });
+
+          const totalTV: any[] = await List.aggregate([
+            ...optionsTV,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalTV[0].totalCount;
           break;
         default:
           return next(
@@ -105,68 +256,238 @@ export class ListController {
 
       switch (req.params.slug) {
         case 'all':
-          result.results = await List.find({
-            user_id: user.id,
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const options = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id,
+                $or: [
+                  { 'movieData.name': { $regex: query, $options: 'i' } },
+                  {
+                    'movieData.original_name': {
+                      $regex: query,
+                      $options: 'i'
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
 
-          result.total = await List.countDocuments({
-            user_id: user.id,
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          });
+          // result.results = await List.find({
+          //   user_id: user.id,
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
+
+          result.results = await List.aggregate([
+            ...options,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id,
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // });
+
+          const total: any[] = await List.aggregate([
+            ...options,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = total[0].totalCount;
           break;
         case 'movie':
-          result.results = await List.find({
-            user_id: user.id,
-            media_type: 'movie',
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const optionsMovie = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id,
+                'movieData.media_type': 'movie',
+                $or: [
+                  { 'movieData.name': { $regex: query, $options: 'i' } },
+                  {
+                    'movieData.original_name': {
+                      $regex: query,
+                      $options: 'i'
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
 
-          result.total = await List.countDocuments({
-            user_id: user.id,
-            media_type: 'movie',
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          });
+          // result.results = await List.find({
+          //   user_id: user.id,
+          //   media_type: 'movie',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
+
+          result.results = await List.aggregate([
+            ...optionsMovie,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id,
+          //   media_type: 'movie',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // });
+
+          const totalMovie: any[] = await List.aggregate([
+            ...optionsMovie,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalMovie[0].totalCount;
           break;
         case 'tv':
-          result.results = await List.find({
-            user_id: user.id,
-            media_type: 'tv',
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          })
-            .skip(skip * limit)
-            .limit(limit)
-            .sort({ created_at: -1 });
+          const optionsTV = [
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: '$movieData'
+            },
+            {
+              $match: {
+                user_id: user.id,
+                'movieData.media_type': 'tv'
+              }
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$movieData', '$$ROOT']
+                }
+              }
+            }
+          ];
 
-          result.total = await List.countDocuments({
-            user_id: user.id,
-            media_type: 'tv',
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          });
+          // result.results = await List.find({
+          //   user_id: user.id,
+          //   media_type: 'tv',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // })
+          //   .skip(skip * limit)
+          //   .limit(limit)
+          //   .sort({ created_at: -1 });
+
+          result.results = await List.aggregate([
+            ...optionsTV,
+            {
+              $skip: skip * limit
+            },
+            {
+              $limit: limit
+            },
+            {
+              $sort: {
+                created_at: -1
+              }
+            }
+          ]);
+
+          // result.total = await List.countDocuments({
+          //   user_id: user.id,
+          //   media_type: 'tv',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // });
+
+          const totalTV: any[] = await List.aggregate([
+            ...optionsTV,
+            {
+              $count: 'totalCount'
+            }
+          ]);
+
+          result.total = totalTV[0].totalCount;
           break;
         default:
           return next(
@@ -187,13 +508,42 @@ export class ListController {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      const data = await List.findOne({
-        user_id: user.id,
-        movie_id: req.params.movieId,
-        media_type: req.params.type
-      });
+      // const data = await List.findOne({
+      //   user_id: user.id,
+      //   movie_id: req.params.movieId,
+      //   media_type: req.params.type
+      // });
 
-      if (data != null) {
+      const data = await List.aggregate([
+        {
+          $lookup: {
+            from: 'movies',
+            localField: 'movie_id',
+            foreignField: 'id',
+            as: 'movieData'
+          }
+        },
+        {
+          $unwind: '$movieData'
+        },
+        {
+          $match: {
+            user_id: user.id,
+            movie_id: req.params.movieId,
+            media_type: req.params.type
+          }
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              $mergeObjects: ['$movieData', '$$ROOT']
+            }
+          }
+        }
+      ]);
+
+      // if (data != null) {
+      if (data.length > 0) {
         return res.json({ success: true, result: data });
       } else {
         return res.json({
