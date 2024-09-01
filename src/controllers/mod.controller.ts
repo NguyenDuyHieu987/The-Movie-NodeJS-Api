@@ -14,7 +14,9 @@ export class ModController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const data = await Mod.find();
+      const data = await Mod.find().sort({
+        order: 1
+      });
 
       const response = {
         results: data
