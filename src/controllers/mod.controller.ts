@@ -42,11 +42,21 @@ export class ModController extends RedisCache {
       const limit: number = +req.query.limit! || 3;
       const listCount: number = +req.query.list_count! || 20;
 
+      const type: string = (req.query?.type as string) || 'all';
+
       if (dataCache != null) {
         return res.json(JSON.parse(dataCache));
       }
 
       const data = await Mod.aggregate([
+        {
+          $match:
+            type != 'all'
+              ? {
+                  media_type: type
+                }
+              : {}
+        },
         {
           $lookup: {
             from: 'modlists',
