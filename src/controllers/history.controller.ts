@@ -87,7 +87,7 @@ export class HistoryController {
             }
           ]);
 
-          result.total = total[0].totalCount;
+          result.total = !!total ? total[0].totalCount : 0;
 
           break;
         case 'movie':
@@ -153,7 +153,7 @@ export class HistoryController {
             }
           ]);
 
-          result.total = totalMovie[0].totalCount;
+          result.total = !!totalMovie ? totalMovie[0].totalCount : 0;
           break;
         case 'tv':
           const optionsTV = [
@@ -218,7 +218,7 @@ export class HistoryController {
             }
           ]);
 
-          result.total = totalTV[0].totalCount;
+          result.total = !!totalTV ? totalTV[0].totalCount : 0;
           break;
         default:
           return next(
