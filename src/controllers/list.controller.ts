@@ -332,7 +332,7 @@ export class ListController {
             }
           ]);
 
-          result.total = total[0].totalCount;
+          result.total = total ? total[0].totalCount : 0;
           break;
         case 'movie':
           const optionsMovie = [
@@ -414,7 +414,7 @@ export class ListController {
             }
           ]);
 
-          result.total = totalMovie[0].totalCount;
+          result.total = totalMovie ? totalMovie[0].totalCount : 0;
           break;
         case 'tv':
           const optionsTV = [
@@ -487,7 +487,7 @@ export class ListController {
             }
           ]);
 
-          result.total = totalTV[0].totalCount;
+          result.total = totalTV ? totalTV[0].totalCount : 0;
           break;
         default:
           return next(
