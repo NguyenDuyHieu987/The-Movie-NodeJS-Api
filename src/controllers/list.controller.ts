@@ -87,7 +87,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!total ? total[0].totalCount : 0;
+          result.total = total?.length > 0 ? total[0].totalCount : 0;
           break;
         case 'movie':
           const optionsMovie = [
@@ -152,7 +152,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!totalMovie ? totalMovie[0].totalCount : 0;
+          result.total = totalMovie?.length > 0 ? totalMovie[0].totalCount : 0;
           break;
         case 'tv':
           const optionsTV = [
@@ -217,7 +217,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!totalTV ? totalTV[0].totalCount : 0;
+          result.total = totalTV?.length > 0 ? totalTV[0].totalCount : 0;
           break;
         default:
           return next(
@@ -332,7 +332,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!total ? total[0].totalCount : 0;
+          result.total = total?.length > 0 ? total[0].totalCount : 0;
           break;
         case 'movie':
           const optionsMovie = [
@@ -414,7 +414,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!totalMovie ? totalMovie[0].totalCount : 0;
+          result.total = totalMovie?.length > 0 ? totalMovie[0].totalCount : 0;
           break;
         case 'tv':
           const optionsTV = [
@@ -487,7 +487,7 @@ export class ListController {
             }
           ]);
 
-          result.total = !!totalTV ? totalTV[0].totalCount : 0;
+          result.total = totalTV?.length > 0 ? totalTV[0].totalCount : 0;
           break;
         default:
           return next(
