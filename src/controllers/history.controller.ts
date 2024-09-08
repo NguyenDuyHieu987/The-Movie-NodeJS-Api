@@ -655,12 +655,10 @@ export class HistoryController {
           //     },
           //   }
           // );
-
-          itemHistory.percent = percent;
-          itemHistory.seconds = seconds;
-          itemHistory.updated_at = new Date();
-
-          await itemHistory.save();
+          // itemHistory.percent = percent;
+          // itemHistory.seconds = seconds;
+          // itemHistory.updated_at = new Date();
+          // await itemHistory.save();
         }
 
         return res.json({
