@@ -574,7 +574,7 @@ export class ListController {
       const itemList = await List.findOne({
         user_id: user.id,
         movie_id: movieId,
-        media_type: 'movie'
+        media_type: mediaType
       });
 
       if (itemList != null) {

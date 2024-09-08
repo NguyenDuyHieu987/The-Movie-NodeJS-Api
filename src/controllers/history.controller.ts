@@ -586,7 +586,7 @@ export class HistoryController {
       const itemHistory = await History.findOne({
         user_id: user.id,
         movie_id: movieId,
-        media_type: 'movie'
+        media_type: mediaType
       });
 
       if (itemHistory == null) {
