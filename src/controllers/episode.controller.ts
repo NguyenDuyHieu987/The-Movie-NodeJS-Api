@@ -11,9 +11,9 @@ export class EpisodeController extends RedisCache {
       const seasonId: string = req.params.seasonId;
       // const seasonNumber: number = +req.params.seasonNumber;
       const skip: number = +req.query.skip! || 1;
-      const limit: number = +req.query.limit! || 40;
+      const limit: number = +req.query.limit! || 50;
       const from: number = +req.query.from! || 1;
-      const to: number = +req.query.to! || 40;
+      const to: number = +req.query.to! || 50;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
