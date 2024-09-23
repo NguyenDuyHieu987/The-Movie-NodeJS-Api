@@ -92,17 +92,23 @@ const Movie = new mongoose.Schema(
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     // TV Fields
-    created_by: { type: Array },
-    episode_run_time: { type: Array },
+    created_by: { type: Array, default: undefined },
+    episode_run_time: { type: Array, default: undefined },
     first_air_date: { type: String },
     last_air_date: { type: String },
     last_episode_to_air: { type: Object },
     next_episode_to_air: { type: Object },
-    networks: { type: Array },
+    networks: { type: Array, default: undefined },
     number_of_episodes: { type: Number },
     number_of_seasons: { type: Number }
   },
-  { timestamps: true, versionKey: false }
+  {
+    strict: true,
+    timestamps: true,
+    versionKey: false
+  }
 );
+
+export const MovieTest = mongoose.model('movietests', Movie);
 
 export default mongoose.model('movies', Movie);

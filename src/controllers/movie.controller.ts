@@ -1,16 +1,62 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import { v4 as uuidv4 } from 'uuid';
 
 import Credit from '@/models/credit';
 import History from '@/models/history';
 import Image from '@/models/image';
 import List from '@/models/list';
-import Movie from '@/models/movie';
+import Movie, { MovieTest } from '@/models/movie';
 import Rate from '@/models/rate';
 import Video from '@/models/video';
-import type { TCredit, TImage, User } from '@/types';
+import { RedisCache } from '@/config/redis';
+import type { MovieForm, TCredit, TImage, User } from '@/types';
 
 export class MovieController {
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const noCache: boolean = !!req.query?.no_cache;
+      const page: number = +req.query.page! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null && !noCache) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let data: any[] = [];
+      let total: number = 0;
+
+      if (limit != -1) {
+        data = await Movie.find({ media_type: 'movie' })
+          .skip(page * limit)
+          .limit(limit);
+      } else {
+        data = await Movie.find({ media_type: 'movie' });
+      }
+
+      total = await Movie.countDocuments({});
+
+      const response = {
+        page: page + 1,
+        results: data,
+        total,
+        page_size: 20
+      };
+
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(response)
+      );
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       let append_to_response: string[] | null = null;
@@ -324,6 +370,39 @@ export class MovieController {
       return res.json({
         success: true,
         result: 'Update views movie successfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: MovieForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full movie information'
+        );
+      }
+
+      const id: string = uuidv4();
+
+      const result = MovieTest.create({
+        id: id,
+        media_type: 'movie',
+        ...req.body,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      if (result == null) {
+        throw createHttpError.InternalServerError('Add movie failed');
+      }
+
+      return res.json({
+        success: true,
+        result: result
       });
     } catch (error) {
       return next(error);

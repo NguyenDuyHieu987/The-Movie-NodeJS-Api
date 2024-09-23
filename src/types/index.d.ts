@@ -61,4 +61,52 @@ export declare type CommentForm = {
   updatedAt?: Date;
 };
 
+export declare type GenreForm = {
+  id: number;
+  name: string;
+  name_vietsub: string;
+  short_name: string;
+};
+
+export declare type MovieForm = {
+  adult: boolean;
+  backdrop_path: string;
+  belongs_to_collection: Object;
+  budget: number;
+  genres: GenreForm[];
+  homepage: string;
+  id: string;
+  season_id: string;
+  series_id: string;
+  imdb_id: string;
+  name: string;
+  original_language: string;
+  original_name: string;
+  overview: string;
+  popularity: number;
+  poster_path: string;
+  production_companies: string[];
+  production_countries: string[];
+  release_date: string;
+  revenue: number;
+  runtime: number;
+  spoken_languages: string[];
+  status: string;
+  tagline: string;
+  media_type: string;
+  video: boolean;
+  vote_average: number;
+  vote_count: number;
+  dominant_backdrop_color: string[];
+  dominant_poster_color: string[];
+  views: number;
+  vip: number | string;
+  backdrop_file: File | Blob;
+  poster_file: File | Blob;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';

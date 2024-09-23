@@ -411,7 +411,9 @@ export class CommentController {
 
       if (commentForm.content.length == 0) {
         return next(
-          createHttpError.NotFound('Content comment is not allowed empty')
+          createHttpError.InternalServerError(
+            'Content comment is not allowed empty'
+          )
         );
       }
 

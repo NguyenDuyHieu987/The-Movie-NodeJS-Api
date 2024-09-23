@@ -6,6 +6,7 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
+router.get('/get-all', Movie.getAll);
 router.get('/detail/:type/:id', Movie.get);
 router.post(
   '/update-view/:type/:id',
@@ -14,5 +15,6 @@ router.post(
 );
 router.get('/:slug', MovieSlug.getSlug);
 router.get('/discover/:slug', MovieSlug.filter);
+router.post('/create', Movie.create);
 
 export default router;
