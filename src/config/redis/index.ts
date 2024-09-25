@@ -3,24 +3,28 @@ import { createClient, RedisClientType } from 'redis';
 dotenv.config();
 
 export class RedisCache {
-  static client: RedisClientType = createClient({
-    // url:
-    //   process.env.NODE_ENV == 'production'
-    //     ? process.env.REDIS_URL
-    //     : 'redis://127.0.0.1:6379',
-    url: process.env.REDIS_URL,
-    // username: 'default',
-    // password: process.env.REDIS_PASSWORD,
-    socket: {
-      // host: process.env.REDIS_HOST,
-      // port: +process.env.REDIS_PORT!,
-      // connectTimeout: 50000,
-      reconnectStrategy: (retries) => Math.min(retries * 50, 1000)
-    },
-    pingInterval: 10000
-  });
+  static client: RedisClientType;
 
-  constructor() {}
+  constructor() {
+    if (!RedisCache.client) {
+      RedisCache.client = createClient({
+        // url:
+        //   process.env.NODE_ENV == 'production'
+        //     ? process.env.REDIS_URL
+        //     : 'redis://127.0.0.1:6379',
+        url: process.env.REDIS_URL,
+        // username: 'default',
+        // password: process.env.REDIS_PASSWORD,
+        socket: {
+          // host: process.env.REDIS_HOST,
+          // port: +process.env.REDIS_PORT!,
+          // connectTimeout: 50000,
+          reconnectStrategy: (retries) => Math.min(retries * 50, 1000)
+        },
+        pingInterval: 10000
+      });
+    }
+  }
 
   redisClient(): RedisClientType {
     return RedisCache.client;

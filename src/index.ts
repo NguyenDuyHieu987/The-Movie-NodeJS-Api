@@ -22,7 +22,6 @@ import { APP_TOKEN_SECRET } from './constants';
 import { ONE_HOUR } from './common';
 import path from 'path';
 import favicon from 'serve-favicon';
-// import WebSocket from 'ws';
 
 dotenv.config();
 
@@ -125,22 +124,6 @@ middleware(app, () => {
 });
 
 const server = http.createServer(app);
-
-// const ws = new WebSocket.Server({ server });
-
-// ws.on('connection', (ws) => {
-//   // Gửi tin nhắn cho client khi kết nối được thiết lập
-//   ws.send('Hello from server');
-
-//   // Xử lý khi nhận được tin nhắn từ client
-//   ws.on('message', (message) => {
-//     console.log(`Received message from client: ${message}`);
-//     // Gửi thông báo cho client rằng yêu cầu đã được xử lý xong
-//     ws.send('Request processed successfully');
-//   });
-
-//   ws.on('close', () => {});
-// });
 
 const PORT = process.env.PORT || 5000;
 

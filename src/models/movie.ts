@@ -58,7 +58,9 @@ const Movie = new mongoose.Schema(
       type: [
         {
           id: Number,
-          name: String
+          name: String,
+          name_vietsub: String,
+          short_name: String
         }
       ]
     },
@@ -103,7 +105,6 @@ const Movie = new mongoose.Schema(
     number_of_seasons: { type: Number }
   },
   {
-    strict: true,
     timestamps: true,
     versionKey: false
   }
