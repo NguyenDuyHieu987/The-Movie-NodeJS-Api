@@ -85,6 +85,7 @@ const Movie = new mongoose.Schema(
     tagline: { type: String },
     media_type: { type: String },
     video: { type: Boolean },
+    video_path: { type: String },
     vote_average: { type: Number },
     vote_count: { type: Number },
     dominant_backdrop_color: { type: Array },
