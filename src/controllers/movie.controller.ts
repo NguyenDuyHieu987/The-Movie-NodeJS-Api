@@ -42,16 +42,86 @@ export class MovieController {
         page: page + 1,
         results: data,
         total,
-        page_size: 20
+        page_size: limit
       };
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(response)
-      );
+      if (!noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
 
       return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const noCache: boolean = !!req.query?.no_cache;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      const query: string = (req.query.query as string) || '';
+      const page: number = +req.query.page! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+
+      if (dataCache != null) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const result: {
+        page: number;
+        results: any[];
+        page_size: number;
+        total: number;
+      } = {
+        page: page + 1,
+        results: [],
+        page_size: limit,
+        total: 0
+      };
+
+      if (limit != -1) {
+        result.results = await Movie.find({
+          media_type: 'movie',
+          $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { original_name: { $regex: query, $options: 'i' } }
+          ]
+        })
+          .skip(page * limit)
+          .limit(limit);
+      } else {
+        result.results = await Movie.find({
+          media_type: 'movie',
+          $or: [
+            { name: { $regex: query, $options: 'i' } },
+            { original_name: { $regex: query, $options: 'i' } }
+          ]
+        });
+      }
+
+      result.total = await Movie.countDocuments({
+        media_type: 'movie',
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { original_name: { $regex: query, $options: 'i' } }
+        ]
+      });
+
+      if (!noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(result)
+        );
+      }
+
+      return res.json(result);
     } catch (error) {
       return next(error);
     }

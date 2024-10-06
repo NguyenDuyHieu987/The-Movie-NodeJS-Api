@@ -138,6 +138,12 @@ export class SearchController extends RedisCache {
           );
       }
 
+      await RedisCache.client.setEx(
+        key,
+        +process.env.REDIS_CACHE_TIME!,
+        JSON.stringify(result)
+      );
+
       return res.json(result);
     } catch (error) {
       return next(error);
