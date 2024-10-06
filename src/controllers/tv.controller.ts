@@ -379,7 +379,7 @@ export class TVController {
 
   async updateView(req: Request, res: Response, next: NextFunction) {
     try {
-      const movieId: string = req.params.movieId;
+      const movieId: string = req.params.id;
 
       const tv = await TV.updateOne(
         { id: movieId },

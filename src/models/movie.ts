@@ -70,7 +70,7 @@ const Movie = new mongoose.Schema(
     series_id: { type: String },
     imdb_id: { type: String },
     name: { type: String },
-    original_language: { type: String },
+    original_language: { type: mongoose.Schema.Types.Mixed },
     original_name: { type: String },
     overview: { type: String },
     popularity: { type: Number },

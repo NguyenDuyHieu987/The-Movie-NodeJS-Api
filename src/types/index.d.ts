@@ -101,8 +101,6 @@ export declare type MovieForm = {
   dominant_poster_color: string[];
   views: number;
   vip: number | string;
-  backdrop_file: File | Blob;
-  poster_file: File | Blob;
   created_at: Date;
   updated_at: Date;
   createdAt?: Date;

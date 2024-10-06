@@ -351,10 +351,10 @@ export class MovieController {
 
   async updateView(req: Request, res: Response, next: NextFunction) {
     try {
-      const movieId: string = req.params.movieId;
+      const movieId: string = req.params.id;
 
       const movie = await Movie.updateOne(
-        { id: req.params.id, media_type: req.params.type },
+        { id: movieId, media_type: 'movie' },
         {
           $inc: { views: 1 }
         }
@@ -403,6 +403,119 @@ export class MovieController {
       return res.json({
         success: true,
         result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateVideo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: MovieForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full movie information'
+        );
+      }
+
+      const movieId: string = req.params.id;
+
+      const result = await MovieTest.updateOne(
+        {
+          id: movieId,
+          media_type: 'movie'
+        },
+        {
+          $set: {
+            name: formData.name,
+            original_name: formData.original_name,
+            genres: formData.genres,
+            original_language: formData.original_language,
+            release_date: formData.release_date,
+            overview: formData.overview,
+            status: formData.status,
+            budget: formData.budget,
+            revenue: formData.revenue,
+            vip: formData.vip,
+            poster_path: formData.poster_path,
+            backdrop_path: formData.backdrop_path,
+            dominant_backdrop_color: formData.dominant_backdrop_color,
+            dominant_poster_color: formData.dominant_poster_color,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.matchedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Update video path failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateVideoPath(req: Request, res: Response, next: NextFunction) {
+    try {
+      const videoPath: string = req.body?.video_path;
+
+      if (!videoPath) {
+        throw createHttpError.InternalServerError('Please provide video path');
+      }
+
+      const movieId: string = req.params.id;
+
+      const result = await Movie.updateOne(
+        {
+          id: movieId,
+          media_type: 'movie'
+        },
+        {
+          $set: {
+            video_path: videoPath,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.matchedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Update video path failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteVideo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const movieId: string = req.params.id;
+
+      const result = await MovieTest.deleteOne({
+        id: movieId,
+        media_type: 'movie'
+      });
+
+      if (result.deletedCount != 1) {
+        return next(createHttpError.InternalServerError('Delete video failed'));
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete video suucessfully'
       });
     } catch (error) {
       return next(error);
