@@ -16,9 +16,29 @@ router.post(
 );
 router.get('/:slug', MovieSlug.getSlug);
 router.get('/discover/:slug', MovieSlug.filter);
-router.post('/create', Movie.create);
-router.post('/update/:id', Movie.updateVideo);
-router.post('/update-videopath/:id', Movie.updateVideoPath);
-router.delete('/delete/:id', Movie.deleteVideo);
+router.post(
+  '/create',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Movie.create
+);
+router.post(
+  '/update/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Movie.updateVideo
+);
+router.post(
+  '/update-videopath/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Movie.updateVideoPath
+);
+router.delete(
+  '/delete/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Movie.deleteVideo
+);
 
 export default router;
