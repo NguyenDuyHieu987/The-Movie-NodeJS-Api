@@ -548,7 +548,7 @@ export class CommentController {
         }
       );
 
-      if (result.matchedCount != 1) {
+      if (result.modifiedCount != 1) {
         return next(
           createHttpError.InternalServerError('Update comment failed')
         );

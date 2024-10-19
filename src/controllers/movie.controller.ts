@@ -491,7 +491,7 @@ export class MovieController {
 
       const movieId: string = req.params.id;
 
-      const result = await MovieTest.updateOne(
+      const result = await Movie.updateOne(
         {
           id: movieId,
           media_type: 'movie'
@@ -517,7 +517,7 @@ export class MovieController {
         }
       );
 
-      if (result.matchedCount != 1) {
+      if (result.modifiedCount != 1) {
         return next(
           createHttpError.InternalServerError('Update video path failed')
         );
