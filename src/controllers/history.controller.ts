@@ -433,7 +433,16 @@ export class HistoryController {
             {
               $match: {
                 user_id: user.id,
-                'movieData.media_type': 'tv'
+                'movieData.media_type': 'tv',
+                $or: [
+                  { 'movieData.name': { $regex: query, $options: 'i' } },
+                  {
+                    'movieData.original_name': {
+                      $regex: query,
+                      $options: 'i'
+                    }
+                  }
+                ]
               }
             },
             {
