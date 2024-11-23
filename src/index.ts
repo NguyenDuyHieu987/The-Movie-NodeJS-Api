@@ -94,6 +94,8 @@ app.use(
       'https://proxy.' + process.env.CLIENT_DOMAIN,
       'https://dash.' + process.env.CLIENT_DOMAIN,
       'https://dashboard.' + process.env.CLIENT_DOMAIN,
+      'https://vite.' + process.env.CLIENT_DOMAIN,
+      'https://v2.' + process.env.CLIENT_DOMAIN,
       // www
       'https://www.' + process.env.CLIENT_DOMAIN
     ],
