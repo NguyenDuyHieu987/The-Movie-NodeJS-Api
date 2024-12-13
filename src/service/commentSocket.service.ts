@@ -2,6 +2,7 @@ import { Socket, Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import LiveComment from '@/models/LiveComment';
 import { LiveCommentForm } from '@/types';
+import broadcast from '@/models/broadcast';
 
 interface Comment {
   roomID: string;
@@ -18,6 +19,11 @@ export async function handleCommentEvents(
     socket.join(roomID);
 
     const initialComments = await LiveComment.aggregate([
+      {
+        $match: {
+          broadcast_id: roomID
+        }
+      },
       {
         $lookup: {
           from: 'accounts',
@@ -111,5 +117,18 @@ export async function handleCommentEvents(
     // commentsByMovie[roomID].push(comment);
 
     io.to(roomID).emit('newComment', resultWithAuthor[0]);
+  });
+
+  socket.on('interactEmoji', async ({ roomID, emoji_type }) => {
+    if (!roomID) return;
+
+    await broadcast.updateOne(
+      { id: roomID },
+      {
+        $inc: { number_of_interactions: 1 }
+      }
+    );
+
+    io.to(roomID).emit('interactEmoji', { emoji_type });
   });
 }
