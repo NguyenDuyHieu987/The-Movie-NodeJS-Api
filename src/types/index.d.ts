@@ -61,6 +61,24 @@ export declare type CommentForm = {
   updatedAt?: Date;
 };
 
+export declare type LiveCommentForm = {
+  id: string;
+  user_id: string;
+  broadcast_id: string;
+  movie_id: string;
+  content: string;
+  timestamp: string;
+  author: User;
+  movie_type: string;
+  parent_id?: string | null;
+  reply_to?: string | null;
+  type: 'children' | 'parent';
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 export declare type GenreForm = {
   id: number;
   name: string;

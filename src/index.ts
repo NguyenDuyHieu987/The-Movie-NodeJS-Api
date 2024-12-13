@@ -18,6 +18,7 @@ import MongoDB from './config/db';
 import RedisCache from './config/redis';
 import route from './routes';
 import middleware from './middlewares';
+import SocketService from './config/websocket';
 import { APP_TOKEN_SECRET } from './constants';
 import { ONE_HOUR } from './common';
 import path from 'path';
@@ -126,6 +127,8 @@ middleware(app, () => {
 });
 
 const server = http.createServer(app);
+
+SocketService.initialize(server);
 
 const PORT = process.env.PORT || 5000;
 
