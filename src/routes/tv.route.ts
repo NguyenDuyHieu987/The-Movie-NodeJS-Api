@@ -6,7 +6,7 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
-router.get('/detail/:id', TV.get);
+router.get('/detail/:id', TV.detail);
 router.post(
   '/update-view/:id',
   (...params) => authenticationHandler(...params, { required: true }),

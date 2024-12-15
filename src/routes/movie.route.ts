@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/get-all', Movie.getAll);
 router.get('/search', Movie.search);
-router.get('/detail/:type/:id', Movie.get);
+router.get('/detail/:type/:id', Movie.detail);
 router.post(
   '/update-view/:id',
   (...params) => authenticationHandler(...params, { required: true }),

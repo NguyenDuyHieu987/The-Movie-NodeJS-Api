@@ -13,7 +13,7 @@ import Video from '@/models/video';
 import type { TCredit, TImage, User } from '@/types';
 
 export class TVController {
-  async get(req: Request, res: Response, next: NextFunction) {
+  async detail(req: Request, res: Response, next: NextFunction) {
     try {
       let append_to_response: string[] | null = null;
       const extraValue: {

@@ -21,6 +21,7 @@ import planRouter from './plan.route';
 import ranRouter from './rank.route';
 import ratingRouter from './rating.route';
 import recommendRouter from './recommend.route';
+import broadcastRouter from './broadcast.route';
 import searchRouter from './search.route';
 import seasonRouter from './season.route';
 import similarRouter from './similar.route';
@@ -54,6 +55,7 @@ export default function route(app: Application) {
   app.use('/images', imageRouter);
   app.use('/similar', similarRouter);
   app.use('/recommend', recommendRouter);
+  app.use('/broadcast', broadcastRouter);
   app.use('/plan', planRouter);
   app.use('/rating', ratingRouter);
   app.use('/comment', commentRouter);

@@ -127,7 +127,7 @@ export class MovieController {
     }
   }
 
-  async get(req: Request, res: Response, next: NextFunction) {
+  async detail(req: Request, res: Response, next: NextFunction) {
     try {
       let append_to_response: string[] | null = null;
       const extraValue: {
