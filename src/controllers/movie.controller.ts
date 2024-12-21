@@ -532,9 +532,10 @@ export class MovieController {
     }
   }
 
-  async updateVideoPath(req: Request, res: Response, next: NextFunction) {
+  async updateVideoUpload(req: Request, res: Response, next: NextFunction) {
     try {
       const videoPath: string = req.body?.video_path;
+      const duration: string = req.body?.duration;
 
       if (!videoPath) {
         throw createHttpError.InternalServerError('Please provide video path');
@@ -550,6 +551,8 @@ export class MovieController {
         {
           $set: {
             video_path: videoPath,
+            duration: duration,
+            runtime: duration,
             updated_at: new Date().toISOString()
           }
         }

@@ -29,10 +29,10 @@ router.post(
   Movie.updateVideo
 );
 router.post(
-  '/update-videopath/:id',
+  '/update-videoupload/:id',
   (...params) =>
     authenticationHandler(...params, { required: true, role: ['admin'] }),
-  Movie.updateVideoPath
+  Movie.updateVideoUpload
 );
 router.delete(
   '/delete/:id',

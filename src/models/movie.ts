@@ -80,6 +80,7 @@ const Movie = new mongoose.Schema(
     release_date: { type: String },
     revenue: { type: Number },
     runtime: { type: Number },
+    duration: { type: Number },
     spoken_languages: { type: Array },
     status: { type: String },
     tagline: { type: String },
