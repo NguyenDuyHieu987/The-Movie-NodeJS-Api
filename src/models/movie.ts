@@ -66,8 +66,6 @@ const Movie = new mongoose.Schema(
     },
     homepage: { type: String },
     id: { type: String, default: uuidv4() },
-    season_id: { type: String },
-    series_id: { type: String },
     imdb_id: { type: String },
     name: { type: String },
     original_language: { type: mongoose.Schema.Types.Mixed },
@@ -96,6 +94,8 @@ const Movie = new mongoose.Schema(
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     // TV Fields
+    series_id: { type: String, default: uuidv4() },
+    season_id: { type: String, default: uuidv4() },
     created_by: { type: Array, default: undefined },
     episode_run_time: { type: Array, default: undefined },
     first_air_date: { type: String },

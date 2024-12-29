@@ -7,5 +7,6 @@ const router = express.Router();
 router.get('/list/:movieId/:seasonId', Episode.getList);
 router.get('/latest/:movieId/:seasonId', Episode.getLatest);
 router.get('/get/:movieId/:seasonId/:episodeNumber', Episode.get);
+router.get('/getbyid/:movieId/:seasonId/:episodeId', Episode.getById);
 
 export default router;

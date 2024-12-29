@@ -35,25 +35,43 @@ export class EpisodeController extends RedisCache {
         total_episode: 0
       };
 
-      const episodes = await Episode.find({
-        movie_id: movieId,
-        season_id: seasonId,
-        // season_number: seasonNumber,
-        episode_number: {
-          $gte: req.query?.from ? from : skip,
-          $lte: req.query?.to ? to : limit + skip - 1
-        }
-      });
+      var episodes: any[] = [];
+      if (limit != -1) {
+        episodes = await Episode.find({
+          movie_id: movieId,
+          season_id: seasonId,
+          // season_number: seasonNumber,
+          episode_number: {
+            $gte: req.query?.from ? from : skip,
+            $lte: req.query?.to ? to : limit + skip - 1
+          }
+        });
+      } else {
+        episodes = await Episode.find({
+          movie_id: movieId,
+          season_id: seasonId
+          // season_number: seasonNumber,
+        });
+      }
 
-      const total = await Episode.countDocuments({
-        movie_id: movieId,
-        season_id: seasonId,
-        // season_number: seasonNumber,
-        episode_number: {
-          $gte: req.query?.from ? from : skip,
-          $lte: req.query?.to ? to : limit + skip - 1
-        }
-      });
+      var total = 0;
+      if (limit != -1) {
+        total = await Episode.countDocuments({
+          movie_id: movieId,
+          season_id: seasonId,
+          // season_number: seasonNumber,
+          episode_number: {
+            $gte: req.query?.from ? from : skip,
+            $lte: req.query?.to ? to : limit + skip - 1
+          }
+        });
+      } else {
+        total = await Episode.countDocuments({
+          movie_id: movieId,
+          season_id: seasonId
+          // season_number: seasonNumber,
+        });
+      }
 
       const total_episode = await Episode.countDocuments({
         movie_id: movieId,
@@ -163,9 +181,9 @@ export class EpisodeController extends RedisCache {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
       const episode = await Episode.findOne({
         movie_id: movieId,
@@ -174,13 +192,45 @@ export class EpisodeController extends RedisCache {
         episode_number: episodeNumber
       });
 
-      if (episode != null) {
-        await RedisCache.client.setEx(
-          key,
-          +process.env.REDIS_CACHE_TIME!,
-          JSON.stringify(episode)
-        );
-      }
+      // if (episode != null) {
+      //   await RedisCache.client.setEx(
+      //     key,
+      //     +process.env.REDIS_CACHE_TIME!,
+      //     JSON.stringify(episode)
+      //   );
+      // }
+
+      return res.json(episode);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const movieId: string = req.params.movieId;
+      const seasonId: string = req.params.seasonId;
+      const episodeId: string = req.params.episodeId;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
+
+      const episode = await Episode.findOne({
+        movie_id: movieId,
+        season_id: seasonId,
+        id: episodeId
+      });
+
+      // if (episode != null) {
+      //   await RedisCache.client.setEx(
+      //     key,
+      //     +process.env.REDIS_CACHE_TIME!,
+      //     JSON.stringify(episode)
+      //   );
+      // }
 
       return res.json(episode);
     } catch (error) {

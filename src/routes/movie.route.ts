@@ -38,7 +38,13 @@ router.delete(
   '/delete/:id',
   (...params) =>
     authenticationHandler(...params, { required: true, role: ['admin'] }),
-  Movie.deleteVideo
+  Movie.deleteMovie
+);
+router.delete(
+  '/delete-multiple',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Movie.deleteMovieMultiple
 );
 
 export default router;

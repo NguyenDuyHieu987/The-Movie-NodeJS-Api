@@ -11,6 +11,7 @@ import Rate from '@/models/rate';
 import Video from '@/models/video';
 import { RedisCache } from '@/config/redis';
 import type { MovieForm, TCredit, TImage, User } from '@/types';
+import { DeleteResult } from 'mongoose';
 
 export class MovieController {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -24,19 +25,25 @@ export class MovieController {
       if (dataCache != null && !noCache) {
         return res.json(JSON.parse(dataCache));
       }
+      const media_type: string = (req.query.media_type as string) || 'all';
 
       let data: any[] = [];
       let total: number = 0;
+      let optionSearch: any = {};
+
+      if (media_type != 'all') {
+        optionSearch.media_type = media_type;
+      }
 
       if (limit != -1) {
-        data = await Movie.find({ media_type: 'movie' })
+        data = await Movie.find(optionSearch)
           .skip(page * limit)
           .limit(limit);
       } else {
-        data = await Movie.find({ media_type: 'movie' });
+        data = await Movie.find(optionSearch);
       }
 
-      total = await Movie.countDocuments({});
+      total = await Movie.countDocuments(optionSearch);
 
       const response = {
         page: page + 1,
@@ -573,7 +580,7 @@ export class MovieController {
     }
   }
 
-  async deleteVideo(req: Request, res: Response, next: NextFunction) {
+  async deleteMovie(req: Request, res: Response, next: NextFunction) {
     try {
       const movieId: string = req.params.id;
 
@@ -583,6 +590,32 @@ export class MovieController {
       });
 
       if (result.deletedCount != 1) {
+        return next(createHttpError.InternalServerError('Delete video failed'));
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete video suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteMovieMultiple(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listMovieId: string[] | number[] = req.body.listMovieId;
+
+      var results: DeleteResult[] = [];
+      for (var movieId in listMovieId) {
+        const result = await MovieTest.deleteOne({
+          id: movieId,
+          media_type: 'movie'
+        });
+        results.push(result);
+      }
+
+      if (results.some((r) => !r.acknowledged)) {
         return next(createHttpError.InternalServerError('Delete video failed'));
       }
 
