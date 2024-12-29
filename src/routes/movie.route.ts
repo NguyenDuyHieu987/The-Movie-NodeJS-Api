@@ -26,7 +26,7 @@ router.post(
   '/update/:id',
   (...params) =>
     authenticationHandler(...params, { required: true, role: ['admin'] }),
-  Movie.updateVideo
+  Movie.updateMovie
 );
 router.post(
   '/update-videoupload/:id',

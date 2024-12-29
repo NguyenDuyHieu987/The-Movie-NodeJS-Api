@@ -125,4 +125,29 @@ export declare type MovieForm = {
   updatedAt?: Date;
 };
 
+export declare type EpisodeForm = {
+  id: string;
+  movie_id: string;
+  season_id: string;
+  series_id: string;
+  name: string;
+  overview: string;
+  episode_type: string;
+  episode_number: number;
+  still_path: string;
+  video_path: string;
+  air_date: string;
+  runtime: number;
+  duration: number;
+  vote_average: number;
+  vote_count: number;
+  dominant_still_color: string[];
+  views: number;
+  vip: number | string;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';

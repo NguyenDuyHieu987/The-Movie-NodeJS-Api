@@ -76,9 +76,12 @@ export class MovieController {
       const page: number = +req.query.page! - 1 || 0;
       const limit: number = +req.query.limit! || 20;
 
-      if (dataCache != null) {
+      if (dataCache != null && !noCache) {
         return res.json(JSON.parse(dataCache));
       }
+
+      const media_type: string = (req.query.media_type as string) || 'all';
+      let optionSearch: any = {};
 
       const result: {
         page: number;
@@ -92,9 +95,13 @@ export class MovieController {
         total: 0
       };
 
+      if (media_type != 'all') {
+        optionSearch.media_type = media_type;
+      }
+
       if (limit != -1) {
         result.results = await Movie.find({
-          media_type: 'movie',
+          ...optionSearch,
           $or: [
             { name: { $regex: query, $options: 'i' } },
             { original_name: { $regex: query, $options: 'i' } }
@@ -104,7 +111,7 @@ export class MovieController {
           .limit(limit);
       } else {
         result.results = await Movie.find({
-          media_type: 'movie',
+          ...optionSearch,
           $or: [
             { name: { $regex: query, $options: 'i' } },
             { original_name: { $regex: query, $options: 'i' } }
@@ -113,7 +120,7 @@ export class MovieController {
       }
 
       result.total = await Movie.countDocuments({
-        media_type: 'movie',
+        ...optionSearch,
         $or: [
           { name: { $regex: query, $options: 'i' } },
           { original_name: { $regex: query, $options: 'i' } }
@@ -431,7 +438,7 @@ export class MovieController {
       const movieId: string = req.params.id;
 
       const movie = await Movie.updateOne(
-        { id: movieId, media_type: 'movie' },
+        { id: movieId },
         {
           $inc: { views: 1 }
         }
@@ -467,7 +474,6 @@ export class MovieController {
 
       const result = MovieTest.create({
         id: id,
-        media_type: 'movie',
         ...req.body,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -486,7 +492,7 @@ export class MovieController {
     }
   }
 
-  async updateVideo(req: Request, res: Response, next: NextFunction) {
+  async updateMovie(req: Request, res: Response, next: NextFunction) {
     try {
       const formData: MovieForm = req.body;
 
@@ -500,8 +506,7 @@ export class MovieController {
 
       const result = await Movie.updateOne(
         {
-          id: movieId,
-          media_type: 'movie'
+          id: movieId
         },
         {
           $set: {
@@ -552,8 +557,7 @@ export class MovieController {
 
       const result = await Movie.updateOne(
         {
-          id: movieId,
-          media_type: 'movie'
+          id: movieId
         },
         {
           $set: {
@@ -585,17 +589,16 @@ export class MovieController {
       const movieId: string = req.params.id;
 
       const result = await MovieTest.deleteOne({
-        id: movieId,
-        media_type: 'movie'
+        id: movieId
       });
 
       if (result.deletedCount != 1) {
-        return next(createHttpError.InternalServerError('Delete video failed'));
+        return next(createHttpError.InternalServerError('Delete movie failed'));
       }
 
       return res.json({
         success: true,
-        message: 'Delete video suucessfully'
+        message: 'Delete movie suucessfully'
       });
     } catch (error) {
       return next(error);
@@ -607,21 +610,22 @@ export class MovieController {
       const listMovieId: string[] | number[] = req.body.listMovieId;
 
       var results: DeleteResult[] = [];
-      for (var movieId in listMovieId) {
+      for (var movieId of listMovieId) {
         const result = await MovieTest.deleteOne({
-          id: movieId,
-          media_type: 'movie'
+          id: movieId
         });
         results.push(result);
       }
 
       if (results.some((r) => !r.acknowledged)) {
-        return next(createHttpError.InternalServerError('Delete video failed'));
+        return next(
+          createHttpError.InternalServerError('Delete movies failed')
+        );
       }
 
       return res.json({
         success: true,
-        message: 'Delete video suucessfully'
+        message: 'Delete movies suucessfully'
       });
     } catch (error) {
       return next(error);
