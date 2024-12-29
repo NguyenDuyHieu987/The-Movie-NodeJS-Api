@@ -51,7 +51,7 @@ export class EpisodeController extends RedisCache {
           }
         });
       } else {
-        episodes = await EpisodeTest.find({
+        episodes = await Episode.find({
           movie_id: movieId,
           season_id: seasonId
           // season_number: seasonNumber,
