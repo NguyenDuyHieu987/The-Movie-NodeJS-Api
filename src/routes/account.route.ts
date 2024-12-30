@@ -20,6 +20,11 @@ router.post(
   (...params) => authenticationHandler(...params, { required: true }),
   Account.changeFullName
 );
+router.post(
+  '/change-avatar',
+  (...params) => authenticationHandler(...params, { required: true }),
+  Account.changeAvatar
+);
 router.get(
   '/change-email',
   (...params) => authenticationHandler(...params, { required: true }),

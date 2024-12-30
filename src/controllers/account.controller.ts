@@ -431,6 +431,77 @@ export class AccountController extends RedisCache {
     }
   }
 
+  async changeAvatar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userToken = res.locals.userToken;
+      const user = res.locals.user as User;
+
+      if (!req.body?.avatar || req.body?.avatar.length == 0) {
+        return res.json({
+          success: false,
+          result: 'Avatar is required'
+        });
+      }
+
+      const account = await Account.findOneAndUpdate(
+        {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          full_name: user.full_name,
+          auth_type: user.auth_type
+        },
+        {
+          $set: {
+            avatar: req.body.avatar
+          }
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (account == null) {
+        return res.json({
+          success: false,
+          result: 'Cant not find information of account'
+        });
+      }
+
+      const newUserToken = await signUserToken(
+        {
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        },
+        userToken
+      );
+
+      res.set('Access-Control-Expose-Headers', 'Authorization');
+
+      res.cookie('user_token', newUserToken, {
+        ...(req.session.cookie as CookieOptions),
+        domain: req.session.cookie.domain,
+        httpOnly: req.session.cookie.httpOnly,
+        sameSite: req.session.cookie.sameSite,
+        secure: true,
+        maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+      });
+
+      res.header('Authorization', newUserToken);
+
+      return res.json({
+        success: true,
+        result: 'Change full name successfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;
