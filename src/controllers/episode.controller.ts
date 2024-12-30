@@ -449,6 +449,7 @@ export class EpisodeController extends RedisCache {
 
   async updateVideoUpload(req: Request, res: Response, next: NextFunction) {
     try {
+      const stillPath: string = req.body?.still_path;
       const videoPath: string = req.body?.video_path;
       const duration: string = req.body?.duration;
 
@@ -464,6 +465,7 @@ export class EpisodeController extends RedisCache {
         },
         {
           $set: {
+            still_path: stillPath,
             video_path: videoPath,
             duration: duration,
             runtime: duration,
