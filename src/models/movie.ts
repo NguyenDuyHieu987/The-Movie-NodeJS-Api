@@ -97,7 +97,7 @@ const Movie = new mongoose.Schema(
     series_id: { type: String, default: uuidv4() },
     season_id: { type: String, default: uuidv4() },
     created_by: { type: Array, default: undefined },
-    episode_run_time: { type: Array, default: undefined },
+    episode_run_time: { type: Number },
     first_air_date: { type: String },
     last_air_date: { type: String },
     last_episode_to_air: { type: Object },

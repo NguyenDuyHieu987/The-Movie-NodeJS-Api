@@ -164,6 +164,34 @@ export class BroadcastController extends RedisCache {
         },
         {
           $unwind: '$movieData'
+        },
+        {
+          $lookup: {
+            from: 'episodes',
+            let: {
+              episodeId: '$episode_id',
+              mediaType: '$movieData.media_type'
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$id', '$$episodeId'] },
+                      { $eq: ['$$mediaType', 'tv'] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'episodeData'
+          }
+        },
+        {
+          $unwind: {
+            path: '$episodeData',
+            preserveNullAndEmptyArrays: true // Giữ nguyên nếu không có dữ liệu trong episodeData
+          }
         }
       ]);
 

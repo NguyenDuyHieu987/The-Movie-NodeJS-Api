@@ -5,6 +5,7 @@ const Broadcast = new mongoose.Schema(
   {
     id: { type: String, default: uuidv4() },
     movie_id: { type: String },
+    episode_id: { type: String },
     type: { type: String, enum: ['play', 'search', 'rate'] },
     number_of_interactions: { type: Number, default: 0 },
     backdrop_path: { type: String },

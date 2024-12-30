@@ -11,6 +11,11 @@ router.get('/latest/:movieId/:seasonId', Episode.getLatest);
 router.get('/get/:movieId/:seasonId/:episodeNumber', Episode.get);
 router.get('/getbyid/:movieId/:seasonId/:episodeId', Episode.getById);
 router.post(
+  '/update-view/:id',
+  (...params) => authenticationHandler(...params, { required: true }),
+  Episode.updateView
+);
+router.post(
   '/create',
   (...params) =>
     authenticationHandler(...params, { required: true, role: ['admin'] }),

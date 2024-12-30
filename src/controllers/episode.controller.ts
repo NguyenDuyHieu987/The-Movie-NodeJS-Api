@@ -97,7 +97,7 @@ export class EpisodeController extends RedisCache {
       result.total = total;
       result.total_episode = total_episode;
 
-      if (episodes.length > 0) {
+      if (episodes.length > 0 && !noCache) {
         await RedisCache.client.setEx(
           key,
           +process.env.REDIS_CACHE_TIME!,
@@ -197,7 +197,7 @@ export class EpisodeController extends RedisCache {
       result.results = episodes;
       result.total = total;
 
-      if (episodes.length > 0) {
+      if (episodes.length > 0 && !noCache) {
         await RedisCache.client.setEx(
           key,
           +process.env.REDIS_CACHE_TIME!,
@@ -337,6 +337,33 @@ export class EpisodeController extends RedisCache {
       // }
 
       return res.json(episode);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const episodeId: string = req.params.id;
+
+      const episode = await Episode.updateOne(
+        { id: episodeId },
+        {
+          $inc: { views: 1 }
+        }
+      );
+
+      if (episode.modifiedCount == 1) {
+        return res.json({
+          success: false,
+          result: 'Update views episode failed'
+        });
+      }
+
+      return res.json({
+        success: true,
+        result: 'Update views episode successfully'
+      });
     } catch (error) {
       return next(error);
     }
