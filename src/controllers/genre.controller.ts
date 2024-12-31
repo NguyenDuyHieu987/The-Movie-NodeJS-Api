@@ -77,7 +77,9 @@ export class GenreController extends RedisCache {
         );
       }
 
-      const id: string = uuidv4();
+      // const id: string = uuidv4();
+
+      const id: number = (await Genre.findOne().sort({ id: -1 }))!.id + 1;
 
       const result = Genre.create({
         id: id,
@@ -126,48 +128,6 @@ export class GenreController extends RedisCache {
       );
 
       if (result.modifiedCount != 1) {
-        return next(
-          createHttpError.InternalServerError('Update video path failed')
-        );
-      }
-
-      return res.json({
-        success: true,
-        result: result
-      });
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  async updateVideoUpload(req: Request, res: Response, next: NextFunction) {
-    try {
-      const stillPath: string = req.body?.still_path;
-      const videoPath: string = req.body?.video_path;
-      const duration: string = req.body?.duration;
-
-      if (!videoPath) {
-        throw createHttpError.InternalServerError('Please provide video path');
-      }
-
-      const genreId: string = req.params.id;
-
-      const result = await Genre.updateOne(
-        {
-          id: genreId
-        },
-        {
-          $set: {
-            still_path: stillPath,
-            video_path: videoPath,
-            duration: duration,
-            runtime: duration,
-            updated_at: new Date().toISOString()
-          }
-        }
-      );
-
-      if (result.matchedCount != 1) {
         return next(
           createHttpError.InternalServerError('Update video path failed')
         );
