@@ -129,7 +129,7 @@ export class YearController extends RedisCache {
 
       const result = await Year.updateOne(
         {
-          _íd: yearId
+          _id: yearId
         },
         {
           $set: {
