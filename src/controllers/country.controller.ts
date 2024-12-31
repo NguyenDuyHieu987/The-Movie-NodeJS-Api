@@ -1,8 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import ISO6391 from 'iso-639-1';
 
 import { RedisCache } from '@/config/redis';
 import Country from '@/models/country';
+import { DeleteResult } from 'mongoose';
+import { CountryForm } from '@/types';
 
 export class CountryController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -25,6 +28,178 @@ export class CountryController extends RedisCache {
       );
 
       return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query: string = (req.query.query as string) || '';
+      const noCache: boolean = !!req.query?.no_cache;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null && !noCache) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const data = await Country.find({
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { english_name: { $regex: query, $options: 'i' } }
+        ]
+      });
+
+      const response = { results: data };
+
+      if (data.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: CountryForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full genre information'
+        );
+      }
+
+      // const id: string = uuidv4();
+      const iso_639_1 = ISO6391.getCode(req.body.english_name);
+      if (!iso_639_1) {
+        return res.json({
+          success: false,
+          message: `No iso_639_1 code found for country: '${req.body.english_name}'`
+        });
+      }
+
+      const country = await Country.findOne({ iso_639_1: iso_639_1 });
+
+      if (country != null) {
+        return res.json({
+          success: false,
+          message: `Country already exists`
+        });
+      }
+
+      const result = Country.create({
+        iso_639_1: iso_639_1,
+        ...req.body,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      if (result == null) {
+        throw createHttpError.InternalServerError('Add genre failed');
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateCountry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: CountryForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full country information'
+        );
+      }
+
+      const countryId: string = req.params.id;
+
+      const result = await Country.updateOne(
+        {
+          iso_639_1: countryId
+        },
+        {
+          $set: {
+            english_name: formData.english_name,
+            name: formData.name,
+            short_name: formData.short_name,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Update video path failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteCountry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const countryId: string = req.params.id;
+
+      const result = await Country.deleteOne({
+        iso_639_1: countryId
+      });
+
+      if (result.deletedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Delete country failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete country suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteCountryMultiple(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listCountryId: string[] | number[] = req.body.listCountryId;
+      var results: DeleteResult[] = [];
+      for (var genreId of listCountryId) {
+        const result = await Country.deleteOne({
+          iso_639_1: genreId
+        });
+        results.push(result);
+      }
+
+      if (results.some((r) => !r.acknowledged)) {
+        return next(
+          createHttpError.InternalServerError('Delete genres failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete genres suucessfully'
+      });
     } catch (error) {
       return next(error);
     }

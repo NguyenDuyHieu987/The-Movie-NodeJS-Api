@@ -5,7 +5,7 @@ import { authenticationHandler } from '@/middlewares';
 const router = express.Router();
 
 router.get('/get-all', Genre.getAll);
-router.get('/search/:movieId/:seasonId', Genre.search);
+router.get('/search', Genre.search);
 router.post(
   '/create',
   (...params) =>

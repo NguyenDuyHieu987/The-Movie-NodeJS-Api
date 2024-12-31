@@ -86,6 +86,17 @@ export declare type GenreForm = {
   short_name: string;
 };
 
+export declare interface CountryForm {
+  iso_639_1: string;
+  english_name: string;
+  name: string;
+  short_name: string;
+}
+
+export declare interface YearForn {
+  name: string;
+}
+
 export declare type MovieForm = {
   adult: boolean;
   backdrop_path: string;

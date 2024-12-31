@@ -48,7 +48,12 @@ export class GenreController extends RedisCache {
       }
 
       const data = await Genre.find({
-        name: { $regex: query, $options: 'i' }
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          {
+            name_vietsub: { $regex: query, $options: 'i' }
+          }
+        ]
       });
 
       const response = { results: data };
