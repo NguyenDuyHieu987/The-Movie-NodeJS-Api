@@ -381,7 +381,7 @@ export class EpisodeController extends RedisCache {
 
       const id: string = uuidv4();
 
-      const result = EpisodeTest.create({
+      const result = await EpisodeTest.create({
         id: id,
         ...req.body,
         created_at: new Date().toISOString(),
@@ -434,7 +434,7 @@ export class EpisodeController extends RedisCache {
 
       if (result.modifiedCount != 1) {
         return next(
-          createHttpError.InternalServerError('Update video path failed')
+          createHttpError.InternalServerError('Update episode failed')
         );
       }
 

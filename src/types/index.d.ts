@@ -80,6 +80,7 @@ export declare type LiveCommentForm = {
 };
 
 export declare type GenreForm = {
+  _id: string;
   id: number;
   name: string;
   name_vietsub: string;
@@ -87,13 +88,15 @@ export declare type GenreForm = {
 };
 
 export declare interface CountryForm {
+  _id: string;
   iso_639_1: string;
   english_name: string;
   name: string;
   short_name: string;
 }
 
-export declare interface YearForn {
+export declare interface YearForm {
+  _id: string;
   name: string;
 }
 

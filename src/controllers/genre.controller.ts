@@ -86,7 +86,7 @@ export class GenreController extends RedisCache {
 
       const id: number = (await Genre.findOne().sort({ id: -1 }))!.id + 1;
 
-      const result = Genre.create({
+      const result = await Genre.create({
         id: id,
         ...req.body,
         created_at: new Date().toISOString(),
@@ -133,9 +133,7 @@ export class GenreController extends RedisCache {
       );
 
       if (result.modifiedCount != 1) {
-        return next(
-          createHttpError.InternalServerError('Update video path failed')
-        );
+        return next(createHttpError.InternalServerError('Update genre failed'));
       }
 
       return res.json({

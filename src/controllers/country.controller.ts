@@ -10,10 +10,11 @@ import { CountryForm } from '@/types';
 export class CountryController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const noCache: boolean = !!req.query?.no_cache;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
+      if (dataCache != null && !noCache) {
         return res.json(JSON.parse(dataCache));
       }
 
@@ -21,11 +22,13 @@ export class CountryController extends RedisCache {
 
       const response = { results: data };
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(response)
-      );
+      if (data.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
 
       return res.json(response);
     } catch (error) {
@@ -95,7 +98,7 @@ export class CountryController extends RedisCache {
         });
       }
 
-      const result = Country.create({
+      const result = await Country.create({
         iso_639_1: iso_639_1,
         ...req.body,
         created_at: new Date().toISOString(),
@@ -127,6 +130,23 @@ export class CountryController extends RedisCache {
 
       const countryId: string = req.params.id;
 
+      const iso_639_1 = ISO6391.getCode(req.body.english_name);
+      if (!iso_639_1) {
+        return res.json({
+          success: false,
+          message: `No iso_639_1 code found for country: '${req.body.english_name}'`
+        });
+      }
+
+      const country = await Country.findOne({ iso_639_1: iso_639_1 });
+
+      if (country != null) {
+        return res.json({
+          success: false,
+          message: `Country already exists`
+        });
+      }
+
       const result = await Country.updateOne(
         {
           iso_639_1: countryId
@@ -143,7 +163,7 @@ export class CountryController extends RedisCache {
 
       if (result.modifiedCount != 1) {
         return next(
-          createHttpError.InternalServerError('Update video path failed')
+          createHttpError.InternalServerError('Update country failed')
         );
       }
 
