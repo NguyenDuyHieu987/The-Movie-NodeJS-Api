@@ -115,7 +115,10 @@ export class YearController extends RedisCache {
 
       const yearId: string = req.params.id;
 
-      const year = await Year.findOne({ name: req.body.name });
+      const year = await Year.findOne({
+        _id: { $ne: yearId },
+        name: req.body.name
+      });
 
       if (year != null) {
         return res.json({

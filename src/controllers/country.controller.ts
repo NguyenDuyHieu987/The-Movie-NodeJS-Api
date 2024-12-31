@@ -138,7 +138,9 @@ export class CountryController extends RedisCache {
         });
       }
 
-      const country = await Country.findOne({ iso_639_1: iso_639_1 });
+      const country = await Country.findOne({
+        $and: [{ iso_639_1: { $ne: countryId } }, { iso_639_1: iso_639_1 }]
+      });
 
       if (country != null) {
         return res.json({
@@ -153,6 +155,7 @@ export class CountryController extends RedisCache {
         },
         {
           $set: {
+            iso_639_1: iso_639_1,
             english_name: formData.english_name,
             name: formData.name,
             short_name: formData.short_name,
