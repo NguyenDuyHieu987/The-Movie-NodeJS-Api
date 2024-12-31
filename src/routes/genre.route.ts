@@ -1,6 +1,7 @@
 import express from 'express';
 
 import Genre from '@/controllers/genre.controller';
+import { authenticationHandler } from '@/middlewares';
 const router = express.Router();
 
 router.get('/get-all', Genre.getAll);
