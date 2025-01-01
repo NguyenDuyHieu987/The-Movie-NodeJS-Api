@@ -165,3 +165,20 @@ export declare type EpisodeForm = {
 };
 
 export type PaymentMethods = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'STRIPE';
+
+export declare interface BroadcastForm {
+  id: string;
+  movie_id: string;
+  episode_id: string;
+  type: string;
+  number_of_interactions: Number;
+  backdrop_path: string;
+  poster_path: string;
+  release_time: string;
+  name: string;
+  description: string;
+  created_at: Date;
+  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

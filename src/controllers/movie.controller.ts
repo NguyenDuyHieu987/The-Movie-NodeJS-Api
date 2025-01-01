@@ -444,7 +444,7 @@ export class MovieController {
         }
       );
 
-      if (movie.modifiedCount == 1) {
+      if (movie.modifiedCount != 1) {
         return res.json({
           success: false,
           result: 'Update views movie failed'

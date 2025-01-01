@@ -388,7 +388,7 @@ export class TVController {
         }
       );
 
-      if (tv.modifiedCount == 1) {
+      if (tv.modifiedCount != 1) {
         return res.json({
           success: false,
           result: 'Update views tv failed'

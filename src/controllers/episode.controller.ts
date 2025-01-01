@@ -51,7 +51,7 @@ export class EpisodeController extends RedisCache {
           }
         });
       } else {
-        episodes = await Episode.find({
+        episodes = await EpisodeTest.find({
           movie_id: movieId,
           season_id: seasonId
           // season_number: seasonNumber,
@@ -353,7 +353,7 @@ export class EpisodeController extends RedisCache {
         }
       );
 
-      if (episode.modifiedCount == 1) {
+      if (episode.modifiedCount != 1) {
         return res.json({
           success: false,
           result: 'Update views episode failed'
