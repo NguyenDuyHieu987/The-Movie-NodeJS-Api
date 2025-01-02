@@ -10,7 +10,7 @@ const Broadcast = new mongoose.Schema(
     number_of_interactions: { type: Number, default: 0 },
     backdrop_path: { type: String },
     poster_path: { type: String },
-    release_time: { type: String },
+    release_time: { type: Date },
     name: { type: String },
     description: { type: String },
     created_at: { type: Date, default: Date.now },
