@@ -218,6 +218,40 @@ export class BroadcastController extends RedisCache {
         },
         {
           $addFields: {
+            // Kiểm tra nếu có trường episode_id
+            hasEpisodeId: { $ne: ['$episode_id', null] }
+          }
+        },
+        {
+          $lookup: {
+            from: 'episodes',
+            let: { episodeId: '$episode_id' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$id', '$$episodeId'] } } },
+              { $project: { runtime: 1 } }
+            ],
+            as: 'episodeData'
+          }
+        },
+        {
+          $addFields: {
+            // Nếu có episode_id và media_type là 'tv', dùng runtime từ episodes
+            adjusted_runtime: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ['$movieData.media_type', 'tv'] },
+                    { $eq: ['$hasEpisodeId', true] }
+                  ]
+                },
+                then: { $arrayElemAt: ['$episodeData.runtime', 0] }, // Lấy runtime từ episodeData
+                else: '$movieData.runtime' // Nếu không, lấy runtime từ movieData
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
             // Kiểm tra nếu release_date là kiểu 'string' rồi chuyển nó sang kiểu 'Date'
             release_time: {
               $cond: {
@@ -226,12 +260,12 @@ export class BroadcastController extends RedisCache {
                 else: '$release_time' // Giữ nguyên nếu đã là 'Date'
               }
             },
-            // Chuyển movieData.runtime sang kiểu Number nếu nó là kiểu string
+            // Chuyển adjusted_runtime sang kiểu Number nếu nó là kiểu string
             movie_runtime_in_ms: {
               $cond: {
-                if: { $eq: [{ $type: '$movieData.runtime' }, 'string'] },
-                then: { $toDouble: '$movieData.runtime' }, // Chuyển thành số
-                else: '$movieData.runtime' // Giữ nguyên nếu đã là số
+                if: { $eq: [{ $type: '$adjusted_runtime' }, 'string'] },
+                then: { $multiply: [{ $toDouble: '$adjusted_runtime' }, 1000] }, // Chuyển thành số và nhân với 1000
+                else: { $multiply: ['$adjusted_runtime', 1000] } // Nhân với 1000 nếu đã là số
               }
             }
           }
@@ -366,15 +400,6 @@ export class BroadcastController extends RedisCache {
         throw createHttpError.InternalServerError(
           'Please provide full genre information'
         );
-      }
-
-      const broadcast = await Broadcast.findOne({ name: req.body.name });
-
-      if (broadcast != null) {
-        return res.json({
-          success: false,
-          message: `Broadcast already exists`
-        });
       }
 
       const result = await Broadcast.create({
