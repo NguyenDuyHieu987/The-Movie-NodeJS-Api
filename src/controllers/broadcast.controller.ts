@@ -43,27 +43,34 @@ export class BroadcastController extends RedisCache {
         {
           $unwind: '$movieData'
         },
-        // {
-        //   $replaceRoot: {
-        //     newRoot: {
-        //       $mergeObjects: [
-        //         {
-        //           modData: '$modData'
-        //         },
-        //         '$movieData'
-        //       ]
-        //     }
-        //   }
-        // },
-        // {
-        //   $match: {
-        //     'modData.type': slug,
-        //     $or: [
-        //       { $and: [releaseDate, genres, originalLanguage] },
-        //       { $and: [firstAirDate, genres, originalLanguage] }
-        //     ]
-        //   }
-        // },
+        {
+          $lookup: {
+            from: 'episodes',
+            let: {
+              episodeId: '$episode_id',
+              mediaType: '$movieData.media_type'
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$id', '$$episodeId'] },
+                      { $eq: ['$$mediaType', 'tv'] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'episodeData'
+          }
+        },
+        {
+          $unwind: {
+            path: '$episodeData',
+            preserveNullAndEmptyArrays: true // Giữ nguyên nếu không có dữ liệu trong episodeData
+          }
+        },
         ...aggregateOptions
       ]);
 
@@ -139,6 +146,34 @@ export class BroadcastController extends RedisCache {
           $unwind: '$movieData'
         },
         {
+          $lookup: {
+            from: 'episodes',
+            let: {
+              episodeId: '$episode_id',
+              mediaType: '$movieData.media_type'
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$id', '$$episodeId'] },
+                      { $eq: ['$$mediaType', 'tv'] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'episodeData'
+          }
+        },
+        {
+          $unwind: {
+            path: '$episodeData',
+            preserveNullAndEmptyArrays: true // Giữ nguyên nếu không có dữ liệu trong episodeData
+          }
+        },
+        {
           $match: {
             $or: [
               { name: { $regex: query, $options: 'i' } },
@@ -158,6 +193,34 @@ export class BroadcastController extends RedisCache {
               localField: 'movie_id',
               foreignField: 'id',
               as: 'movieData'
+            }
+          },
+          {
+            $lookup: {
+              from: 'episodes',
+              let: {
+                episodeId: '$episode_id',
+                mediaType: '$movieData.media_type'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$id', '$$episodeId'] },
+                        { $eq: ['$$mediaType', 'tv'] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'episodeData'
+            }
+          },
+          {
+            $unwind: {
+              path: '$episodeData',
+              preserveNullAndEmptyArrays: true // Giữ nguyên nếu không có dữ liệu trong episodeData
             }
           },
           {
