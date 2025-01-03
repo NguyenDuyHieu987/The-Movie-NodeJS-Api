@@ -8,7 +8,7 @@ const LiveComment = new mongoose.Schema(
     broadcast_id: { type: String },
     movie_id: { type: String },
     content: { type: String },
-    timestamp: { type: String },
+    timestamp: { type: Date },
     parent_id: { type: String },
     type: { type: String, enum: ['children', 'parent'], default: 'parent' },
     reply_to: { type: String },

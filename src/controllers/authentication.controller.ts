@@ -78,7 +78,8 @@ export class AuthController extends RedisCache {
     try {
       const account = await Account.findOne({
         email: req.body.email,
-        auth_type: 'email'
+        auth_type: 'email',
+        status: 'active'
       });
 
       if (account == null) {
@@ -193,7 +194,8 @@ export class AuthController extends RedisCache {
 
       const account = await Account.findOne({
         facebook_user_id: facebookUser.id,
-        auth_type: 'facebook'
+        auth_type: 'facebook',
+        status: 'active'
       });
 
       if (account == null) {
@@ -272,7 +274,7 @@ export class AuthController extends RedisCache {
         return res.json(response);
       } else {
         const accountLogedIn = await Account.findOneAndUpdate(
-          { id: account.id, auth_type: 'facebook' },
+          { id: account.id, auth_type: 'facebook', status: 'active' },
           {
             $set: {
               avatar: facebookUser.picture.data.url
@@ -420,7 +422,8 @@ export class AuthController extends RedisCache {
 
       const account = await Account.findOne({
         google_user_id: googleUserId,
-        auth_type: 'google'
+        auth_type: 'google',
+        status: 'active'
       });
 
       if (account == null) {
@@ -573,7 +576,8 @@ export class AuthController extends RedisCache {
 
       const account = await Account.findOne({
         google_user_id: googleUserId,
-        auth_type: 'google'
+        auth_type: 'google',
+        status: 'active'
       });
 
       if (account == null) {
@@ -740,7 +744,8 @@ export class AuthController extends RedisCache {
 
       const account = await Account.findOne({
         id: signupUser.id,
-        auth_type: 'email'
+        auth_type: 'email',
+        status: 'active'
       });
 
       if (account != null) {
@@ -804,7 +809,8 @@ export class AuthController extends RedisCache {
         case 'email':
           const account = await Account.findOne({
             email: formUser.email,
-            auth_type: 'email'
+            auth_type: 'email',
+            status: 'active'
           });
 
           if (account != null) {
@@ -900,7 +906,8 @@ export class AuthController extends RedisCache {
         case 'email':
           const account = await Account.findOne({
             email: req.body.email,
-            auth_type: 'email'
+            auth_type: 'email',
+            status: 'active'
           });
 
           if (account == null) {

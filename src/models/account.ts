@@ -12,6 +12,11 @@ const Account = new mongoose.Schema(
     full_name: { type: String },
     avatar: { type: String },
     role: { type: String, enum: ['normal', 'admin'], default: 'normal' },
+    status: {
+      type: String,
+      enum: ['active', 'banned', 'deleted'],
+      default: 'active'
+    },
     auth_type: { type: String, enum: ['email', 'google', 'facebook'] },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }

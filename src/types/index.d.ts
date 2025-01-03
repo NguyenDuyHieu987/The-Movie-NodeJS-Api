@@ -19,6 +19,7 @@ export declare type User = {
   role: RoleUser;
   avatar: string;
   auth_type: string | 'email' | 'facebook' | 'google';
+  status: string | 'active' | 'banned' | 'deleted';
   created_at: Date;
   updated_at: Date;
   createdAt?: Date;

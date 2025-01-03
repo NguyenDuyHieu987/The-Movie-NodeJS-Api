@@ -28,6 +28,45 @@ export class AccountController extends RedisCache {
     super();
   }
 
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const key: string = req.originalUrl;
+
+      const data = await Account.find();
+
+      const response = { results: data };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query: string = (req.query.query as string) || '';
+      const key: string = req.originalUrl;
+
+      const data = await Account.find({
+        $or: [
+          { username: { $regex: query, $options: 'i' } },
+          {
+            full_name: { $regex: query, $options: 'i' }
+          },
+          {
+            email: { $regex: query, $options: 'i' }
+          }
+        ]
+      });
+
+      const response = { results: data };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async confirm(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;
@@ -83,7 +122,8 @@ export class AccountController extends RedisCache {
         case 'change-password':
           const account = await Account.findOne({
             email: user.email,
-            auth_type: 'email'
+            auth_type: 'email',
+            status: 'active'
           });
 
           if (account == null) {
@@ -152,7 +192,8 @@ export class AccountController extends RedisCache {
         case 'change-email':
           const account1 = await Account.findOne({
             email: formUser.new_email,
-            auth_type: 'email'
+            auth_type: 'email',
+            status: 'active'
           });
 
           if (account1 != null) {
@@ -378,7 +419,8 @@ export class AccountController extends RedisCache {
           email: user.email,
           username: user.username,
           full_name: user.full_name,
-          auth_type: user.auth_type
+          auth_type: user.auth_type,
+          status: 'active'
         },
         {
           $set: {
@@ -449,7 +491,8 @@ export class AccountController extends RedisCache {
           email: user.email,
           username: user.username,
           full_name: user.full_name,
-          auth_type: user.auth_type
+          auth_type: user.auth_type,
+          status: 'active'
         },
         {
           $set: {
@@ -565,7 +608,8 @@ export class AccountController extends RedisCache {
       const account = await Account.findOne({
         id: changeEmailInfo.id,
         email: changeEmailInfo.email,
-        auth_type: changeEmailInfo.auth_type
+        auth_type: changeEmailInfo.auth_type,
+        status: 'active'
       });
 
       if (account == null) {
@@ -619,7 +663,8 @@ export class AccountController extends RedisCache {
         {
           id: changeEmailInfo.id,
           email: changeEmailInfo.email,
-          auth_type: changeEmailInfo.auth_type
+          auth_type: changeEmailInfo.auth_type,
+          status: 'active'
         },
         {
           $set: {
@@ -719,7 +764,8 @@ export class AccountController extends RedisCache {
       const account = await Account.findOne({
         id: resetPasswordInfo.id,
         email: resetPasswordInfo.email,
-        auth_type: resetPasswordInfo.auth_type
+        auth_type: resetPasswordInfo.auth_type,
+        status: 'active'
       });
 
       if (account == null) {
@@ -775,7 +821,8 @@ export class AccountController extends RedisCache {
         {
           id: resetPasswordInfo.id,
           email: resetPasswordInfo.email,
-          auth_type: resetPasswordInfo.auth_type
+          auth_type: resetPasswordInfo.auth_type,
+          status: 'active'
         },
         {
           $set: {

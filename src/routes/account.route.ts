@@ -5,6 +5,18 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
+router.get(
+  '/get-all',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.getAll
+);
+router.get(
+  '/search',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.search
+);
 router.post(
   '/confirm/:type',
   (...params) => authenticationHandler(...params, { required: true }),
