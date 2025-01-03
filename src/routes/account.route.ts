@@ -73,6 +73,12 @@ router.delete(
   Account.deleteAccount
 );
 router.delete(
+  '/delete-permanent/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.deletePermanent
+);
+router.delete(
   '/delete-multiple',
   (...params) =>
     authenticationHandler(...params, { required: true, role: ['admin'] }),

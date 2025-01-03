@@ -194,8 +194,7 @@ export class AccountController extends RedisCache {
         case 'change-email':
           const account1 = await Account.findOne({
             email: formUser.new_email,
-            auth_type: 'email',
-            status: 'active'
+            auth_type: 'email'
           });
 
           if (account1 != null) {
@@ -421,8 +420,7 @@ export class AccountController extends RedisCache {
           email: user.email,
           username: user.username,
           full_name: user.full_name,
-          auth_type: user.auth_type,
-          status: 'active'
+          auth_type: user.auth_type
         },
         {
           $set: {
@@ -493,8 +491,7 @@ export class AccountController extends RedisCache {
           email: user.email,
           username: user.username,
           full_name: user.full_name,
-          auth_type: user.auth_type,
-          status: 'active'
+          auth_type: user.auth_type
         },
         {
           $set: {
@@ -665,8 +662,7 @@ export class AccountController extends RedisCache {
         {
           id: changeEmailInfo.id,
           email: changeEmailInfo.email,
-          auth_type: changeEmailInfo.auth_type,
-          status: 'active'
+          auth_type: changeEmailInfo.auth_type
         },
         {
           $set: {
@@ -823,8 +819,7 @@ export class AccountController extends RedisCache {
         {
           id: resetPasswordInfo.id,
           email: resetPasswordInfo.email,
-          auth_type: resetPasswordInfo.auth_type,
-          status: 'active'
+          auth_type: resetPasswordInfo.auth_type
         },
         {
           $set: {
@@ -994,6 +989,29 @@ export class AccountController extends RedisCache {
       );
 
       if (result.modifiedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Delete account failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete account suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deletePermanent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const accountId: string = req.params.id;
+
+      const result = await Account.deleteOne({
+        id: accountId
+      });
+
+      if (result.deletedCount != 1) {
         return next(
           createHttpError.InternalServerError('Delete account failed')
         );
