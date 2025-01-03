@@ -3,6 +3,7 @@ import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import type { JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE } from '@/common';
 import { RedisCache } from '@/config/redis';
@@ -22,6 +23,7 @@ import {
 } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
+import { UpdateWriteOpResult } from 'mongoose';
 
 export class AccountController extends RedisCache {
   constructor() {
@@ -877,6 +879,165 @@ export class AccountController extends RedisCache {
           result: 'Token is invalid'
         });
       }
+      return next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: User = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full genre information'
+        );
+      }
+
+      const account = await Account.findOne({ email: req.body.email });
+
+      if (account != null) {
+        return res.json({
+          success: false,
+          message: `Account already exists`
+        });
+      }
+
+      const id: string = uuidv4();
+
+      const result = await Account.create({
+        id: id,
+        ...req.body,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      if (result == null) {
+        throw createHttpError.InternalServerError('Add account failed');
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateAccount(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: User = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full genre information'
+        );
+      }
+
+      const accountId: string = req.params.id;
+
+      const account = await Account.findOne({
+        $and: [{ id: { $ne: accountId } }, { email: req.body.email }]
+      });
+
+      if (account != null) {
+        return res.json({
+          success: false,
+          message: `Account already exists`
+        });
+      }
+
+      const result = await Account.updateOne(
+        {
+          id: accountId
+        },
+        {
+          $set: {
+            username: formData.username,
+            full_name: formData.full_name,
+            email: formData.email,
+            status: formData.status,
+            auth_type: formData.auth_type,
+            role: formData.role,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
+        return next(createHttpError.InternalServerError('Update genre failed'));
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteAccount(req: Request, res: Response, next: NextFunction) {
+    try {
+      const accountId: string = req.params.id;
+
+      const result = await Account.updateOne(
+        {
+          id: accountId
+        },
+        {
+          $set: {
+            status: 'deleted',
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Delete account failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete account suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteAccountMultiple(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listAccountId: string[] | number[] = req.body.listAccountId;
+      var results: UpdateWriteOpResult[] = [];
+      for (var accountId of listAccountId) {
+        const result = await Account.updateOne(
+          {
+            id: accountId
+          },
+          {
+            $set: {
+              status: 'deleted',
+              updated_at: new Date().toISOString()
+            }
+          }
+        );
+        results.push(result);
+      }
+
+      if (results.some((r) => !r.acknowledged)) {
+        return next(
+          createHttpError.InternalServerError('Delete accounts failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete genres suucessfully'
+      });
+    } catch (error) {
       return next(error);
     }
   }

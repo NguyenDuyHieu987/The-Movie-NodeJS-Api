@@ -54,5 +54,29 @@ router.post(
 );
 router.get('/reset-password', Account.resetPasswordRetrieveToken);
 router.post('/reset-password', Account.resetPassword);
+router.post(
+  '/create',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.create
+);
+router.post(
+  '/update/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.updateAccount
+);
+router.delete(
+  '/delete/:id',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.deleteAccount
+);
+router.delete(
+  '/delete-multiple',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.deleteAccountMultiple
+);
 
 export default router;
