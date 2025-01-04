@@ -9,6 +9,22 @@ export declare type TCredit = {
   crew: Array;
 };
 
+export declare interface ModForm {
+  id: string;
+  media_type: string;
+  name: string;
+  type: string;
+  order: number;
+  path: string;
+}
+
+export declare interface ModListForm {
+  _id: string;
+  id: string;
+  listMovieId: string[] | number[];
+  modId: string;
+}
+
 export declare type RoleUser = 'normal' | 'admin';
 
 export declare type User = {

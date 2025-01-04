@@ -884,7 +884,7 @@ export class AccountController extends RedisCache {
 
       if (!formData) {
         throw createHttpError.InternalServerError(
-          'Please provide full genre information'
+          'Please provide full account information'
         );
       }
 
@@ -925,7 +925,7 @@ export class AccountController extends RedisCache {
 
       if (!formData) {
         throw createHttpError.InternalServerError(
-          'Please provide full genre information'
+          'Please provide full account information'
         );
       }
 
@@ -960,7 +960,9 @@ export class AccountController extends RedisCache {
       );
 
       if (result.modifiedCount != 1) {
-        return next(createHttpError.InternalServerError('Update genre failed'));
+        return next(
+          createHttpError.InternalServerError('Update account failed')
+        );
       }
 
       return res.json({
@@ -1053,7 +1055,7 @@ export class AccountController extends RedisCache {
 
       return res.json({
         success: true,
-        message: 'Delete genres suucessfully'
+        message: 'Delete accounts suucessfully'
       });
     } catch (error) {
       return next(error);

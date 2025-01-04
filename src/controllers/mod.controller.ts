@@ -1,16 +1,20 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import { v4 as uuidv4 } from 'uuid';
 
 import { RedisCache } from '@/config/redis';
 import Mod from '@/models/mod';
+import { DeleteResult } from 'mongoose';
+import { ModForm } from '@/types';
 
 export class ModController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const noCache: boolean = !!req.query?.no_cache;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
 
-      if (dataCache != null) {
+      if (dataCache != null && !noCache) {
         return res.json(JSON.parse(dataCache));
       }
 
@@ -22,11 +26,48 @@ export class ModController extends RedisCache {
         results: data
       };
 
-      await RedisCache.client.setEx(
-        key,
-        +process.env.REDIS_CACHE_TIME!,
-        JSON.stringify(response)
-      );
+      if (data.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query: string = (req.query.query as string) || '';
+      const noCache: boolean = !!req.query?.no_cache;
+      const key: string = req.originalUrl;
+      const dataCache: any = await RedisCache.client.get(key);
+
+      if (dataCache != null && !noCache) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      const data = await Mod.find({
+        name: { $regex: query, $options: 'i' }
+      }).sort({
+        order: 1
+      });
+
+      const response = {
+        results: data
+      };
+
+      if (data.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
 
       return res.json(response);
     } catch (error) {
@@ -156,7 +197,7 @@ export class ModController extends RedisCache {
       const primaryReleaseDateLte: string =
         (req.query?.primary_release_date_lte as string) || '';
 
-      const withGenres: string = (req.query?.with_genres as string) || '';
+      const withMods: string = (req.query?.with_genres as string) || '';
 
       const withOriginalLanguage: string =
         (req.query?.with_original_language as string) || '';
@@ -217,19 +258,19 @@ export class ModController extends RedisCache {
         primaryReleaseDateLte
       );
 
-      const convertGenres = (genre: string) => {
+      const convertMods = (genre: string) => {
         if (genre != '') {
           return {
             'movieData.genres': {
               $elemMatch: {
-                id: +withGenres
+                id: +withMods
               }
             }
           };
         } else return {};
       };
 
-      const genres = convertGenres(withGenres);
+      const genres = convertMods(withMods);
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
@@ -455,6 +496,154 @@ export class ModController extends RedisCache {
       );
 
       return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: ModForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full mod information'
+        );
+      }
+
+      const mod = await Mod.findOne({
+        $and: [{ type: req.body.type }, { media_type: req.body.media_type }]
+      });
+
+      if (mod != null) {
+        return res.json({
+          success: false,
+          message: `Mod already exists`
+        });
+      }
+
+      const id: string = uuidv4();
+
+      const order: number =
+        (await Mod.findOne().sort({ order: -1 }))!.order! + 1;
+
+      const result = await Mod.create({
+        id: id,
+        ...req.body,
+        order: order,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      if (result == null) {
+        throw createHttpError.InternalServerError('Add mod failed');
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateMod(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: ModForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full mod information'
+        );
+      }
+
+      const modId: string = req.params.id;
+
+      const mod = await Mod.findOne({
+        $and: [
+          { id: { $ne: modId } },
+          { type: formData.type },
+          { media_type: formData.media_type }
+        ]
+      });
+
+      if (mod != null) {
+        return res.json({
+          success: false,
+          message: `Mod already exists`
+        });
+      }
+
+      const result = await Mod.updateOne(
+        {
+          id: modId
+        },
+        {
+          $set: {
+            name: formData.name,
+            media_type: formData.media_type,
+            type: formData.type,
+            path: formData.path,
+            order: formData.order,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
+        return next(createHttpError.InternalServerError('Update mod failed'));
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteMod(req: Request, res: Response, next: NextFunction) {
+    try {
+      const modId: string = req.params.id;
+
+      const result = await Mod.deleteOne({
+        id: modId
+      });
+
+      if (result.deletedCount != 1) {
+        return next(createHttpError.InternalServerError('Delete mod failed'));
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete mod suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteModMultiple(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listModId: string[] | number[] = req.body.listModId;
+      var results: DeleteResult[] = [];
+      for (var modId of listModId) {
+        const result = await Mod.deleteOne({
+          id: modId
+        });
+        results.push(result);
+      }
+
+      if (results.some((r) => !r.acknowledged)) {
+        return next(createHttpError.InternalServerError('Delete mods failed'));
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete mods suucessfully'
+      });
     } catch (error) {
       return next(error);
     }

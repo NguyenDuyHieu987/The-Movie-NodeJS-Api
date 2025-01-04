@@ -3,8 +3,298 @@ import createHttpError from 'http-errors';
 
 import { RedisCache } from '@/config/redis';
 import ModList from '@/models/modList';
+import { ModListForm } from '@/types';
+import { DeleteResult } from 'mongoose';
 
 export class ModListController extends RedisCache {
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const noCache: boolean = !!req.query?.no_cache;
+      const key: string = req.originalUrl;
+      const page: number = +req.query.page! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+      const dataCache: any = await RedisCache.client.get(key);
+      const type: string = (req.query.type as string) || 'all';
+
+      if (dataCache != null && !noCache) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let optionSearch: any[] = [];
+
+      if (type != 'all') {
+        optionSearch = [
+          {
+            $match: {
+              'modData.type': type
+            }
+          }
+        ];
+      }
+
+      const response: {
+        page: number;
+        results: any[];
+        page_size: number;
+        total: number;
+      } = {
+        page: page + 1,
+        results: [],
+        page_size: limit,
+        total: 0
+      };
+
+      if (limit != -1) {
+        response.results = await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          ...optionSearch
+        ])
+          .skip(page * limit)
+          .limit(limit);
+      } else {
+        response.results = await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          ...optionSearch
+        ]);
+      }
+
+      response.total = (
+        await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          ...optionSearch
+        ])
+      ).length;
+
+      if (response.results.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query: string = (req.query.query as string) || '';
+      const noCache: boolean = !!req.query?.no_cache;
+      const key: string = req.originalUrl;
+      const page: number = +req.query.page! - 1 || 0;
+      const limit: number = +req.query.limit! || 20;
+      const dataCache: any = await RedisCache.client.get(key);
+      const type: string = (req.query.type as string) || 'all';
+
+      if (dataCache != null && !noCache) {
+        return res.json(JSON.parse(dataCache));
+      }
+
+      let optionSearch: any = {};
+
+      if (type != 'all') {
+        optionSearch['modData.type'] = type;
+      }
+
+      const response: {
+        page: number;
+        results: any[];
+        page_size: number;
+        total: number;
+      } = {
+        page: page + 1,
+        results: [],
+        page_size: limit,
+        total: 0
+      };
+      if (limit != -1) {
+        response.results = await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          {
+            $match: {
+              ...optionSearch,
+              $or: [
+                { 'movieData.name': { $regex: query, $options: 'i' } },
+                { 'movieData.original_name': { $regex: query, $options: 'i' } }
+              ]
+            }
+          }
+        ])
+          .skip(page * limit)
+          .limit(limit);
+      } else {
+        response.results = await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          {
+            $match: {
+              ...optionSearch,
+              $or: [
+                { 'movieData.name': { $regex: query, $options: 'i' } },
+                { 'movieData.original_name': { $regex: query, $options: 'i' } }
+              ]
+            }
+          }
+        ]);
+      }
+
+      response.total = (
+        await ModList.aggregate([
+          {
+            $lookup: {
+              from: 'mods',
+              localField: 'modId',
+              foreignField: 'id',
+              as: 'modData'
+            }
+          },
+          {
+            $unwind: '$modData'
+          },
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          {
+            $match: {
+              ...optionSearch,
+              $or: [
+                { 'movieData.name': { $regex: query, $options: 'i' } },
+                { 'movieData.original_name': { $regex: query, $options: 'i' } }
+              ]
+            }
+          }
+        ])
+      ).length;
+
+      if (response.results.length > 0 && !noCache) {
+        await RedisCache.client.setEx(
+          key,
+          +process.env.REDIS_CACHE_TIME!,
+          JSON.stringify(response)
+        );
+      }
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async filter(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
@@ -36,20 +326,20 @@ export class ModListController extends RedisCache {
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
         if (date_gte != '' && data_lte != '') {
           return {
-            release_date: {
+            'movieData.release_date': {
               $gte: date_gte,
               $lte: data_lte
             }
           };
         } else if (date_gte == '' && data_lte != '') {
           return {
-            release_date: {
+            'movieData.release_date': {
               $lte: data_lte
             }
           };
         } else if (date_gte != '' && data_lte == '') {
           return {
-            release_date: {
+            'movieData.release_date': {
               $gte: date_gte
             }
           };
@@ -59,20 +349,20 @@ export class ModListController extends RedisCache {
       const convertFirstAirDate = (date_gte: string, data_lte: string) => {
         if (date_gte != '' && data_lte != '') {
           return {
-            first_air_date: {
+            'movieData.first_air_date': {
               $gte: date_gte,
               $lte: data_lte
             }
           };
         } else if (date_gte == '' && data_lte != '') {
           return {
-            first_air_date: {
+            'movieData.first_air_date': {
               $lte: data_lte
             }
           };
         } else if (date_gte != '' && data_lte == '') {
           return {
-            first_air_date: {
+            'movieData.first_air_date': {
               $gte: date_gte
             }
           };
@@ -92,7 +382,7 @@ export class ModListController extends RedisCache {
       const convertGenres = (genre: string) => {
         if (genre != '') {
           return {
-            genres: {
+            'movieData.genres': {
               $elemMatch: {
                 id: +withGenres
               }
@@ -105,7 +395,9 @@ export class ModListController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return {
+            'movieData.original_language': { $regex: withOriginalLanguage }
+          };
         } else return {};
       };
 
@@ -569,6 +861,129 @@ export class ModListController extends RedisCache {
       );
 
       return res.json(result);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: ModListForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full modList information'
+        );
+      }
+
+      const listMovieId: string[] | number[] = formData.listMovieId;
+      var results: any[] = [];
+
+      for (var movieId of listMovieId) {
+        const result = await ModList.create({
+          id: movieId,
+          ...req.body,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        results.push(result);
+      }
+
+      if (results.some((r) => r == null)) {
+        throw createHttpError.InternalServerError('Add modList failed');
+      }
+
+      return res.json({
+        success: true,
+        results: results
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateModList(req: Request, res: Response, next: NextFunction) {
+    try {
+      const formData: ModListForm = req.body;
+
+      if (!formData) {
+        throw createHttpError.InternalServerError(
+          'Please provide full modList information'
+        );
+      }
+
+      const modId: string = req.params._id;
+
+      const result = await ModList.updateOne(
+        {
+          _id: modId
+        },
+        {
+          $set: {
+            id: formData.id || formData.listMovieId[0],
+            modId: formData.modId,
+            updated_at: new Date().toISOString()
+          }
+        }
+      );
+
+      if (result.modifiedCount != 1) {
+        return next(
+          createHttpError.InternalServerError('Update modList failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteModList(req: Request, res: Response, next: NextFunction) {
+    try {
+      const modListId: string = req.params.id;
+
+      const result = await ModList.deleteOne({
+        _id: modListId
+      });
+
+      if (result.deletedCount != 1) {
+        return next(createHttpError.InternalServerError('Delete mod failed'));
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete mod suucessfully'
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteModListMultiple(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listModListId: string[] | number[] = req.body.listModListId;
+      var results: DeleteResult[] = [];
+      for (var modListId of listModListId) {
+        const result = await ModList.deleteOne({
+          _id: modListId
+        });
+        results.push(result);
+      }
+
+      if (results.some((r) => !r.acknowledged)) {
+        return next(
+          createHttpError.InternalServerError('Delete modLists failed')
+        );
+      }
+
+      return res.json({
+        success: true,
+        message: 'Delete modLists suucessfully'
+      });
     } catch (error) {
       return next(error);
     }
