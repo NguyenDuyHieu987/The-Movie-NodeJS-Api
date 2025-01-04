@@ -877,12 +877,13 @@ export class ModListController extends RedisCache {
       }
 
       const listMovieId: string[] | number[] = formData.listMovieId;
+      console.log(listMovieId);
       var results: any[] = [];
 
       for (var movieId of listMovieId) {
         const result = await ModList.create({
           id: movieId,
-          ...req.body,
+          modId: formData.modId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -912,15 +913,15 @@ export class ModListController extends RedisCache {
         );
       }
 
-      const modId: string = req.params._id;
+      const modListId: string = req.params.id;
 
       const result = await ModList.updateOne(
         {
-          _id: modId
+          _id: modListId
         },
         {
           $set: {
-            id: formData.id || formData.listMovieId[0],
+            id: formData.listMovieId[0] || formData.id,
             modId: formData.modId,
             updated_at: new Date().toISOString()
           }
