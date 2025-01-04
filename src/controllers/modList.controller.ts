@@ -877,7 +877,6 @@ export class ModListController extends RedisCache {
       }
 
       const listMovieId: string[] | number[] = formData.listMovieId;
-      console.log(listMovieId);
       var results: any[] = [];
 
       for (var movieId of listMovieId) {
