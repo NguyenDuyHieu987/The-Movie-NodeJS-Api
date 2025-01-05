@@ -15,7 +15,7 @@ export async function handleCommentEvents(
   io: Server,
   socket: Socket
 ): Promise<void> {
-  socket.on('joinMovie', async (roomID: string) => {
+  socket.on('joinRoom', async (roomID: string) => {
     socket.join(roomID);
 
     const initialComments = await LiveComment.aggregate([
@@ -50,6 +50,10 @@ export async function handleCommentEvents(
     // const initialComments = commentsByMovie[roomID] || [];
 
     socket.emit('initialComments', initialComments);
+  });
+
+  socket.on('leaveRoom', async (roomID: string) => {
+    socket.leave(roomID);
   });
 
   socket.on('getStatus', async (roomID: string) => {
