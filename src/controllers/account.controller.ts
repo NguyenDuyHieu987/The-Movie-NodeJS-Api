@@ -25,7 +25,7 @@ import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 import { UpdateWriteOpResult } from 'mongoose';
 import dayjs from 'dayjs';
-const { GraphQLClient, gql } = require('graphql-request');
+// import { GraphQLClient, gql } from 'graphql-request';
 import { google } from 'googleapis';
 import { oauth2Client } from '@/config/google';
 
@@ -117,35 +117,35 @@ export class AccountController extends RedisCache {
       const ZONE_ID = 'cd6053fef7ddad92250a7e945cf89765';
       const API_TOKEN = '_eZImi8Mhn2hMK3wOz-2UpR22y0IQA146fXX__lg';
 
-      const graphQLClient = new GraphQLClient(CLOUDFLARE_API_URL, {
-        headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // const graphQLClient = new GraphQLClient(CLOUDFLARE_API_URL, {
+      //   headers: {
+      //     Authorization: `Bearer ${API_TOKEN}`,
+      //     'Content-Type': 'application/json'
+      //   }
+      // });
 
-      const GET_ANALYTICS_QUERY = gql`
-        query ($zoneTag: String!) {
-          viewer {
-            zones(filter: { zoneTag: $zoneTag }) {
-              firewallEventsAdaptive(
-                filter: { datetime_gt: $start, datetime_lt: $end }
-                limit: 2
-                orderBy: [datetime_DESC]
-              ) {
-                action
-                datetime
-                host: clientRequestHTTPHost
-              }
-            }
-          }
-        }
-      `;
-      const variables = {
-        zoneTag: ZONE_ID,
-        start: '2025-01-03T02:07:05Z',
-        end: '2025-01-03T17:07:05Z'
-      };
+      // const GET_ANALYTICS_QUERY = gql`
+      //   query ($zoneTag: String!) {
+      //     viewer {
+      //       zones(filter: { zoneTag: $zoneTag }) {
+      //         firewallEventsAdaptive(
+      //           filter: { datetime_gt: $start, datetime_lt: $end }
+      //           limit: 2
+      //           orderBy: [datetime_DESC]
+      //         ) {
+      //           action
+      //           datetime
+      //           host: clientRequestHTTPHost
+      //         }
+      //       }
+      //     }
+      //   }
+      // `;
+      // const variables = {
+      //   zoneTag: ZONE_ID,
+      //   start: '2025-01-03T02:07:05Z',
+      //   end: '2025-01-03T17:07:05Z'
+      // };
 
       // const Analytics = await graphQLClient.request(
       //   GET_ANALYTICS_QUERY,
