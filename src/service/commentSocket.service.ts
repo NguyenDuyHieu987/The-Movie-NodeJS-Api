@@ -52,6 +52,15 @@ export async function handleCommentEvents(
     socket.emit('initialComments', initialComments);
   });
 
+  socket.on('getStatus', async (roomID: string) => {
+    socket.join(roomID);
+
+    const roomClients = io.sockets.adapter.rooms.get(roomID);
+    const clientCount = roomClients ? roomClients.size : 0;
+
+    io.to(roomID).emit('getStatus', { clientCount });
+  });
+
   //   socket.on('newComment', async ({ roomID, comment }: Comment) => {
   socket.on('newComment', async (comment: LiveCommentForm) => {
     // if (!commentsByMovie[roomID]) {
