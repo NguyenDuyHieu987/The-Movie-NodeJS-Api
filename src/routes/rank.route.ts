@@ -16,5 +16,11 @@ router.post(
   (...params) => authenticationHandler(...params, { required: true }),
   Rank.addRate
 );
+router.get(
+  '/get-statistics',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Rank.getStatistics
+);
 
 export default router;

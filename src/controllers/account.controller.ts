@@ -24,6 +24,10 @@ import {
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 import { UpdateWriteOpResult } from 'mongoose';
+import dayjs from 'dayjs';
+import { GraphQLClient, gql } from 'graphql-request';
+import { google } from 'googleapis';
+import { oauth2Client } from '@/config/google';
 
 export class AccountController extends RedisCache {
   constructor() {
@@ -62,6 +66,97 @@ export class AccountController extends RedisCache {
       });
 
       const response = { results: data };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async getStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const key: string = req.originalUrl;
+      const startOfDayQuery: string =
+        (req.query.startOfDay as string) || dayjs().format('YYYY-MM-DD');
+      const endOfDayQuery: string =
+        (req.query.endOfDay as string) || dayjs().format('YYYY-MM-DD');
+
+      const startOfDay = new Date(startOfDayQuery);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(endOfDayQuery);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const periodInDays = dayjs(startOfDay).diff(dayjs(endOfDay), 'day');
+
+      const startDateLastPeriod = dayjs(startOfDay).subtract(
+        periodInDays,
+        'day'
+      );
+      const endDateLastPeriod = dayjs(endOfDay).subtract(periodInDays, 'day');
+
+      const data = await Account.find({
+        created_at: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      });
+
+      const dataLastPeriod = await Account.find({
+        created_at: {
+          $gte: startDateLastPeriod.toDate(),
+          $lte: endDateLastPeriod.toDate()
+        }
+      });
+
+      const total = await Account.countDocuments();
+
+      const CLOUDFLARE_API_URL =
+        'https://api.cloudflare.com/client/v4/graphql/';
+      // const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
+      // const ZONE_ID = process.env.CLOUDFLARE_ZONE_ID;
+      const ZONE_ID = 'cd6053fef7ddad92250a7e945cf89765';
+      const API_TOKEN = '_eZImi8Mhn2hMK3wOz-2UpR22y0IQA146fXX__lg';
+
+      const graphQLClient = new GraphQLClient(CLOUDFLARE_API_URL, {
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const GET_ANALYTICS_QUERY = gql`
+        query ($zoneTag: String!) {
+          viewer {
+            zones(filter: { zoneTag: $zoneTag }) {
+              firewallEventsAdaptive(
+                filter: { datetime_gt: $start, datetime_lt: $end }
+                limit: 2
+                orderBy: [datetime_DESC]
+              ) {
+                action
+                datetime
+                host: clientRequestHTTPHost
+              }
+            }
+          }
+        }
+      `;
+      const variables = {
+        zoneTag: ZONE_ID,
+        start: '2025-01-03T02:07:05Z',
+        end: '2025-01-03T17:07:05Z'
+      };
+
+      // const Analytics = await graphQLClient.request(
+      //   GET_ANALYTICS_QUERY,
+      //   variables
+      // );
+
+      const response = {
+        numberUser: data.length,
+        numberUserLastPeriod: dataLastPeriod.length,
+        totalUser: total
+      };
 
       return res.json(response);
     } catch (error) {
@@ -269,18 +364,6 @@ export class AccountController extends RedisCache {
               `Verify account with type ${req.params.type} not found`
             )
           );
-      }
-
-      if (!encoded) {
-        return next(
-          createHttpError.InternalServerError(`Verify account failed`)
-        );
-      } else {
-        return res.json({
-          isSended: true,
-          exp_offset: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
-          result: 'Send otp email successfully'
-        });
       }
     } catch (error) {
       return next(error);

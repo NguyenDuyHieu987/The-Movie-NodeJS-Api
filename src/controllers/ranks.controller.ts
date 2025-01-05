@@ -7,8 +7,63 @@ import Movie from '@/models/movie';
 import Rank from '@/models/rank';
 import TV from '@/models/tv';
 import type { User } from '@/types';
+import dayjs from 'dayjs';
 
 export class RankController extends RedisCache {
+  async getStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const type: string = (req.query.type! as string) || 'play';
+      const key: string = req.originalUrl;
+      const startOfDayQuery: string =
+        (req.query.startOfDay as string) || dayjs().format('YYYY-MM-DD');
+      const endOfDayQuery: string =
+        (req.query.endOfDay as string) || dayjs().format('YYYY-MM-DD');
+
+      const startOfDay = new Date(startOfDayQuery);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(endOfDayQuery);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const periodInDays = dayjs(startOfDay).diff(dayjs(endOfDay), 'day');
+
+      const startDateLastPeriod = dayjs(startOfDay).subtract(
+        periodInDays,
+        'day'
+      );
+      const endDateLastPeriod = dayjs(endOfDay).subtract(periodInDays, 'day');
+
+      const data = await Rank.find({
+        type: type,
+        created_at: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      });
+
+      const dataLastPeriod = await Rank.find({
+        created_at: {
+          $gte: startDateLastPeriod.toDate(),
+          $lte: endDateLastPeriod.toDate()
+        }
+      });
+
+      const total = await Rank.countDocuments({
+        type: type
+      });
+
+      const response = {
+        type,
+        number: data.length,
+        numberLastPeriod: dataLastPeriod.length,
+        total: total
+      };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async filter(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
