@@ -25,7 +25,7 @@ import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
 import { UpdateWriteOpResult } from 'mongoose';
 import dayjs from 'dayjs';
-import { GraphQLClient, gql } from 'graphql-request';
+const { GraphQLClient, gql } = require('graphql-request');
 import { google } from 'googleapis';
 import { oauth2Client } from '@/config/google';
 
