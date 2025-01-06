@@ -982,9 +982,12 @@ export class AccountController extends RedisCache {
 
       const id: string = uuidv4();
 
+      const passwordEncrypted = await encryptPassword(formData.password);
+
       const result = await Account.create({
         id: id,
         ...req.body,
+        password: passwordEncrypted,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });

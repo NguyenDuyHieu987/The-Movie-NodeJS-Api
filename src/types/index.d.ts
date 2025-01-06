@@ -32,6 +32,7 @@ export declare type User = {
   username: string;
   full_name: string;
   email: string;
+  password: string;
   role: RoleUser;
   avatar: string;
   auth_type: string | 'email' | 'facebook' | 'google';
