@@ -379,9 +379,20 @@ export class EpisodeController extends RedisCache {
         );
       }
 
+      const episode = await Episode.findOne({
+        episode_number: formData.episode_number
+      });
+
+      if (episode != null) {
+        return res.json({
+          success: false,
+          message: `Episode ${formData.episode_number} already exists`
+        });
+      }
+
       const id: string = uuidv4();
 
-      const result = await EpisodeTest.create({
+      const result = await Episode.create({
         id: id,
         ...req.body,
         created_at: new Date().toISOString(),
@@ -413,7 +424,21 @@ export class EpisodeController extends RedisCache {
 
       const episodeId: string = req.params.id;
 
-      const result = await EpisodeTest.updateOne(
+      const episode = await Episode.findOne({
+        $and: [
+          { id: { $ne: episodeId } },
+          { episode_number: formData.episode_number }
+        ]
+      });
+
+      if (episode != null) {
+        return res.json({
+          success: false,
+          message: `Episode ${formData.episode_number} already exists`
+        });
+      }
+
+      const result = await Episode.updateOne(
         {
           id: episodeId
         },
