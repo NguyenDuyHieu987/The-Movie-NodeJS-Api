@@ -8,7 +8,7 @@ const Search = new mongoose.Schema(
     user_id: { type: String },
     type: { type: String, enum: ['search', 'history'] },
     query: { type: String },
-    search_times: { type: Number, default: 0 },
+    search_times: { type: Number, default: 1 },
     adult: { type: Boolean },
     backdrop_path: { type: String },
     first_air_date: { type: String },
