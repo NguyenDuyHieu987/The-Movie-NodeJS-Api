@@ -6,6 +6,7 @@ const History = new mongoose.Schema(
     id: { type: String, default: uuidv4() },
     user_id: { type: String },
     movie_id: { type: String },
+    episode_id: { type: String },
     backdrop_path: { type: String },
     release_date: { type: String },
     first_air_date: { type: String },

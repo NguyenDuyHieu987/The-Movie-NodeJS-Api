@@ -162,9 +162,24 @@ export class SearchController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const topSearch = await Search.find({
-        type: 'search'
-      })
+      const topSearch = await Search.aggregate([
+        {
+          $lookup: {
+            from: 'movies',
+            localField: 'movie_id',
+            foreignField: 'id',
+            as: 'movieData'
+          }
+        },
+        {
+          $unwind: '$movieData'
+        },
+        {
+          $match: {
+            type: 'search'
+          }
+        }
+      ])
         .skip(page * limit)
         .limit(limit)
         .sort({ updated_at: -1, search_times: -1 });
@@ -205,25 +220,58 @@ export class SearchController extends RedisCache {
         return res.json(JSON.parse(dataCache));
       }
 
-      const topSearch = await Search.find({
-        type: 'search',
-        $or: [
-          { query: { $regex: query, $options: 'i' } },
-          { name: { $regex: query, $options: 'i' } },
-          { original_name: { $regex: query, $options: 'i' } }
-        ]
-      })
+      const topSearch = await Search.aggregate([
+        {
+          $lookup: {
+            from: 'movies',
+            localField: 'movie_id',
+            foreignField: 'id',
+            as: 'movieData'
+          }
+        },
+        {
+          $unwind: '$movieData'
+        },
+        {
+          $match: {
+            type: 'search',
+            $or: [
+              { query: { $regex: query, $options: 'i' } },
+              { 'movieData.name': { $regex: query, $options: 'i' } },
+              { 'movieData.original_name': { $regex: query, $options: 'i' } }
+            ]
+          }
+        }
+      ])
         .skip(page * limit)
         .limit(limit)
         .sort({ updated_at: -1, search_times: -1 });
 
-      const total = await Search.countDocuments({
-        type: 'search',
-        $or: [
-          { name: { $regex: query, $options: 'i' } },
-          { original_name: { $regex: query, $options: 'i' } }
-        ]
-      });
+      const total = (
+        await Search.aggregate([
+          {
+            $lookup: {
+              from: 'movies',
+              localField: 'movie_id',
+              foreignField: 'id',
+              as: 'movieData'
+            }
+          },
+          {
+            $unwind: '$movieData'
+          },
+          {
+            $match: {
+              type: 'search',
+              $or: [
+                { query: { $regex: query, $options: 'i' } },
+                { 'movieData.name': { $regex: query, $options: 'i' } },
+                { 'movieData.original_name': { $regex: query, $options: 'i' } }
+              ]
+            }
+          }
+        ])
+      ).length;
 
       const result = {
         page,
