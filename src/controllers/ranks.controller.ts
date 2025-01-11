@@ -95,7 +95,7 @@ export class RankController extends RedisCache {
       const convertGenres = (genre: string) => {
         if (genre != '') {
           return {
-            genres: {
+            'movieData.genres': {
               $elemMatch: {
                 id: +withGenres
               }
@@ -108,7 +108,9 @@ export class RankController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return {
+            'movieData.original_language': { $regex: withOriginalLanguage }
+          };
         } else return {};
       };
 
@@ -144,18 +146,19 @@ export class RankController extends RedisCache {
       };
 
       if (withMediaType != 'all') {
-        matchGroupRank.media_type = withMediaType;
+        matchGroupRank['movieData.media_type'] = withMediaType;
       }
 
       const filterGroupRank: any = {
         _id: '$movie_id',
         id: { $first: '$id' },
         movie_id: { $first: '$movie_id' },
-        media_type: { $first: '$media_type' },
-        name: { $first: '$name' },
-        original_name: { $first: '$original_name' },
-        poster_path: { $first: '$poster_path' },
-        backdrop_path: { $first: '$backdrop_path' },
+        // media_type: { $first: '$media_type' },
+        // name: { $first: '$name' },
+        // original_name: { $first: '$original_name' },
+        // poster_path: { $first: '$poster_path' },
+        // backdrop_path: { $first: '$backdrop_path' },
+        movieData: { $first: '$movieData' },
         count: { $sum: 1 }
       };
 
@@ -187,6 +190,20 @@ export class RankController extends RedisCache {
         case 'day':
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -208,6 +225,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(prevDay);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRank,
@@ -235,6 +266,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -254,6 +299,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(startWeek);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRank,
@@ -280,6 +339,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -304,6 +377,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCMonth(prevMonth + 1);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRank,
@@ -331,6 +418,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRank,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -356,6 +457,20 @@ export class RankController extends RedisCache {
 
           result.prev_results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRank,
                 created_at: { $gte: prevDateStart, $lte: prevDateEnd }
@@ -374,6 +489,20 @@ export class RankController extends RedisCache {
           break;
         case 'all':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRank
@@ -440,7 +569,7 @@ export class RankController extends RedisCache {
       const convertGenres = (genre: string) => {
         if (genre != '') {
           return {
-            genres: {
+            'movieData.genres': {
               $elemMatch: {
                 id: +withGenres
               }
@@ -453,7 +582,9 @@ export class RankController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return {
+            'movieData.original_language': { $regex: withOriginalLanguage }
+          };
         } else return {};
       };
 
@@ -489,18 +620,19 @@ export class RankController extends RedisCache {
       };
 
       if (withMediaType != 'all') {
-        matchGroupPlay.media_type = withMediaType;
+        matchGroupPlay['movieData.media_type'] = withMediaType;
       }
 
       const filterGroupPlay = {
         _id: '$movie_id',
         id: { $first: '$id' },
         movie_id: { $first: '$movie_id' },
-        media_type: { $first: '$media_type' },
-        name: { $first: '$name' },
-        original_name: { $first: '$original_name' },
-        poster_path: { $first: '$poster_path' },
-        backdrop_path: { $first: '$backdrop_path' },
+        // media_type: { $first: '$media_type' },
+        // name: { $first: '$name' },
+        // original_name: { $first: '$original_name' },
+        // poster_path: { $first: '$poster_path' },
+        // backdrop_path: { $first: '$backdrop_path' },
+        movieData: { $first: '$movieData' },
         count: { $sum: 1 }
       };
 
@@ -511,6 +643,20 @@ export class RankController extends RedisCache {
       switch (req.params.sortBy) {
         case 'day':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupPlay,
@@ -533,6 +679,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(prevDay);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupPlay,
@@ -560,6 +720,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupPlay,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -579,6 +753,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(startWeek);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupPlay,
@@ -605,6 +793,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupPlay,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -629,6 +831,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCMonth(prevMonth + 1);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupPlay,
@@ -699,6 +915,20 @@ export class RankController extends RedisCache {
           break;
         case 'all':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupPlay
@@ -765,7 +995,7 @@ export class RankController extends RedisCache {
       const convertGenres = (genre: string) => {
         if (genre != '') {
           return {
-            genres: {
+            'movieData.genres': {
               $elemMatch: {
                 id: +withGenres
               }
@@ -778,7 +1008,9 @@ export class RankController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return {
+            'movieData.original_language': { $regex: withOriginalLanguage }
+          };
         } else return {};
       };
 
@@ -814,18 +1046,19 @@ export class RankController extends RedisCache {
       };
 
       if (withMediaType != 'all') {
-        matchGroupSearch.media_type = withMediaType;
+        matchGroupSearch['movieData.media_type'] = withMediaType;
       }
 
       const filterGroupSearch = {
         _id: '$movie_id',
         id: { $first: '$id' },
         movie_id: { $first: '$movie_id' },
-        media_type: { $first: '$media_type' },
-        name: { $first: '$name' },
-        original_name: { $first: '$original_name' },
-        poster_path: { $first: '$poster_path' },
-        backdrop_path: { $first: '$backdrop_path' },
+        // media_type: { $first: '$media_type' },
+        // name: { $first: '$name' },
+        // original_name: { $first: '$original_name' },
+        // poster_path: { $first: '$poster_path' },
+        // backdrop_path: { $first: '$backdrop_path' },
+        movieData: { $first: '$movieData' },
         count: { $sum: 1 }
       };
 
@@ -836,6 +1069,20 @@ export class RankController extends RedisCache {
       switch (req.params.sortBy) {
         case 'day':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupSearch,
@@ -858,6 +1105,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(prevDay);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupSearch,
@@ -885,6 +1146,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -904,6 +1179,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(startWeek);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupSearch,
@@ -930,6 +1219,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -954,6 +1257,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCMonth(prevMonth + 1);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupSearch,
@@ -981,6 +1298,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupSearch,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -1006,6 +1337,20 @@ export class RankController extends RedisCache {
 
           result.prev_results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupSearch,
                 created_at: { $gte: prevDateStart, $lte: prevDateEnd }
@@ -1024,6 +1369,20 @@ export class RankController extends RedisCache {
           break;
         case 'all':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupSearch
@@ -1090,7 +1449,7 @@ export class RankController extends RedisCache {
       const convertGenres = (genre: string) => {
         if (genre != '') {
           return {
-            genres: {
+            'movieData.genres': {
               $elemMatch: {
                 id: +withGenres
               }
@@ -1103,7 +1462,9 @@ export class RankController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return {
+            'movieData.original_language': { $regex: withOriginalLanguage }
+          };
         } else return {};
       };
 
@@ -1139,18 +1500,19 @@ export class RankController extends RedisCache {
       };
 
       if (withMediaType != 'all') {
-        matchGroupRate.media_type = withMediaType;
+        matchGroupRate['movieData.media_type'] = withMediaType;
       }
 
       const filterGroupRate = {
         _id: '$movie_id',
         id: { $first: '$id' },
         movie_id: { $first: '$movie_id' },
-        media_type: { $first: '$media_type' },
-        name: { $first: '$name' },
-        original_name: { $first: '$original_name' },
-        poster_path: { $first: '$poster_path' },
-        backdrop_path: { $first: '$backdrop_path' },
+        // media_type: { $first: '$media_type' },
+        // name: { $first: '$name' },
+        // original_name: { $first: '$original_name' },
+        // poster_path: { $first: '$poster_path' },
+        // backdrop_path: { $first: '$backdrop_path' },
+        movieData: { $first: '$movieData' },
         count: { $sum: 1 },
         rate_average: { $avg: '$rate_value' }
       };
@@ -1163,6 +1525,20 @@ export class RankController extends RedisCache {
       switch (req.params.sortBy) {
         case 'day':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRate,
@@ -1185,6 +1561,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(prevDay);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRate,
@@ -1212,6 +1602,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -1231,6 +1635,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCDate(startWeek);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRate,
@@ -1257,6 +1675,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -1281,6 +1713,20 @@ export class RankController extends RedisCache {
           prevDateEnd.setUTCMonth(prevMonth + 1);
 
           result.prev_results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRate,
@@ -1308,6 +1754,20 @@ export class RankController extends RedisCache {
 
           result.results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRate,
                 created_at: { $gte: dateStart, $lte: dateEnd }
@@ -1333,6 +1793,20 @@ export class RankController extends RedisCache {
 
           result.prev_results = await Rank.aggregate([
             {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
               $match: {
                 ...matchGroupRate,
                 created_at: { $gte: prevDateStart, $lte: prevDateEnd }
@@ -1351,6 +1825,20 @@ export class RankController extends RedisCache {
           break;
         case 'all':
           result.results = await Rank.aggregate([
+            {
+              $lookup: {
+                from: 'movies',
+                localField: 'movie_id',
+                foreignField: 'id',
+                as: 'movieData'
+              }
+            },
+            {
+              $unwind: {
+                path: '$movieData',
+                preserveNullAndEmptyArrays: true
+              }
+            },
             {
               $match: {
                 ...matchGroupRate
