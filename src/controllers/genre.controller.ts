@@ -51,7 +51,7 @@ export class GenreController extends RedisCache {
         $or: [
           { name: { $regex: query, $options: 'i' } },
           {
-            name_vietsub: { $regex: query, $options: 'i' }
+            english_name: { $regex: query, $options: 'i' }
           }
         ]
       });
@@ -125,7 +125,7 @@ export class GenreController extends RedisCache {
         {
           $set: {
             name: formData.name,
-            name_vietsub: formData.name_vietsub,
+            english_name: formData.english_name,
             short_name: formData.short_name,
             updated_at: new Date().toISOString()
           }

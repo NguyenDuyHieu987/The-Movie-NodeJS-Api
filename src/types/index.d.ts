@@ -101,7 +101,7 @@ export declare type GenreForm = {
   _id: string;
   id: number;
   name: string;
-  name_vietsub: string;
+  english_name: string;
   short_name: string;
 };
 

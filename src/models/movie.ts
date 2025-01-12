@@ -59,7 +59,7 @@ const Movie = new mongoose.Schema(
         {
           id: Number,
           name: String,
-          name_vietsub: String,
+          english_name: String,
           short_name: String
         }
       ]
