@@ -818,6 +818,18 @@ export class AuthController extends RedisCache {
             });
           }
 
+          const account1 = await Account.findOne({
+            username: formUser.username,
+            auth_type: 'email'
+          });
+
+          if (account1 != null) {
+            return res.json({
+              isUsernameExist: true,
+              result: 'Username is already exists'
+            });
+          }
+
           if (!(await ValidateEmail(formUser.email))) {
             // if (true) {
             return res.json({

@@ -980,6 +980,15 @@ export class AccountController extends RedisCache {
         });
       }
 
+      const account1 = await Account.findOne({ username: req.body.username });
+
+      if (account1 != null) {
+        return res.json({
+          success: false,
+          message: `Username already exists`
+        });
+      }
+
       const id: string = uuidv4();
 
       const passwordEncrypted = await encryptPassword(formData.password);
@@ -1025,6 +1034,17 @@ export class AccountController extends RedisCache {
         return res.json({
           success: false,
           message: `Account already exists`
+        });
+      }
+
+      const account1 = await Account.findOne({
+        $and: [{ id: { $ne: accountId } }, { username: req.body.username }]
+      });
+
+      if (account1 != null) {
+        return res.json({
+          success: false,
+          message: `Username already exists`
         });
       }
 
