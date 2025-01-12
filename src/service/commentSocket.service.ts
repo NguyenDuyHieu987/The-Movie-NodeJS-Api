@@ -57,9 +57,14 @@ export async function handleCommentEvents(
   });
 
   socket.on('getStatus', async (roomID: string) => {
-    socket.join(roomID);
+    let roomClients = io.sockets.adapter.rooms.get(roomID);
+    const isJoined = roomClients?.has(socket.id) ?? false;
+    if (!isJoined) {
+      socket.join(roomID);
 
-    const roomClients = io.sockets.adapter.rooms.get(roomID);
+      roomClients = io.sockets.adapter.rooms.get(roomID);
+    }
+
     const clientCount = roomClients ? roomClients.size : 0;
 
     io.to(roomID).emit('getStatus', { clientCount });
