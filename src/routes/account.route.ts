@@ -23,6 +23,12 @@ router.get(
     authenticationHandler(...params, { required: true, role: ['admin'] }),
   Account.getStatistics
 );
+router.get(
+  '/get-reports',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Account.getReports
+);
 router.post(
   '/confirm/:type',
   (...params) => authenticationHandler(...params, { required: true }),

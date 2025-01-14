@@ -164,6 +164,68 @@ export class AccountController extends RedisCache {
     }
   }
 
+  async getReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const key: string = req.originalUrl;
+      const startOfDayQuery: string =
+        (req.query.startOfDay as string) || dayjs().format('YYYY-MM-DD');
+      const endOfDayQuery: string =
+        (req.query.endOfDay as string) || dayjs().format('YYYY-MM-DD');
+
+      const startOfDay = new Date(startOfDayQuery);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(endOfDayQuery);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const periodInDays = dayjs(startOfDay).diff(dayjs(endOfDay), 'day');
+
+      const startDateLastPeriod = dayjs(startOfDay).subtract(
+        periodInDays,
+        'day'
+      );
+      const endDateLastPeriod = dayjs(endOfDay).subtract(periodInDays, 'day');
+
+      const data = await Account.aggregate([
+        // 1. Lọc user được tạo trong 7 ngày gần đây
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(new Date().setDate(new Date().getDate() - 7)), // 7 ngày trước
+              $lte: new Date() // Ngày hiện tại
+            }
+          }
+        },
+        // 2. Lấy ngày từ `createdAt` (bỏ giờ)
+        {
+          $project: {
+            day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }
+          }
+        },
+        // 3. Đếm số lượng user được tạo theo ngày
+        {
+          $group: {
+            _id: '$day', // Group by ngày
+            count: { $sum: 1 } // Đếm số lượng user
+          }
+        },
+        // 4. Sắp xếp theo ngày tăng dần
+        {
+          $sort: {
+            _id: 1
+          }
+        }
+      ]);
+
+      const response = {
+        results: data
+      };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async confirm(req: Request, res: Response, next: NextFunction) {
     try {
       const userToken = res.locals.userToken;
