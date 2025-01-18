@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import { v4 as uuidv4 } from 'uuid';
 
 import { RedisCache } from '@/config/redis';
 import Broadcast from '@/models/broadcast';
@@ -465,7 +466,10 @@ export class BroadcastController extends RedisCache {
         );
       }
 
+      const id: string = uuidv4();
+
       const result = await Broadcast.create({
+        id: id,
         ...req.body,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
