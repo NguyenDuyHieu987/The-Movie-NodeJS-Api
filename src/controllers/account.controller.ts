@@ -172,10 +172,16 @@ export class AccountController extends RedisCache {
       const endOfDayQuery: string =
         (req.query.endOfDay as string) || dayjs().format('YYYY-MM-DD');
 
-      const startOfDay = new Date(startOfDayQuery);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(endOfDayQuery);
-      endOfDay.setHours(23, 59, 59, 999);
+      // const startOfDay = new Date(startOfDayQuery);
+      // startOfDay.setHours(0, 0, 0, 0);
+      // const endOfDay = new Date(endOfDayQuery);
+      // endOfDay.setHours(23, 59, 59, 999);
+
+      // Lấy ngày bắt đầu và ngày kết thúc của khoảng thời gian 7 ngày gần đây
+      const startOfDay = dayjs(startOfDayQuery)
+        .subtract(6, 'day')
+        .startOf('day'); // 6 ngày trước, bao gồm ngày hiện tại
+      const endOfDay = dayjs(endOfDayQuery).endOf('day');
 
       const periodInDays = dayjs(startOfDay).diff(dayjs(endOfDay), 'day');
 
@@ -184,6 +190,10 @@ export class AccountController extends RedisCache {
         'day'
       );
       const endDateLastPeriod = dayjs(endOfDay).subtract(periodInDays, 'day');
+
+      const allDays = Array.from({ length: 7 }).map((_, i) =>
+        startOfDay.add(i, 'day').format('YYYY-MM-DD')
+      );
 
       const data = await Account.aggregate([
         // 1. Lọc user được tạo trong 7 ngày gần đây
@@ -216,8 +226,20 @@ export class AccountController extends RedisCache {
         }
       ]);
 
+      // Đưa dữ liệu về dạng Object với key là ngày
+      const dataMap = data.reduce((acc: Record<string, number>, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {});
+
+      // Kết hợp kết quả với danh sách tất cả các ngày
+      const results = allDays.map((day) => ({
+        day: day,
+        count: dataMap[day] || 0
+      }));
+
       const response = {
-        results: data
+        results: results
       };
 
       return res.json(response);

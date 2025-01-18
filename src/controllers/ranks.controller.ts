@@ -64,6 +64,93 @@ export class RankController extends RedisCache {
     }
   }
 
+  async getReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const type: string = (req.query.type! as string) || 'play';
+
+      const key: string = req.originalUrl;
+      const startOfDayQuery: string =
+        (req.query.startOfDay as string) || dayjs().format('YYYY-MM-DD');
+      const endOfDayQuery: string =
+        (req.query.endOfDay as string) || dayjs().format('YYYY-MM-DD');
+
+      // const startOfDay = new Date(startOfDayQuery);
+      // startOfDay.setHours(0, 0, 0, 0);
+      // const endOfDay = new Date(endOfDayQuery);
+      // endOfDay.setHours(23, 59, 59, 999);
+
+      // Lấy ngày bắt đầu và ngày kết thúc của khoảng thời gian 7 ngày gần đây
+      const startOfDay = dayjs(startOfDayQuery)
+        .subtract(6, 'day')
+        .startOf('day'); // 6 ngày trước, bao gồm ngày hiện tại
+      const endOfDay = dayjs(endOfDayQuery).endOf('day');
+
+      const periodInDays = dayjs(startOfDay).diff(dayjs(endOfDay), 'day');
+
+      const startDateLastPeriod = dayjs(startOfDay).subtract(
+        periodInDays,
+        'day'
+      );
+      const endDateLastPeriod = dayjs(endOfDay).subtract(periodInDays, 'day');
+
+      const allDays = Array.from({ length: 7 }).map((_, i) =>
+        startOfDay.add(i, 'day').format('YYYY-MM-DD')
+      );
+
+      const data = await Rank.aggregate([
+        // 1. Lọc rank được tạo trong 7 ngày gần đây
+        {
+          $match: {
+            type: type,
+            createdAt: {
+              $gte: new Date(new Date().setDate(new Date().getDate() - 7)), // 7 ngày trước
+              $lte: new Date() // Ngày hiện tại
+            }
+          }
+        },
+        // 2. Lấy ngày từ `createdAt` (bỏ giờ)
+        {
+          $project: {
+            day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }
+          }
+        },
+        // 3. Đếm số lượng rank được tạo theo ngày
+        {
+          $group: {
+            _id: '$day', // Group by ngày
+            count: { $sum: 1 } // Đếm số lượng rank
+          }
+        },
+        // 4. Sắp xếp theo ngày tăng dần
+        {
+          $sort: {
+            _id: 1
+          }
+        }
+      ]);
+
+      // Đưa dữ liệu về dạng Object với key là ngày
+      const dataMap = data.reduce((acc: Record<string, number>, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {});
+
+      // Kết hợp kết quả với danh sách tất cả các ngày
+      const results = allDays.map((day) => ({
+        day: day,
+        count: dataMap[day] || 0
+      }));
+
+      const response = {
+        results: results
+      };
+
+      return res.json(response);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async filter(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;

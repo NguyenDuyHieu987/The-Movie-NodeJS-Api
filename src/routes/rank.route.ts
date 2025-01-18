@@ -22,5 +22,11 @@ router.get(
     authenticationHandler(...params, { required: true, role: ['admin'] }),
   Rank.getStatistics
 );
+router.get(
+  '/get-reports',
+  (...params) =>
+    authenticationHandler(...params, { required: true, role: ['admin'] }),
+  Rank.getReports
+);
 
 export default router;
