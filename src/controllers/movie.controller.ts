@@ -472,7 +472,7 @@ export class MovieController {
 
       const id: string = uuidv4();
 
-      const result = await MovieTest.create({
+      const result = await Movie.create({
         id: id,
         ...req.body,
         created_at: new Date().toISOString(),
