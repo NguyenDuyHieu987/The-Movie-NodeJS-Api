@@ -68,6 +68,14 @@ export class ModListController extends RedisCache {
           {
             $unwind: '$movieData'
           },
+          {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
+          },
           ...optionSearch
         ])
           .skip(page * limit)
@@ -96,6 +104,14 @@ export class ModListController extends RedisCache {
           {
             $unwind: '$movieData'
           },
+          {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
+          },
           ...optionSearch
         ]);
       }
@@ -123,6 +139,14 @@ export class ModListController extends RedisCache {
           },
           {
             $unwind: '$movieData'
+          },
+          {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
           },
           ...optionSearch
         ])
@@ -198,6 +222,14 @@ export class ModListController extends RedisCache {
             $unwind: '$movieData'
           },
           {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
+          },
+          {
             $match: {
               ...optionSearch,
               $or: [
@@ -234,6 +266,14 @@ export class ModListController extends RedisCache {
             $unwind: '$movieData'
           },
           {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
+          },
+          {
             $match: {
               ...optionSearch,
               $or: [
@@ -268,6 +308,14 @@ export class ModListController extends RedisCache {
           },
           {
             $unwind: '$movieData'
+          },
+          {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
           },
           {
             $match: {
@@ -320,8 +368,8 @@ export class ModListController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
         if (date_gte != '' && data_lte != '') {
@@ -396,12 +444,17 @@ export class ModListController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.origin_country': { $regex: withOriginalCountry }
           };
+          // return {
+          //   'movieData.origin_country': {
+          //     $elemMatch: { $regex: withOriginalCountry, $options: 'i' }
+          //   }
+          // };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;
@@ -452,6 +505,14 @@ export class ModListController extends RedisCache {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -595,6 +656,14 @@ export class ModListController extends RedisCache {
               $unwind: '$movieData'
             },
             {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
+            },
+            {
               $match: {
                 'modData.type': slug,
                 'movieData.media_type': type,
@@ -731,6 +800,14 @@ export class ModListController extends RedisCache {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {

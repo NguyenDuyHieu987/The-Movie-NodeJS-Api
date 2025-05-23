@@ -103,11 +103,12 @@ export declare type GenreForm = {
   name: string;
   english_name: string;
   short_name: string;
+  media_type: string;
 };
 
 export declare interface CountryForm {
   _id: string;
-  iso_639_1: string;
+  iso_3166_1: string;
   english_name: string;
   name: string;
   short_name: string;

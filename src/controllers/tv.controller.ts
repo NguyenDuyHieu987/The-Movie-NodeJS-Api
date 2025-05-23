@@ -34,86 +34,24 @@ export class TVController {
         episodes: []
       };
 
+      let fieldsToUnset = [];
+      append_to_response = (
+        (req.query?.append_to_response as string) || ''
+      ).split(',');
+
+      if (!append_to_response.includes('images')) {
+        fieldsToUnset.push('images');
+      }
+
+      if (!append_to_response.includes('videos')) {
+        fieldsToUnset.push('videos');
+      }
+
+      if (!append_to_response.includes('credits')) {
+        fieldsToUnset.push('credits');
+      }
+
       if (req.query?.append_to_response) {
-        append_to_response = (req.query.append_to_response as string).split(
-          ','
-        );
-
-        if (append_to_response.includes('images')) {
-          // const images = await Image.findOne({
-          //   movie_id: req.params.id,
-          // });
-
-          // extraValue!.images = images!.items;
-
-          extraValue.images = [
-            {
-              $lookup: {
-                from: 'images',
-                localField: 'id',
-                foreignField: 'movie_id',
-                as: 'images'
-              }
-            },
-            { $unwind: '$images' },
-            {
-              $addFields: {
-                images: '$images.items'
-              }
-            }
-          ];
-        }
-
-        if (append_to_response.includes('videos')) {
-          // const videos = await Video.findOne({
-          //   movie_id: req.params.id,
-          // });
-
-          // extraValue!.videos = videos!.items;
-
-          extraValue.videos = [
-            {
-              $lookup: {
-                from: 'videos',
-                localField: 'id',
-                foreignField: 'movie_id',
-                as: 'videos'
-              }
-            },
-            { $unwind: '$videos' },
-            {
-              $addFields: {
-                videos: '$videos.items'
-              }
-            }
-          ];
-        }
-
-        if (append_to_response.includes('credits')) {
-          // const credits = await Credit.findOne({
-          //   movie_id: req.params.id,
-          // });
-
-          // extraValue!.credits = credits!.items;
-
-          extraValue.credits = [
-            {
-              $lookup: {
-                from: 'credits',
-                localField: 'id',
-                foreignField: 'movie_id',
-                as: 'credits'
-              }
-            },
-            { $unwind: '$credits' },
-            {
-              $addFields: {
-                credits: '$credits.items'
-              }
-            }
-          ];
-        }
-
         if (append_to_response.includes('seasons')) {
           // const seasons = await Season.findOne({
           //   movie_id: req.params.id,
@@ -346,19 +284,25 @@ export class TVController {
         // });
       }
 
-      const data = await TV.aggregate([
+      const pipeline: any[] = [
         {
           $match: { id: req.params.id }
-        },
-        ...extraValue.images!,
-        ...extraValue.videos!,
-        ...extraValue.credits!,
+        }
+      ];
+
+      if (fieldsToUnset.length > 0) {
+        pipeline.push({ $unset: fieldsToUnset });
+      }
+
+      pipeline.push(
         ...extraValue.seasons!,
         ...extraValue.episodes!,
         ...extraValue2.list,
         ...extraValue2.history,
         ...extraValue2.rate
-      ]);
+      );
+
+      const data = await TV.aggregate(pipeline);
 
       if (data.length == 0) {
         return next(

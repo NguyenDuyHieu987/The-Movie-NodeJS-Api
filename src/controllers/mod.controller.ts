@@ -6,6 +6,7 @@ import { RedisCache } from '@/config/redis';
 import Mod from '@/models/mod';
 import { DeleteResult } from 'mongoose';
 import { ModForm } from '@/types';
+import { SHORT_DATA_MOVIE_SELECT } from '@/constants';
 
 export class ModController extends RedisCache {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -88,15 +89,16 @@ export class ModController extends RedisCache {
       }
 
       const type: string = (req.query?.type as string) || 'all';
+      const media_type: string = (req.query?.media_type as string) || 'all';
 
       const data = await Mod.aggregate([
         {
-          $match:
-            type != 'all'
-              ? {
-                  media_type: type
-                }
-              : {}
+          $match: {
+            $and: [
+              media_type !== 'all' ? { media_type: media_type } : {},
+              type !== 'all' ? { type: type } : {}
+            ]
+          }
         },
         {
           $lookup: {
@@ -106,8 +108,11 @@ export class ModController extends RedisCache {
             as: 'modListData'
           }
         },
+        { $unwind: '$modListData' },
         {
-          $unwind: '$modListData'
+          $sort: {
+            'modListData.page_tmdb': 1
+          }
         },
         {
           $lookup: {
@@ -117,44 +122,38 @@ export class ModController extends RedisCache {
             as: 'movieData'
           }
         },
+        { $unwind: '$movieData' },
         {
-          $unwind: '$movieData'
+          $project: SHORT_DATA_MOVIE_SELECT
         },
         {
           $group: {
-            _id: '$_id', // Nhóm lại theo các trường của Mods
+            _id: '$_id',
             id: { $first: '$id' },
             media_type: { $first: '$media_type' },
             name: { $first: '$name' },
             type: { $first: '$type' },
             order: { $first: '$order' },
             path: { $first: '$path' },
-            data: { $push: '$movieData' } // Chỉ giữ lại các trường từ Movies
+            data: { $push: '$movieData' }
           }
         },
-        {
-          $sort: { order: 1 }
-        },
+        { $sort: { order: 1 } },
         {
           $addFields: {
             data: { $slice: ['$data', listCount] }
           }
         },
-        {
-          $skip: page * limit
-        },
-        {
-          $limit: limit
-        }
-      ]);
+        { $skip: page * limit },
+        { $limit: limit }
+      ]).option({ allowDiskUse: true });
 
-      const total = await Mod.countDocuments(
-        type != 'all'
-          ? {
-              media_type: type
-            }
-          : {}
-      );
+      const total = await Mod.countDocuments({
+        $and: [
+          media_type !== 'all' ? { media_type: media_type } : {},
+          type !== 'all' ? { type: type } : {}
+        ]
+      });
 
       const response = {
         page: page + 1,
@@ -175,7 +174,7 @@ export class ModController extends RedisCache {
     }
   }
 
-  async filteWithData(req: Request, res: Response, next: NextFunction) {
+  async filterWithData(req: Request, res: Response, next: NextFunction) {
     try {
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -199,8 +198,8 @@ export class ModController extends RedisCache {
 
       const withMods: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
         if (date_gte != '' && data_lte != '') {
@@ -275,12 +274,12 @@ export class ModController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.original_language': { $regex: withOriginalCountry }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const response: {
         page: number;
@@ -309,6 +308,11 @@ export class ModController extends RedisCache {
               $unwind: '$modListData'
             },
             {
+              $sort: {
+                'modListData.page_tmdb': 1
+              }
+            },
+            {
               $lookup: {
                 from: 'movies',
                 localField: 'modListData.id',
@@ -318,6 +322,9 @@ export class ModController extends RedisCache {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $project: SHORT_DATA_MOVIE_SELECT
             },
             {
               $match: {
@@ -371,6 +378,11 @@ export class ModController extends RedisCache {
               $unwind: '$modListData'
             },
             {
+              $sort: {
+                'modListData.page_tmdb': 1
+              }
+            },
+            {
               $lookup: {
                 from: 'movies',
                 localField: 'modListData.id',
@@ -380,6 +392,14 @@ export class ModController extends RedisCache {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -433,6 +453,11 @@ export class ModController extends RedisCache {
               $unwind: '$modListData'
             },
             {
+              $sort: {
+                'modListData.page_tmdb': 1
+              }
+            },
+            {
               $lookup: {
                 from: 'movies',
                 localField: 'modListData.id',
@@ -442,6 +467,9 @@ export class ModController extends RedisCache {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $project: SHORT_DATA_MOVIE_SELECT
             },
             {
               $match: {

@@ -176,8 +176,8 @@ export class RankController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertGenres = (genre: string) => {
         if (genre != '') {
@@ -196,12 +196,12 @@ export class RankController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.original_language': { $regex: withOriginalCountry }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;
@@ -650,8 +650,8 @@ export class RankController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertGenres = (genre: string) => {
         if (genre != '') {
@@ -670,12 +670,12 @@ export class RankController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.original_language': { $regex: withOriginalCountry }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1076,8 +1076,8 @@ export class RankController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertGenres = (genre: string) => {
         if (genre != '') {
@@ -1096,12 +1096,12 @@ export class RankController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.original_language': { $regex: withOriginalCountry }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1530,8 +1530,8 @@ export class RankController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertGenres = (genre: string) => {
         if (genre != '') {
@@ -1550,12 +1550,12 @@ export class RankController extends RedisCache {
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalLanguage }
+            'movieData.original_language': { $regex: withOriginalCountry }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;

@@ -13,7 +13,7 @@ export class EpisodeController extends RedisCache {
       const noCache: boolean = !!req.query?.no_cache;
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
-      // const seasonNumber: number = +req.params.seasonNumber;
+      const seasonNumber: number = +req.params?.seasonNumber || 1;
       const skip: number = +req.query.skip! || 1;
       const limit: number = +req.query.limit! || 50;
       const from: number = +req.query.from! || 1;
@@ -43,8 +43,8 @@ export class EpisodeController extends RedisCache {
       if (limit != -1) {
         episodes = await Episode.find({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           episode_number: {
             $gte: req.query?.from ? from : skip,
             $lte: req.query?.to ? to : limit + skip - 1
@@ -53,8 +53,8 @@ export class EpisodeController extends RedisCache {
       } else {
         episodes = await Episode.find({
           movie_id: movieId,
-          season_id: seasonId
-          // season_number: seasonNumber,
+          // season_id: seasonId
+          season_number: seasonNumber
         });
       }
 
@@ -62,8 +62,8 @@ export class EpisodeController extends RedisCache {
       if (limit != -1) {
         total = await Episode.countDocuments({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           episode_number: {
             $gte: req.query?.from ? from : skip,
             $lte: req.query?.to ? to : limit + skip - 1
@@ -72,15 +72,15 @@ export class EpisodeController extends RedisCache {
       } else {
         total = await Episode.countDocuments({
           movie_id: movieId,
-          season_id: seasonId
-          // season_number: seasonNumber,
+          // season_id: seasonId
+          season_number: seasonNumber
         });
       }
 
       const total_episode = await Episode.countDocuments({
         movie_id: movieId,
-        season_id: seasonId
-        // season_number: seasonNumber,
+        // season_id: seasonId
+        season_number: seasonNumber
       });
 
       if (req.query?.skip || (!req.query?.skip && !req.query?.from)) {
@@ -116,7 +116,7 @@ export class EpisodeController extends RedisCache {
       const noCache: boolean = !!req.query?.no_cache;
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
-      // const seasonNumber: number = +req.params.seasonNumber;
+      const seasonNumber: number = +req.params?.seasonNumber || 1;
 
       const query: string = (req.query.query as string) || '';
       const skip: number = +req.query.skip! || 1;
@@ -146,8 +146,8 @@ export class EpisodeController extends RedisCache {
       if (limit != -1) {
         episodes = await Episode.find({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           name: { $regex: query, $options: 'i' },
           episode_number: {
             $gte: req.query?.from ? from : skip,
@@ -157,8 +157,8 @@ export class EpisodeController extends RedisCache {
       } else {
         episodes = await Episode.find({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           name: { $regex: query, $options: 'i' }
         });
       }
@@ -167,8 +167,8 @@ export class EpisodeController extends RedisCache {
       if (limit != -1) {
         total = await Episode.countDocuments({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           name: { $regex: query, $options: 'i' },
           episode_number: {
             $gte: req.query?.from ? from : skip,
@@ -178,8 +178,8 @@ export class EpisodeController extends RedisCache {
       } else {
         total = await Episode.countDocuments({
           movie_id: movieId,
-          season_id: seasonId,
-          // season_number: seasonNumber,
+          // season_id: seasonId,
+          season_number: seasonNumber,
           name: { $regex: query, $options: 'i' }
         });
       }
@@ -215,7 +215,7 @@ export class EpisodeController extends RedisCache {
     try {
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
-      // const seasonNumber: number = +req.params.seasonNumber;
+      const seasonNumber: number = +req.params.seasonNumber || 1;
       const limit: number = +req.query.limit! || 7;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -238,24 +238,24 @@ export class EpisodeController extends RedisCache {
 
       const episodes = await Episode.find({
         movie_id: movieId,
-        season_id: seasonId
-        // season_number: seasonNumber,
+        // season_id: seasonId
+        season_number: seasonNumber
       })
         .sort({ episode_number: -1 })
         .limit(limit);
 
       const total = await Episode.countDocuments({
         movie_id: movieId,
-        season_id: seasonId
-        // season_number: seasonNumber,
+        // season_id: seasonId
+        season_number: seasonNumber
       })
         .sort({ episode_number: -1 })
         .limit(limit);
 
       const total_episode = await Episode.countDocuments({
         movie_id: movieId,
-        season_id: seasonId
-        // season_number: seasonNumber,
+        // season_id: seasonId
+        season_number: seasonNumber
       });
 
       result.results = episodes;
@@ -280,7 +280,7 @@ export class EpisodeController extends RedisCache {
     try {
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
-      // const seasonNumber: number = +req.params.seasonNumber;
+      const seasonNumber: number = +req.params.seasonNumber || 1;
       const episodeNumber: number = +req.params.episodeNumber;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -291,8 +291,8 @@ export class EpisodeController extends RedisCache {
 
       const episode = await Episode.findOne({
         movie_id: movieId,
-        season_id: seasonId,
-        // season_number: seasonNumber,
+        // season_id: seasonId,
+        season_number: seasonNumber,
         episode_number: episodeNumber
       });
 
@@ -314,6 +314,7 @@ export class EpisodeController extends RedisCache {
     try {
       const movieId: string = req.params.movieId;
       const seasonId: string = req.params.seasonId;
+      const seasonNumber: number = +req.params.seasonNumber || 1;
       const episodeId: string = req.params.episodeId;
       const key: string = req.originalUrl;
       const dataCache: any = await RedisCache.client.get(key);
@@ -324,7 +325,8 @@ export class EpisodeController extends RedisCache {
 
       const episode = await Episode.findOne({
         movie_id: movieId,
-        season_id: seasonId,
+        // season_id: seasonId,
+        season_number: seasonNumber,
         id: episodeId
       });
 

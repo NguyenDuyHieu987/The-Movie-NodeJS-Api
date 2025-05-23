@@ -175,6 +175,14 @@ export class SearchController extends RedisCache {
           $unwind: '$movieData'
         },
         {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
+        },
+        {
           $match: {
             type: 'search'
           }
@@ -233,6 +241,14 @@ export class SearchController extends RedisCache {
           $unwind: '$movieData'
         },
         {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
+        },
+        {
           $match: {
             type: 'search',
             $or: [
@@ -259,6 +275,14 @@ export class SearchController extends RedisCache {
           },
           {
             $unwind: '$movieData'
+          },
+          {
+            $unset: [
+              'movieData.credits',
+              'movieData.videos',
+              'movieData.images',
+              'movieData.seasons'
+            ]
           },
           {
             $match: {

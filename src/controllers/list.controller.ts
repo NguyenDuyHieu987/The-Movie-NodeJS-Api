@@ -42,6 +42,14 @@ export class ListController {
               $unwind: '$movieData'
             },
             {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
+            },
+            {
               $match: {
                 user_id: user.id
               }
@@ -101,6 +109,14 @@ export class ListController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -166,6 +182,14 @@ export class ListController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -269,6 +293,14 @@ export class ListController {
               $unwind: '$movieData'
             },
             {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
+            },
+            {
               $match: {
                 user_id: user.id,
                 $or: [
@@ -346,6 +378,14 @@ export class ListController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -428,6 +468,14 @@ export class ListController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -534,6 +582,14 @@ export class ListController {
         },
         {
           $unwind: '$movieData'
+        },
+        {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
         },
         {
           $match: {

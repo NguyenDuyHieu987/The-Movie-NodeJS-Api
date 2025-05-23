@@ -6,6 +6,7 @@ const Genre = new mongoose.Schema(
     name: { type: String },
     english_name: { type: String },
     short_name: { type: String },
+    media_type: { type: String },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

@@ -45,6 +45,14 @@ export class BroadcastController extends RedisCache {
           $unwind: '$movieData'
         },
         {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
+        },
+        {
           $lookup: {
             from: 'episodes',
             let: {
@@ -145,6 +153,14 @@ export class BroadcastController extends RedisCache {
         },
         {
           $unwind: '$movieData'
+        },
+        {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
         },
         {
           $lookup: {
@@ -281,6 +297,14 @@ export class BroadcastController extends RedisCache {
           $unwind: '$movieData'
         },
         {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
+        },
+        {
           $addFields: {
             // Kiểm tra nếu có trường episode_id
             hasEpisodeId: { $ne: ['$episode_id', null] }
@@ -384,6 +408,14 @@ export class BroadcastController extends RedisCache {
         },
         {
           $unwind: '$movieData'
+        },
+        {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
         },
         {
           $lookup: {

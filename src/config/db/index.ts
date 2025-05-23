@@ -16,7 +16,7 @@ class MongoDB {
       console.log(process.env.NODE_ENV);
 
       await mongoose.connect(mongo_uri, {
-        dbName: 'Phimhay247_DB_NEW'
+        dbName: 'Phimhay247_DB_NEW_V2'
       });
 
       // console.log('Connected to MongoDB');

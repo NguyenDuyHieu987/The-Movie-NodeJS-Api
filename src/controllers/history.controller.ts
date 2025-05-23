@@ -42,6 +42,14 @@ export class HistoryController {
               $unwind: '$movieData'
             },
             {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
+            },
+            {
               $match: {
                 user_id: user.id
               }
@@ -102,6 +110,14 @@ export class HistoryController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -167,6 +183,14 @@ export class HistoryController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -270,6 +294,14 @@ export class HistoryController {
               $unwind: '$movieData'
             },
             {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
+            },
+            {
               $match: {
                 user_id: user.id,
                 $or: [
@@ -347,6 +379,14 @@ export class HistoryController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -429,6 +469,14 @@ export class HistoryController {
             },
             {
               $unwind: '$movieData'
+            },
+            {
+              $unset: [
+                'movieData.credits',
+                'movieData.videos',
+                'movieData.images',
+                'movieData.seasons'
+              ]
             },
             {
               $match: {
@@ -535,6 +583,14 @@ export class HistoryController {
         },
         {
           $unwind: '$movieData'
+        },
+        {
+          $unset: [
+            'movieData.credits',
+            'movieData.videos',
+            'movieData.images',
+            'movieData.seasons'
+          ]
         },
         {
           $match: {

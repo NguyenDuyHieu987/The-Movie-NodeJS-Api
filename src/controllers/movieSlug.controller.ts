@@ -109,8 +109,8 @@ export class MovieSlugController extends RedisCache {
 
       const withGenres: string = (req.query?.with_genres as string) || '';
 
-      const withOriginalLanguage: string =
-        (req.query?.with_original_language as string) || '';
+      const withOriginalCountry: string =
+        (req.query?.with_origin_country as string) || '';
 
       const convertReleaseDate = (date_gte: string, data_lte: string) => {
         if (date_gte != '' && data_lte != '') {
@@ -156,11 +156,11 @@ export class MovieSlugController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { original_language: { $regex: withOriginalLanguage } };
+          return { original_language: { $regex: withOriginalCountry } };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalLanguage);
+      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
 
       const result: {
         page: number;

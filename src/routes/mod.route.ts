@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/get-all', Mod.getAll);
 router.get('/search', Mod.search);
 router.get('/get-all-with-data', Mod.getAllWithData);
-router.get('/filter-with-data/:type', Mod.filteWithData);
+router.get('/filter-with-data/:type', Mod.filterWithData);
 router.post(
   '/create',
   (...params) =>

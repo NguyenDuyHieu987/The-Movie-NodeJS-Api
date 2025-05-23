@@ -5,11 +5,11 @@ import { authenticationHandler } from '@/middlewares';
 
 const router = express.Router();
 
-router.get('/list/:movieId/:seasonId', Episode.getList);
-router.get('/search/:movieId/:seasonId', Episode.search);
-router.get('/latest/:movieId/:seasonId', Episode.getLatest);
-router.get('/get/:movieId/:seasonId/:episodeNumber', Episode.get);
-router.get('/getbyid/:movieId/:seasonId/:episodeId', Episode.getById);
+router.get('/list/:movieId/:seasonNumber', Episode.getList);
+router.get('/search/:movieId/:seasonNumber', Episode.search);
+router.get('/latest/:movieId/:seasonNumber', Episode.getLatest);
+router.get('/get/:movieId/:seasonNumber/:episodeNumber', Episode.get);
+router.get('/getbyid/:movieId/:seasonNumber/:episodeId', Episode.getById);
 router.post(
   '/update-view/:id',
   (...params) => authenticationHandler(...params, { required: true }),
