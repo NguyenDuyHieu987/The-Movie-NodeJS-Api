@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
 import Search from '@/models/search';
-import TV from '@/models/tv';
 import type { User } from '@/types';
 
 export class SearchController extends RedisCache {

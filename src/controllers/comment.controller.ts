@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import Comment from '@/models/comment';
 import CommentLike from '@/models/commentLike';
 import Movie from '@/models/movie';
-import TV from '@/models/tv';
 import type { CommentForm, User } from '@/types';
 
 export class CommentController {

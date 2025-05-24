@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import Movie from '@/models/movie';
 import Rate from '@/models/rate';
-import TV from '@/models/tv';
 import type { User } from '@/types';
 
 export class RatingController {

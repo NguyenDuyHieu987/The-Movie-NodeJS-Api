@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { RedisCache } from '@/config/redis';
 import Movie from '@/models/movie';
 import Rank from '@/models/rank';
-import TV from '@/models/tv';
 import type { User } from '@/types';
 import dayjs from 'dayjs';
 
