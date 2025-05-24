@@ -1,5 +1,4 @@
 import mongoose, { Error } from 'mongoose';
-// import { isProduction } from 'std-env';
 
 class MongoDB {
   constructor() {}
