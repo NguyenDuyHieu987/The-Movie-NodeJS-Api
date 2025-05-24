@@ -6,7 +6,7 @@
     "start": "set NODE_ENV=development && cls && nodemon src/index.ts",
     "start:prod": "cross-env NODE_ENV=production && rimraf ./build && tsc && node build/index.js",
     "start:pm2": "cross-env NODE_ENV=production && rimraf ./build && tsc && pm2 start ecosystem.config.cjs",
-    "build": "cross-env NODE_ENV=production && rimraf ./build && tsc && node --max-old-space-size=4096 node_modules/.bin/tsc",
+    "build": "cross-env NODE_ENV=production && rimraf ./build && node --max-old-space-size=4096 node_modules/.bin/tsc",
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput",
     "typecheck:once": "tsc --noEmit",
     "test": "jest",
