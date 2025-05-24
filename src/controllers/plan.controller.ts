@@ -447,11 +447,11 @@ export class PlanController extends RedisCache {
               ).toISOString();
 
             const current_period_start = new Date(
-              (stripeSubscription.current_period_start as number) * 1000
+              (stripeSubscription.start_date as number) * 1000
             ).toISOString();
 
             const current_period_end = new Date(
-              (stripeSubscription.current_period_end as number) * 1000
+              (stripeSubscription.ended_at as number) * 1000
             ).toISOString();
 
             const trial_start = new Date(
