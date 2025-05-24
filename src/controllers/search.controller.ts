@@ -43,29 +43,40 @@ export class SearchController extends RedisCache {
 
       switch (req.params.type) {
         case 'all':
-          const movie = await Movie.find({
-            media_type: 'movie',
+          // const movie = await Movie.find({
+          //   media_type: 'movie',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // })
+          //   .skip(page * (limit / 2))
+          //   .limit(limit / 2)
+          //   .sort({ views: -1 });
+
+          // const tv = await Movie.find({
+          //   media_type: 'tv',
+          //   $or: [
+          //     { name: { $regex: query, $options: 'i' } },
+          //     { original_name: { $regex: query, $options: 'i' } }
+          //   ]
+          // })
+          //   .skip(page * (limit / 2))
+          //   .limit(limit / 2)
+          //   .sort({ views: -1 });
+
+          result.results = await Movie.find({
             $or: [
               { name: { $regex: query, $options: 'i' } },
               { original_name: { $regex: query, $options: 'i' } }
             ]
           })
-            .skip(page * (limit / 2))
-            .limit(limit / 2)
+            .skip(page * limit)
+            .limit(limit)
             .sort({ views: -1 });
 
-          const tv = await Movie.find({
-            media_type: 'tv',
-            $or: [
-              { name: { $regex: query, $options: 'i' } },
-              { original_name: { $regex: query, $options: 'i' } }
-            ]
-          })
-            .skip(page * (limit / 2))
-            .limit(limit / 2)
-            .sort({ views: -1 });
-
-          result.results = movie.concat(tv);
+          const movie = result.results.filter((r) => r.media_type === 'movie');
+          const tv = result.results.filter((r) => r.media_type === 'tv');
 
           const totalMovie = await Movie.countDocuments({
             media_type: 'movie',
