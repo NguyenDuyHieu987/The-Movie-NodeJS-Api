@@ -55,4 +55,4 @@ const TV = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-export default mongoose.model('tvs', TV);
+// export default mongoose.model('tvs', TV);
