@@ -192,15 +192,15 @@ export class RankController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalCountry }
+            'movieData.origin_country': { $in: [withOriginalCountry] }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -666,15 +666,15 @@ export class RankController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalCountry }
+            'movieData.origin_country': { $in: [withOriginalCountry] }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1092,15 +1092,15 @@ export class RankController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalCountry }
+            'movieData.origin_country': { $in: [withOriginalCountry] }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1546,15 +1546,15 @@ export class RankController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return {
-            'movieData.original_language': { $regex: withOriginalCountry }
+            'movieData.origin_country': { $in: [withOriginalCountry] }
           };
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;

@@ -441,10 +441,10 @@ export class ModListController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return {
-            'movieData.origin_country': { $regex: withOriginalCountry }
+            'movieData.origin_country': { $in: [withOriginalCountry] }
           };
           // return {
           //   'movieData.origin_country': {
@@ -454,7 +454,7 @@ export class ModListController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;

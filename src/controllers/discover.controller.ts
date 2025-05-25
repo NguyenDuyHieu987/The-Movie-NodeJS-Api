@@ -99,7 +99,7 @@ export class DiscoverController extends RedisCache {
 
       const genres = convertGenres(withGenres);
 
-      const convertOriginalLanguage = (language: string) => {
+      const convertOriginalCountry = (language: string) => {
         if (language != '') {
           return { origin_country: { $in: [withOriginalCountry] } };
           // return {
@@ -110,7 +110,7 @@ export class DiscoverController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalLanguage(withOriginalCountry);
+      const originalLanguage = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
