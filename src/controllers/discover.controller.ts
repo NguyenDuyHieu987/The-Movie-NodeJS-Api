@@ -101,7 +101,7 @@ export class DiscoverController extends RedisCache {
 
       const convertOriginalLanguage = (language: string) => {
         if (language != '') {
-          return { origin_country: { $regex: withOriginalCountry } };
+          return { origin_country: { $in: [withOriginalCountry] } };
           // return {
           //   origin_country: {
           //     $elemMatch: { $regex: withOriginalCountry, $options: 'i' }
