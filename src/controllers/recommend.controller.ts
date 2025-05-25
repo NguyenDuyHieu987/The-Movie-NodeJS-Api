@@ -52,12 +52,13 @@ export class RecommendController extends RedisCache {
       list.forEach((item) => {
         item.genres.forEach((genre) => {
           if (!genres.some((item1) => genre.id == item1.id)) {
-            genres = [...genres, { id: genre.id }];
+            // genres = [...genres, { id: genre.id }];
+            genres = [...genres, genre.id];
           }
         });
 
         if (!countries.includes(item.origin_country)) {
-          countries = [...countries, item.origin_country];
+          countries = [...countries, ...item.origin_country];
         }
       });
 
@@ -70,7 +71,7 @@ export class RecommendController extends RedisCache {
         });
 
         if (!countries.includes(item.origin_country)) {
-          countries = [...countries, item.origin_country];
+          countries = [...countries, ...item.origin_country];
         }
       });
 

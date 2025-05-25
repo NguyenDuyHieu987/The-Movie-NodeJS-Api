@@ -35,7 +35,7 @@ export class SimilarController extends RedisCache {
       const genreIds = Array.isArray(genre)
         ? movie.genres.map((g) => g.id)
         : [];
-      const country: string[] = Utils.isString(movie.origin_country)
+      const countries: string[] = Utils.isString(movie.origin_country)
         ? [movie.origin_country]
         : movie.origin_country;
 
@@ -46,7 +46,7 @@ export class SimilarController extends RedisCache {
               $nin: [movieId]
             },
             $or: [
-              { origin_country: { $in: country } },
+              { origin_country: { $in: countries } },
               genre.length > 0
                 ? //  {
                   //     genres: {
@@ -68,7 +68,7 @@ export class SimilarController extends RedisCache {
             },
             media_type: 'movie',
             $or: [
-              { origin_country: { $in: country } },
+              { origin_country: { $in: countries } },
               genre.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
             ]
           })
@@ -83,7 +83,7 @@ export class SimilarController extends RedisCache {
             },
             media_type: 'tv',
             $or: [
-              { origin_country: { $in: country } },
+              { origin_country: { $in: countries } },
               genre.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
             ]
           })
