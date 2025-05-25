@@ -662,6 +662,7 @@ export class HistoryController {
           name: movie.name,
           original_name: movie.original_name,
           original_language: movie.original_language,
+          origin_country: movie.origin_country,
           media_type: mediaType,
           genres: movie.genres,
           backdrop_path: movie.backdrop_path,

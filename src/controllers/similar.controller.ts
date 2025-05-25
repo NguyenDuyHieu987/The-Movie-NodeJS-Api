@@ -31,8 +31,8 @@ export class SimilarController extends RedisCache {
         throw createHttpError.NotFound(`Movie is not exist`);
       }
 
-      const genre: any[] = movie.genres;
-      const genreIds = Array.isArray(genre)
+      const genres: any[] = movie.genres;
+      const genreIds = Array.isArray(genres)
         ? movie.genres.map((g) => g.id)
         : [];
       const countries: string[] = Utils.isString(movie.origin_country)
@@ -47,7 +47,7 @@ export class SimilarController extends RedisCache {
             },
             $or: [
               { origin_country: { $in: countries } },
-              genre.length > 0
+              genreIds.length > 0
                 ? //  {
                   //     genres: {
                   //       $elemMatch: { $or: [...genre] }
@@ -69,7 +69,7 @@ export class SimilarController extends RedisCache {
             media_type: 'movie',
             $or: [
               { origin_country: { $in: countries } },
-              genre.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
+              genreIds.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
             ]
           })
             .skip(page * limit)
@@ -84,7 +84,7 @@ export class SimilarController extends RedisCache {
             media_type: 'tv',
             $or: [
               { origin_country: { $in: countries } },
-              genre.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
+              genreIds.length > 0 ? { 'genres.id': { $in: genreIds } } : {}
             ]
           })
             .skip(page * limit)

@@ -82,14 +82,16 @@ export class RecommendController extends RedisCache {
               $in: countries
             }
           },
-          {
-            // genres: {
-            //   $elemMatch: {
-            //     $or: genres
-            //   }
-            // }
-            'genres.id': { $in: genres }
-          }
+          genres.length > 0
+            ? {
+                // genres: {
+                //   $elemMatch: {
+                //     $or: genres
+                //   }
+                // }
+                'genres.id': { $in: genres }
+              }
+            : {}
         ]
       })
         .skip(page * limit)
