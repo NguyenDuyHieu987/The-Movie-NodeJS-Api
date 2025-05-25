@@ -58,7 +58,7 @@ export class RecommendController extends RedisCache {
         });
 
         if (!countries.includes(item.origin_country)) {
-          countries = [...countries, ...item.origin_country];
+          countries = [...countries, ...item?.origin_country];
         }
       });
 
@@ -71,7 +71,7 @@ export class RecommendController extends RedisCache {
         });
 
         if (!countries.includes(item.origin_country)) {
-          countries = [...countries, ...item.origin_country];
+          countries = [...countries, ...item?.origin_country];
         }
       });
 
