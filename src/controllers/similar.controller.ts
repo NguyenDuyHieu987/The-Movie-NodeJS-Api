@@ -59,7 +59,7 @@ export class SimilarController extends RedisCache {
           })
             .skip(page * limit)
             .limit(limit)
-            .sort({ views: -1 });
+            .sort({ views: -1, id: 1 });
           break;
         case 'movie':
           similar = await Movie.find({
@@ -74,7 +74,7 @@ export class SimilarController extends RedisCache {
           })
             .skip(page * limit)
             .limit(limit)
-            .sort({ views: -1 });
+            .sort({ views: -1, id: 1 });
           break;
         case 'tv':
           similar = await Movie.find({
@@ -89,7 +89,7 @@ export class SimilarController extends RedisCache {
           })
             .skip(page * limit)
             .limit(limit)
-            .sort({ views: -1 });
+            .sort({ views: -1, id: 1 });
           break;
         default:
           return next(
