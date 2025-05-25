@@ -12,6 +12,7 @@ const List = new mongoose.Schema(
     last_air_date: { type: String },
     name: { type: String },
     original_name: { type: String },
+    origin_country: { type: mongoose.Schema.Types.Mixed },
     original_language: { type: String },
     poster_path: { type: String },
     media_type: { type: String, enum: ['movie', 'tv'] },

@@ -56,42 +56,44 @@ export class RecommendController extends RedisCache {
           }
         });
 
-        if (!countries.includes(item.original_language)) {
-          countries = [...countries, item.original_language];
+        if (!countries.includes(item.origin_country)) {
+          countries = [...countries, item.origin_country];
         }
       });
 
       history.forEach((item) => {
         item.genres.forEach((genre) => {
           if (!genres.some((item1) => genre.id == item1.id)) {
-            genres = [...genres, { id: genre.id }];
+            // genres = [...genres, { id: genre.id }];
+            genres = [...genres, genre.id];
           }
         });
 
-        if (!countries.includes(item.original_language)) {
-          countries = [...countries, item.original_language];
+        if (!countries.includes(item.origin_country)) {
+          countries = [...countries, item.origin_country];
         }
       });
 
       const movie = await Movie.find({
         $or: [
           {
-            original_language: {
+            origin_country: {
               $in: countries
             }
           },
           {
-            genres: {
-              $elemMatch: {
-                $or: genres
-              }
-            }
+            // genres: {
+            //   $elemMatch: {
+            //     $or: genres
+            //   }
+            // }
+            'genres.id': { $in: genres }
           }
         ]
       })
         .skip(page * limit)
         .limit(limit)
-        .sort({ views: -1 });
+        .sort({ views: -1, id: 1 });
 
       const result = movie;
 
