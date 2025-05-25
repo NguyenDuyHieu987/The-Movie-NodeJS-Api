@@ -53,7 +53,8 @@ const sessionConfig: SessionOptions = {
     mongoUrl:
       process.env.NODE_ENV == 'production'
         ? process.env.MONGODB_URI!
-        : process.env.MONGODB_URI_DEV!
+        : process.env.MONGODB_URI_DEV!,
+    dbName: 'Phimhay247_DB_NEW_V2'
   }),
   cookie: cookieConfig
 };
