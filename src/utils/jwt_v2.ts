@@ -69,8 +69,26 @@ export async function verifyAndRefreshToken(
       JWT_REFRESH_SECRET_VERIFY,
       { algorithms: JWT_ALLOWED_ALGORITHMS },
       async (err, decoded) => {
-        if (err || !decoded)
-          return reject(createHttpError.Unauthorized('Refresh token invalid'));
+        if (err) {
+          if (err instanceof jwt.TokenExpiredError) {
+            return reject(
+              createHttpError.Unauthorized('Refresh token has expired')
+            );
+          } else if (err instanceof jwt.JsonWebTokenError) {
+            return reject(
+              createHttpError.Unauthorized('Refresh token is invalid')
+            );
+          } else {
+            return reject(
+              createHttpError.Unauthorized('Refresh token verification failed')
+            );
+          }
+        }
+
+        if (!decoded)
+          return reject(
+            createHttpError.Unauthorized('Refresh token is missing')
+          );
 
         const user = decoded as User;
         const tokenList = await RedisCache.client.get(`user_login__${user.id}`);
@@ -99,7 +117,7 @@ export async function verifyAndRefreshToken(
 
         const newAccessToken = jwt.sign(accountData, JWT_SIGNATURE_SECRET, {
           algorithm: JWT_ALGORITHM,
-          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
+          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 's'
         });
 
         const newRefreshToken = jwt.sign(accountData, JWT_REFRESH_SECRET, {
