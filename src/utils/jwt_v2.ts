@@ -117,7 +117,7 @@ export async function verifyAndRefreshToken(
 
         const newAccessToken = jwt.sign(accountData, JWT_SIGNATURE_SECRET, {
           algorithm: JWT_ALGORITHM,
-          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 's'
+          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
         });
 
         const newRefreshToken = jwt.sign(accountData, JWT_REFRESH_SECRET, {

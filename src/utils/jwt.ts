@@ -122,7 +122,7 @@ export async function signUserToken(account: object, oldUserToken?: string) {
     JWT_SIGNATURE_SECRET,
     {
       algorithm: JWT_ALGORITHM,
-      expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 's'
+      expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
     }
   );
 }
