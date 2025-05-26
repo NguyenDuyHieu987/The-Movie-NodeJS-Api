@@ -51,6 +51,10 @@ export async function signDefaultToken(
     payload instanceof Object
       ? {
           ...payload
+          /*  equal to expiresIn but overridden by expiresIn */
+          // exp:
+          //   Math.floor(Date.now() / 1000) +
+          //   +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
         }
       : payload,
     option?.signature || JWT_SIGNATURE_SECRET,
@@ -113,14 +117,12 @@ export async function signUserToken(account: object, oldUserToken?: string) {
 
   return jwt.sign(
     {
-      ...account,
-      exp:
-        Math.floor(Date.now() / 1000) +
-        +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
+      ...account
     },
     JWT_SIGNATURE_SECRET,
     {
-      algorithm: JWT_ALGORITHM
+      algorithm: JWT_ALGORITHM,
+      expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
     }
   );
 }

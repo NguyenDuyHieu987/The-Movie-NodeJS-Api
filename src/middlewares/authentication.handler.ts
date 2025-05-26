@@ -6,7 +6,7 @@ import type { RoleUser, User } from '@/types';
 import { isStringEmpty } from '@/utils';
 import { verifyUserToken } from '@/utils/jwt';
 
-const authenticationHandler = async (
+export async function authenticationHandler(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -14,7 +14,7 @@ const authenticationHandler = async (
     required: false,
     role: []
   }
-) => {
+) {
   try {
     const userToken =
       req.cookies?.user_token ||
@@ -105,6 +105,4 @@ const authenticationHandler = async (
 
     next(error);
   }
-};
-
-export { authenticationHandler };
+}
