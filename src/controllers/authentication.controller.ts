@@ -147,7 +147,7 @@ export class AuthController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      if (req.body.remember) {
+      if (req.body.remember == 'true') {
         const oldRefreshToken = req.cookies?.refresh_token;
 
         const refreshToken = await signRefreshToken(
