@@ -27,7 +27,7 @@ export async function authenticationHandler(
 
     let user: User | null = res.locals.user ?? null;
 
-    if (accessToken) {
+    if (!user && accessToken) {
       try {
         user = await verifyAccessToken(accessToken, req, res);
         res.locals.user = user;
