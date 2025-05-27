@@ -518,7 +518,7 @@ export class AccountController extends RedisCache {
           created_at: user.created_at
         };
 
-        const newUserToken = await signUserToken(accountInfo, userToken);
+        const newUserToken = await signUserToken(accountInfo);
 
         const newRefreshToken = await signRefreshToken(accountInfo);
 
@@ -604,19 +604,16 @@ export class AccountController extends RedisCache {
         });
       }
 
-      const newUserToken = await signUserToken(
-        {
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at
-        },
-        userToken
-      );
+      const newUserToken = await signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -675,19 +672,16 @@ export class AccountController extends RedisCache {
         });
       }
 
-      const newUserToken = await signUserToken(
-        {
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at
-        },
-        userToken
-      );
+      const newUserToken = await signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -852,19 +846,16 @@ export class AccountController extends RedisCache {
         EX: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
       });
 
-      const newUserToken = await signUserToken(
-        {
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          full_name: account.full_name,
-          avatar: account.avatar,
-          role: account.role,
-          auth_type: account.auth_type,
-          created_at: account.created_at
-        },
-        userToken
-      );
+      const newUserToken = await signUserToken({
+        id: account.id,
+        username: account.username,
+        email: account.email,
+        full_name: account.full_name,
+        avatar: account.avatar,
+        role: account.role,
+        auth_type: account.auth_type,
+        created_at: account.created_at
+      });
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 

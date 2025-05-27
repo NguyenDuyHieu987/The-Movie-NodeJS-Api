@@ -134,7 +134,7 @@ export class AuthController extends RedisCache {
       const oldUserToken = req.cookies.user_token;
       // || req.headers.authorization?.replace('Bearer ', '');
 
-      const userToken = await signUserToken(accountInfo, oldUserToken);
+      const userToken = await signUserToken(accountInfo);
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -240,7 +240,7 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(accountInfo, oldUserToken);
+        const userToken = await signUserToken(accountInfo);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -309,7 +309,7 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(accountInfo, oldUserToken);
+        const userToken = await signUserToken(accountInfo);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -468,7 +468,7 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(accountInfo, oldUserToken);
+        const userToken = await signUserToken(accountInfo);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -520,7 +520,7 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(accountInfo, oldUserToken);
+        const userToken = await signUserToken(accountInfo);
 
         const oldRefreshToken = req.cookies?.refresh_token;
 
@@ -611,19 +611,16 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(
-          {
-            id: newAccount.id,
-            username: newAccount.username,
-            email: newAccount.email,
-            full_name: newAccount.full_name,
-            avatar: newAccount.avatar,
-            role: newAccount.role,
-            auth_type: newAccount.auth_type,
-            created_at: newAccount.created_at
-          },
-          oldUserToken
-        );
+        const userToken = await signUserToken({
+          id: newAccount.id,
+          username: newAccount.username,
+          email: newAccount.email,
+          full_name: newAccount.full_name,
+          avatar: newAccount.avatar,
+          role: newAccount.role,
+          auth_type: newAccount.auth_type,
+          created_at: newAccount.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
@@ -657,19 +654,16 @@ export class AuthController extends RedisCache {
         const oldUserToken = req.cookies.user_token;
         // || req.headers.authorization?.replace('Bearer ', '');
 
-        const userToken = await signUserToken(
-          {
-            id: account.id,
-            username: account.username,
-            email: account.email,
-            full_name: account.full_name,
-            avatar: account.avatar,
-            role: account.role,
-            auth_type: account.auth_type,
-            created_at: account.created_at
-          },
-          oldUserToken
-        );
+        const userToken = await signUserToken({
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        });
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 

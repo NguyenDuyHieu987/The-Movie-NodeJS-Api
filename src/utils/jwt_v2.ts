@@ -44,13 +44,14 @@ export async function verifyAccessToken(
         if (err) return reject(err);
         if (!decoded) return reject(createHttpError.Unauthorized());
 
-        const isAlive = await jwtRedis
-          .setRevokePrefix('user_token')
-          .verify(token);
-        if (!isAlive)
-          return reject(
-            createHttpError.Unauthorized('Token is no longer active')
-          );
+        // const isAlive = await jwtRedis
+        //   .setRevokePrefix('user_token')
+        //   .verify(token);
+
+        // if (!isAlive)
+        //   return reject(
+        //     createHttpError.Unauthorized('Token is no longer active')
+        //   );
 
         resolve(decoded as User);
       }

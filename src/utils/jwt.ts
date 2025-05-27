@@ -106,15 +106,7 @@ export async function verifyDefaultToken(
   });
 }
 
-export async function signUserToken(account: object, oldUserToken?: string) {
-  if (oldUserToken) {
-    jwtRedis.setRevokePrefix('user_token');
-
-    await jwtRedis.sign(oldUserToken, {
-      EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
-    });
-  }
-
+export async function signUserToken(account: object) {
   return jwt.sign(
     {
       ...account
