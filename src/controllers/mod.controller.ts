@@ -111,7 +111,8 @@ export class ModController extends RedisCache {
         { $unwind: '$modListData' },
         {
           $sort: {
-            'modListData.page_tmdb': 1
+            'modListData.page_tmdb': 1,
+            'modListData.updatedAt': -1
           }
         },
         {
@@ -309,7 +310,8 @@ export class ModController extends RedisCache {
             },
             {
               $sort: {
-                'modListData.page_tmdb': 1
+                'modListData.page_tmdb': 1,
+                'modListData.updatedAt': -1
               }
             },
             {
@@ -379,7 +381,8 @@ export class ModController extends RedisCache {
             },
             {
               $sort: {
-                'modListData.page_tmdb': 1
+                'modListData.page_tmdb': 1,
+                'modListData.updatedAt': -1
               }
             },
             {
@@ -454,7 +457,8 @@ export class ModController extends RedisCache {
             },
             {
               $sort: {
-                'modListData.page_tmdb': 1
+                'modListData.page_tmdb': 1,
+                'modListData.updatedAt': -1
               }
             },
             {
