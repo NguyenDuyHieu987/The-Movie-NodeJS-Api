@@ -37,7 +37,7 @@ export default function route(app: Application) {
 
     res.on('finish', () => {
       const diff = process.hrtime(start);
-      const duration = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(6) + 'ms';
+      const duration = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(3) + 'ms';
 
       const date = new Date();
       const dateStr = date.toISOString().replace('T', ' ').replace('Z', '');
