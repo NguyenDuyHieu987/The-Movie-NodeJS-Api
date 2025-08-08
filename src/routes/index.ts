@@ -56,7 +56,7 @@ export default function route(app: Application) {
       if (req.method === 'DELETE') methodColor = chalk.bgRed.white;
 
       console.log(
-        chalk.gray('[PHIMHAY247]'),
+        chalk.gray('[PHIMHAY247-API]'),
         chalk.white(dateStr),
         chalk.white('|'),
         statusColor(` ${res.statusCode} `),
