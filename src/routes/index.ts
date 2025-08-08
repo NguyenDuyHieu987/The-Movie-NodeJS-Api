@@ -1,6 +1,7 @@
 import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import chalk from 'chalk';
+import dayjs from 'dayjs';
 import accountRouter from './account.route';
 import modRouter from './mod.route';
 import modListRouter from './modList.route';
@@ -40,7 +41,10 @@ export default function route(app: Application) {
       const duration = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(3) + 'ms';
 
       const date = new Date();
-      const dateStr = date.toISOString().replace('T', ' ').replace('Z', '');
+      // const dateStr = date.toISOString().replace('T', ' ').replace('Z', '');
+      const dateStr = dayjs(date)
+        .locale('vi')
+        .format('YYYY-MM-DD HH:mm:ss.SSS');
 
       // Màu cho status
       let statusColor = chalk.bgGreen.black;
