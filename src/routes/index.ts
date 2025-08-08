@@ -72,7 +72,8 @@ export default function route(app: Application) {
         chalk.white('|'),
         methodColor(` ${req.method} `),
         chalk.white(''.padEnd(1)),
-        chalk.white(`"${req.originalUrl}"`)
+        chalk.white(`"${req.originalUrl}"`),
+        '\n'
       );
     });
 
