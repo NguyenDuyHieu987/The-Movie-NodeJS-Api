@@ -1,5 +1,6 @@
 import type { Application, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import chalk from 'chalk';
 import accountRouter from './account.route';
 import modRouter from './mod.route';
 import modListRouter from './modList.route';
@@ -31,6 +32,48 @@ import videoRouter from './video.route';
 import yearRouter from './year.route';
 
 export default function route(app: Application) {
+  app.use((req, res, next) => {
+    const start = process.hrtime();
+
+    res.on('finish', () => {
+      const diff = process.hrtime(start);
+      const duration = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(6) + 'ms';
+
+      const date = new Date();
+      const dateStr = date.toISOString().replace('T', ' ').replace('Z', '');
+
+      // Màu cho status
+      let statusColor = chalk.bgGreen.black;
+      if (res.statusCode >= 400 && res.statusCode < 500)
+        statusColor = chalk.bgYellow.black;
+      if (res.statusCode >= 500) statusColor = chalk.bgRed.white;
+
+      // Màu cho method
+      let methodColor = chalk.bgBlue.white;
+      if (req.method === 'GET') methodColor = chalk.bgBlue.white;
+      if (req.method === 'POST') methodColor = chalk.bgCyan.black;
+      if (req.method === 'PUT') methodColor = chalk.bgMagenta.white;
+      if (req.method === 'DELETE') methodColor = chalk.bgRed.white;
+
+      console.log(
+        chalk.gray('[PHIMHAY247]'),
+        chalk.white(dateStr),
+        chalk.white('|'),
+        statusColor(` ${res.statusCode} `),
+        chalk.white('|'),
+        chalk.white(''.padEnd(6)),
+        duration.padEnd(18),
+        chalk.white('|'),
+        chalk.white(req.ip?.padEnd(15)),
+        chalk.white('|'),
+        methodColor(` ${req.method} `),
+        chalk.white(''.padEnd(1)),
+        chalk.white(`"${req.originalUrl}"`)
+      );
+    });
+
+    next();
+  });
   app.use('/auth', authRouter);
   app.use('/account', accountRouter);
   app.use('/mod', modRouter);
