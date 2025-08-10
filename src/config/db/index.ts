@@ -18,7 +18,7 @@ class MongoDB {
         dbName: 'Phimhay247_DB_NEW_V2'
       });
 
-      mongoose.set('debug', true);
+      // mongoose.set('debug', true);
 
       // console.log('Connected to MongoDB');
     } catch (err: any) {
