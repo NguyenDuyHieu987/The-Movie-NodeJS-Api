@@ -200,7 +200,7 @@ export class RankController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -228,7 +228,7 @@ export class RankController extends RedisCache {
 
       const matchGroupRank: any = {
         type: 'play',
-        $and: [genres, originalLanguage]
+        $and: [genres, originalCountry]
       };
 
       if (withMediaType != 'all') {
@@ -674,7 +674,7 @@ export class RankController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -702,7 +702,7 @@ export class RankController extends RedisCache {
 
       const matchGroupPlay: any = {
         type: 'play',
-        $and: [genres, originalLanguage]
+        $and: [genres, originalCountry]
       };
 
       if (withMediaType != 'all') {
@@ -1100,7 +1100,7 @@ export class RankController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1128,7 +1128,7 @@ export class RankController extends RedisCache {
 
       const matchGroupSearch: any = {
         type: 'search',
-        $and: [genres, originalLanguage]
+        $and: [genres, originalCountry]
       };
 
       if (withMediaType != 'all') {
@@ -1554,7 +1554,7 @@ export class RankController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -1582,7 +1582,7 @@ export class RankController extends RedisCache {
 
       const matchGroupRate: any = {
         type: 'rate',
-        $and: [genres, originalLanguage]
+        $and: [genres, originalCountry]
       };
 
       if (withMediaType != 'all') {

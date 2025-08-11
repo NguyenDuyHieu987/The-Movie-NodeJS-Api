@@ -295,7 +295,7 @@ export class ModController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const response: {
         page: number;
@@ -346,8 +346,8 @@ export class ModController extends RedisCache {
             {
               $match: {
                 $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
+                  { $and: [releaseDate, genres, originalCountry] },
+                  { $and: [firstAirDate, genres, originalCountry] }
                 ]
               }
             },
@@ -422,7 +422,7 @@ export class ModController extends RedisCache {
             {
               $match: {
                 media_type: type,
-                $and: [releaseDate, genres, originalLanguage]
+                $and: [releaseDate, genres, originalCountry]
               }
             },
             {
@@ -493,7 +493,7 @@ export class ModController extends RedisCache {
             {
               $match: {
                 media_type: type,
-                $and: [firstAirDate, genres, originalLanguage]
+                $and: [firstAirDate, genres, originalCountry]
               }
             },
             {

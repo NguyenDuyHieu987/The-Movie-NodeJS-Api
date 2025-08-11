@@ -110,7 +110,7 @@ export class DiscoverController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -128,8 +128,8 @@ export class DiscoverController extends RedisCache {
         case 'all':
           const options = {
             $or: [
-              { $and: [releaseDate, genres, originalLanguage] },
-              { $and: [firstAirDate, genres, originalLanguage] }
+              { $and: [releaseDate, genres, originalCountry] },
+              { $and: [firstAirDate, genres, originalCountry] }
             ]
           };
           switch (sortBy) {
@@ -194,7 +194,7 @@ export class DiscoverController extends RedisCache {
         case 'movie':
           const optionsMovie = {
             media_type: 'movie',
-            $and: [releaseDate, genres, originalLanguage]
+            $and: [releaseDate, genres, originalCountry]
           };
           switch (sortBy) {
             case 'views_desc':
@@ -246,7 +246,7 @@ export class DiscoverController extends RedisCache {
         case 'tv':
           const optionsTV = {
             media_type: 'tv',
-            $and: [firstAirDate, genres, originalLanguage]
+            $and: [firstAirDate, genres, originalCountry]
           };
           switch (sortBy) {
             case 'views_desc':

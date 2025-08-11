@@ -454,7 +454,7 @@ export class ModListController extends RedisCache {
         } else return {};
       };
 
-      const originalLanguage = convertOriginalCountry(withOriginalCountry);
+      const originalCountry = convertOriginalCountry(withOriginalCountry);
 
       const result: {
         page: number;
@@ -518,8 +518,8 @@ export class ModListController extends RedisCache {
               $match: {
                 'modData.type': slug,
                 $or: [
-                  { $and: [releaseDate, genres, originalLanguage] },
-                  { $and: [firstAirDate, genres, originalLanguage] }
+                  { $and: [releaseDate, genres, originalCountry] },
+                  { $and: [firstAirDate, genres, originalCountry] }
                 ]
               }
             }
@@ -667,7 +667,7 @@ export class ModListController extends RedisCache {
               $match: {
                 'modData.type': slug,
                 'movieData.media_type': type,
-                $and: [releaseDate, genres, originalLanguage]
+                $and: [releaseDate, genres, originalCountry]
               }
             }
           ];
@@ -813,7 +813,7 @@ export class ModListController extends RedisCache {
               $match: {
                 'modData.type': slug,
                 'movieData.media_type': type,
-                $and: [firstAirDate, genres, originalLanguage]
+                $and: [firstAirDate, genres, originalCountry]
               }
             }
           ];
