@@ -100,15 +100,27 @@ export class ModController extends RedisCache {
             ]
           }
         },
+        // {
+        //   $lookup: {
+        //     from: 'modlists',
+        //     localField: 'id',
+        //     foreignField: 'modId',
+        //     as: 'modListData'
+        //   }
+        // },
+        // { $unwind: '$modListData' },
         {
           $lookup: {
             from: 'modlists',
-            localField: 'id',
-            foreignField: 'modId',
+            let: { mod_id: '$id' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$modId', '$$mod_id'] } } },
+              { $sort: { page_tmdb: 1, updatedAt: -1 } },
+              { $limit: 1 } // nếu chỉ cần bản ghi mới nhất
+            ],
             as: 'modListData'
           }
         },
-        { $unwind: '$modListData' },
         {
           $sort: {
             'modListData.page_tmdb': 1,
@@ -148,6 +160,9 @@ export class ModController extends RedisCache {
         { $skip: page * limit },
         { $limit: limit }
       ]).option({ allowDiskUse: true });
+      //   .explain('executionStats');
+
+      // console.log('Aggregation Stats:', data);
 
       const total = await Mod.countDocuments({
         $and: [
