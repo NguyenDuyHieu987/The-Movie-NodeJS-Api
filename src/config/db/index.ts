@@ -5,6 +5,10 @@ class MongoDB {
 
   async connect() {
     try {
+      if (mongoose.connection.readyState === 1) {
+        return; // đã connect rồi, không connect lại
+      }
+
       mongoose.set('strictQuery', false);
 
       const mongo_uri: string =
