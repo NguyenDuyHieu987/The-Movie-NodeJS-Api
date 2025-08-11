@@ -84,9 +84,9 @@ export class ModController extends RedisCache {
       const limit: number = +req.query.limit! || 3;
       const listCount: number = +req.query.list_count! || 20;
 
-      if (dataCache != null) {
-        return res.json(JSON.parse(dataCache));
-      }
+      // if (dataCache != null) {
+      //   return res.json(JSON.parse(dataCache));
+      // }
 
       const type: string = (req.query?.type as string) || 'all';
       const media_type: string = (req.query?.media_type as string) || 'all';
@@ -100,31 +100,19 @@ export class ModController extends RedisCache {
             ]
           }
         },
-        // {
-        //   $lookup: {
-        //     from: 'modlists',
-        //     localField: 'id',
-        //     foreignField: 'modId',
-        //     as: 'modListData'
-        //   }
-        // },
-        // { $unwind: '$modListData' },
-        // {
-        //   $sort: {
-        //     'modListData.page_tmdb': 1,
-        //     'modListData.updatedAt': -1
-        //   }
-        // },
         {
           $lookup: {
             from: 'modlists',
-            let: { mod_id: '$id' },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$modId', '$$mod_id'] } } },
-              { $sort: { page_tmdb: 1, updatedAt: -1 } },
-              { $limit: 1 } // nếu chỉ cần bản ghi mới nhất
-            ],
+            localField: 'id',
+            foreignField: 'modId',
             as: 'modListData'
+          }
+        },
+        { $unwind: '$modListData' },
+        {
+          $sort: {
+            'modListData.page_tmdb': 1,
+            'modListData.updatedAt': -1
           }
         },
         {
