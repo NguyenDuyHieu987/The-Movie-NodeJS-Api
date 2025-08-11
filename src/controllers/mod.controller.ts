@@ -109,6 +109,12 @@ export class ModController extends RedisCache {
         //   }
         // },
         // { $unwind: '$modListData' },
+        // {
+        //   $sort: {
+        //     'modListData.page_tmdb': 1,
+        //     'modListData.updatedAt': -1
+        //   }
+        // },
         {
           $lookup: {
             from: 'modlists',
@@ -119,12 +125,6 @@ export class ModController extends RedisCache {
               { $limit: 1 } // nếu chỉ cần bản ghi mới nhất
             ],
             as: 'modListData'
-          }
-        },
-        {
-          $sort: {
-            'modListData.page_tmdb': 1,
-            'modListData.updatedAt': -1
           }
         },
         {
