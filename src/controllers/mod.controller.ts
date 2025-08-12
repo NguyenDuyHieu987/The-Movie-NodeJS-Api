@@ -312,23 +312,35 @@ export class ModController extends RedisCache {
       switch (type) {
         case 'all':
           response.results = await Mod.aggregate([
+            // {
+            //   $lookup: {
+            //     from: 'modlists',
+            //     localField: 'id',
+            //     foreignField: 'modId',
+            //     as: 'modListData'
+            //   }
+            // },
             {
               $lookup: {
                 from: 'modlists',
-                localField: 'id',
-                foreignField: 'modId',
+                let: { modId: '$id' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$modId', '$$modId'] } } },
+                  { $sort: { page_tmdb: 1, updatedAt: -1 } },
+                  { $limit: listCount }
+                ],
                 as: 'modListData'
               }
             },
             {
               $unwind: '$modListData'
             },
-            {
-              $sort: {
-                'modListData.page_tmdb': 1,
-                'modListData.updatedAt': -1
-              }
-            },
+            // {
+            //   $sort: {
+            //     'modListData.page_tmdb': 1,
+            //     'modListData.updatedAt': -1
+            //   }
+            // },
             {
               $lookup: {
                 from: 'movies',
@@ -366,11 +378,11 @@ export class ModController extends RedisCache {
             {
               $sort: { order: 1 }
             },
-            {
-              $addFields: {
-                data: { $slice: ['$data', listCount] }
-              }
-            },
+            // {
+            //   $addFields: {
+            //     data: { $slice: ['$data', listCount] }
+            //   }
+            // },
             {
               $skip: page * limit
             },
@@ -383,23 +395,35 @@ export class ModController extends RedisCache {
           break;
         case 'movie':
           response.results = await Mod.aggregate([
+            // {
+            //   $lookup: {
+            //     from: 'modlists',
+            //     localField: 'id',
+            //     foreignField: 'modId',
+            //     as: 'modListData'
+            //   }
+            // },
             {
               $lookup: {
                 from: 'modlists',
-                localField: 'id',
-                foreignField: 'modId',
+                let: { modId: '$id' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$modId', '$$modId'] } } },
+                  { $sort: { page_tmdb: 1, updatedAt: -1 } },
+                  { $limit: listCount }
+                ],
                 as: 'modListData'
               }
             },
             {
               $unwind: '$modListData'
             },
-            {
-              $sort: {
-                'modListData.page_tmdb': 1,
-                'modListData.updatedAt': -1
-              }
-            },
+            // {
+            //   $sort: {
+            //     'modListData.page_tmdb': 1,
+            //     'modListData.updatedAt': -1
+            //   }
+            // },
             {
               $lookup: {
                 from: 'movies',
@@ -440,11 +464,11 @@ export class ModController extends RedisCache {
             {
               $sort: { order: 1 }
             },
-            {
-              $addFields: {
-                data: { $slice: ['$data', listCount] }
-              }
-            },
+            // {
+            //   $addFields: {
+            //     data: { $slice: ['$data', listCount] }
+            //   }
+            // },
             {
               $skip: page * limit
             },
@@ -459,23 +483,35 @@ export class ModController extends RedisCache {
           break;
         case 'tv':
           response.results = await Mod.aggregate([
+            // {
+            //   $lookup: {
+            //     from: 'modlists',
+            //     localField: 'id',
+            //     foreignField: 'modId',
+            //     as: 'modListData'
+            //   }
+            // },
             {
               $lookup: {
                 from: 'modlists',
-                localField: 'id',
-                foreignField: 'modId',
+                let: { modId: '$id' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$modId', '$$modId'] } } },
+                  { $sort: { page_tmdb: 1, updatedAt: -1 } },
+                  { $limit: listCount }
+                ],
                 as: 'modListData'
               }
             },
             {
               $unwind: '$modListData'
             },
-            {
-              $sort: {
-                'modListData.page_tmdb': 1,
-                'modListData.updatedAt': -1
-              }
-            },
+            // {
+            //   $sort: {
+            //     'modListData.page_tmdb': 1,
+            //     'modListData.updatedAt': -1
+            //   }
+            // },
             {
               $lookup: {
                 from: 'movies',
@@ -511,11 +547,11 @@ export class ModController extends RedisCache {
             {
               $sort: { order: 1 }
             },
-            {
-              $addFields: {
-                data: { $slice: ['$data', listCount] }
-              }
-            },
+            // {
+            //   $addFields: {
+            //     data: { $slice: ['$data', listCount] }
+            //   }
+            // },
             {
               $skip: page * limit
             },

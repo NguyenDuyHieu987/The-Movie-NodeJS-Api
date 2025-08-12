@@ -645,10 +645,31 @@ export class ModListController extends RedisCache {
               $unwind: '$modData'
             },
             {
+              $match: {
+                'modData.type': slug
+              }
+            },
+            // {
+            //   $lookup: {
+            //     from: 'movies',
+            //     localField: 'id',
+            //     foreignField: 'id',
+            //     as: 'movieData'
+            //   }
+            // },
+            {
               $lookup: {
                 from: 'movies',
                 localField: 'id',
                 foreignField: 'id',
+                pipeline: [
+                  {
+                    $match: {
+                      media_type: type,
+                      $and: [releaseDate, genres, originalCountry]
+                    }
+                  }
+                ],
                 as: 'movieData'
               }
             },
@@ -662,14 +683,14 @@ export class ModListController extends RedisCache {
                 'movieData.images',
                 'movieData.seasons'
               ]
-            },
-            {
-              $match: {
-                'modData.type': slug,
-                'movieData.media_type': type,
-                $and: [releaseDate, genres, originalCountry]
-              }
             }
+            // {
+            //   $match: {
+            //     'modData.type': slug,
+            //     'movieData.media_type': type,
+            //     $and: [releaseDate, genres, originalCountry]
+            //   }
+            // }
           ];
           switch (sortBy) {
             case 'views_desc':
@@ -759,6 +780,9 @@ export class ModListController extends RedisCache {
                   $limit: limit
                 }
               ]);
+              // .explain('executionStats');
+
+              // console.log(result.results);
               break;
             default:
               return next(
@@ -768,14 +792,14 @@ export class ModListController extends RedisCache {
               );
           }
 
-          const totalMovie: any[] = await ModList.aggregate([
-            ...optionsMovie,
-            {
-              $count: 'totalCount'
-            }
-          ]);
+          // const totalMovie: any[] = await ModList.aggregate([
+          //   ...optionsMovie,
+          //   {
+          //     $count: 'totalCount'
+          //   }
+          // ]);
 
-          result.total = totalMovie[0].totalCount;
+          // result.total = totalMovie[0].totalCount;
           break;
         case 'tv':
           const optionsTV = [
