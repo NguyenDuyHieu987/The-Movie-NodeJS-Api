@@ -21,6 +21,13 @@ const errorHandler: ErrorRequestHandler = (
     errorMessage = error.message;
   }
 
+  if (statusCode == 401) {
+    return res.json({
+      statusCode,
+      message: errorMessage
+    });
+  }
+
   return res.status(statusCode).json({
     statusCode,
     message: errorMessage
