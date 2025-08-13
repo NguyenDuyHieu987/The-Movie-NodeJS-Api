@@ -505,7 +505,7 @@ export class AccountController extends RedisCache {
       });
 
       if (decodeChangePassword.logout_all_device) {
-        await RedisCache.client.del(`user_login__${user.id}`);
+        // await RedisCache.client.del(`refresh_token__${req.cookies.refresh_token}`);
 
         const accountInfo = {
           id: user.id,
@@ -1011,7 +1011,7 @@ export class AccountController extends RedisCache {
       const isLogOutAllDevice = req.body.logout_all_device == 'true';
 
       if (isLogOutAllDevice) {
-        await RedisCache.client.del(`user_login__${resetPasswordInfo.id}`);
+        // await RedisCache.client.del(`refresh_token__${req.cookies.refresh_token}`);
       }
 
       return res.json({

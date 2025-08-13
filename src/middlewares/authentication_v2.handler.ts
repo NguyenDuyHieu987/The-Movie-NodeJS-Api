@@ -39,7 +39,7 @@ export async function authenticationHandler(
             user = newUser;
           } catch (refreshErr) {
             clearAuthCookies(req, res);
-            throw createHttpError.Unauthorized('Session expired.');
+            throw refreshErr;
           }
         } else {
           clearAuthCookies(req, res);
@@ -55,7 +55,7 @@ export async function authenticationHandler(
         user = newUser;
       } catch (refreshErr) {
         clearAuthCookies(req, res);
-        throw createHttpError.Unauthorized('Session expired.');
+        throw refreshErr;
       }
     }
 

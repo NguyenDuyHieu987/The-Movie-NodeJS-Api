@@ -1013,27 +1013,7 @@ export class AuthController extends RedisCache {
 
       const refreshToken = req.cookies.refresh_token;
 
-      const listRefreshToken = await RedisCache.client.get(
-        `user_login__${user.id}`
-      );
-
-      if (listRefreshToken) {
-        let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
-
-        if (refreshToken && listRefreshTokenParse.includes(refreshToken)) {
-          listRefreshTokenParse = listRefreshTokenParse?.filter(
-            (item) => item != refreshToken
-          );
-
-          await RedisCache.client.set(
-            `user_login__${user.id}`,
-            JSON.stringify(listRefreshTokenParse),
-            {
-              EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-            }
-          );
-        }
-      }
+      await RedisCache.client.del(`refresh_token__${refreshToken}`);
 
       res.clearCookie('user_token', {
         ...(req.session.cookie as CookieOptions),

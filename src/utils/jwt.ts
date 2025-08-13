@@ -119,131 +119,30 @@ export async function signUserToken(account: object) {
   );
 }
 
-export async function verifyUserToken(
+export async function verifyAccessToken(
   token: string,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<User> {
   return new Promise((resolve, reject) => {
-    let decodedUser = null;
-
     jwt.verify(
       token,
       JWT_SIGNATURE_SECRET_VERIFY,
-      {
-        algorithms: JWT_ALLOWED_ALGORITHMS
-      },
+      { algorithms: JWT_ALLOWED_ALGORITHMS },
       async (err, decoded) => {
-        try {
-          if (decoded) {
-            const isAlive = await jwtRedis
-              .setRevokePrefix('user_token')
-              .verify(token);
+        if (err) return reject(err);
+        if (!decoded) return reject(createHttpError.Unauthorized());
 
-            if (!isAlive) {
-              return reject(
-                createHttpError.Unauthorized('Token is no longer active')
-              );
-            }
-          }
+        // const isAlive = await jwtRedis
+        //   .setRevokePrefix('user_token')
+        //   .verify(token);
 
-          decodedUser = decoded;
+        // if (!isAlive)
+        //   return reject(
+        //     createHttpError.Unauthorized('Token is no longer active')
+        //   );
 
-          if (
-            err?.name == jwt.TokenExpiredError.name ||
-            (!token && err?.name == jwt.JsonWebTokenError.name)
-          ) {
-            const oldRefreshToken = req.cookies?.refresh_token;
-
-            const decodedRefeshToken = (await verifyRefreshToken(
-              oldRefreshToken,
-              req,
-              res
-            )) as User;
-
-            const account = await Account.findOne({
-              id: decodedRefeshToken.id
-            });
-
-            if (!account) {
-              return reject(
-                createHttpError.InternalServerError('Account is not exist')
-              );
-            }
-
-            const accountInfo = {
-              id: account.id,
-              username: account.username,
-              email: account.email,
-              full_name: account.full_name,
-              avatar: account.avatar,
-              role: account.role,
-              auth_type: account.auth_type,
-              created_at: account.created_at
-            };
-
-            const userToken = await signUserToken(accountInfo);
-
-            const refreshToken = await signRefreshToken(
-              accountInfo,
-              oldRefreshToken
-            );
-
-            res.locals.userToken = userToken;
-
-            res.set('Access-Control-Expose-Headers', 'Authorization');
-
-            res.cookie('user_token', userToken, {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
-            });
-
-            res.cookie('refresh_token', refreshToken, {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true,
-              maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
-            });
-
-            res.header('Authorization', userToken);
-
-            decodedUser = account;
-          }
-
-          if (err?.name == jwt.JsonWebTokenError.name && !!token) {
-            res.clearCookie('user_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
-
-            res.clearCookie('refresh_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
-            return reject(err);
-          }
-
-          if (!decodedUser) {
-            return reject(createHttpError.Unauthorized());
-          }
-
-          return resolve(decodedUser as User);
-        } catch (err) {
-          reject(err);
-        }
+        resolve(decoded as User);
       }
     );
   });
@@ -261,40 +160,14 @@ export async function signRefreshToken(account: any, oldRefreshToken?: string) {
     }
   );
 
-  const listRefreshToken = await RedisCache.client.get(
-    `user_login__${account.id}`
-  );
-
-  if (listRefreshToken?.length) {
-    let listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
-
-    if (oldRefreshToken && listRefreshTokenParse.includes(oldRefreshToken)) {
-      listRefreshTokenParse = listRefreshTokenParse?.filter(
-        (item) => item != oldRefreshToken
-      );
-    }
-
-    await RedisCache.client.set(
-      `user_login__${account.id}`,
-      JSON.stringify([...listRefreshTokenParse, refreshToken]),
-      {
-        EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-      }
-    );
-  } else {
-    await RedisCache.client.set(
-      `user_login__${account.id}`,
-      JSON.stringify([refreshToken]),
-      {
-        EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-      }
-    );
-  }
+  await RedisCache.client.set(`refresh_token__${refreshToken}`, 1, {
+    EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+  });
 
   return refreshToken;
 }
 
-export async function verifyRefreshToken(
+export async function verifyAndRefreshToken(
   token: string,
   req: Request,
   res: Response
@@ -303,96 +176,89 @@ export async function verifyRefreshToken(
     jwt.verify(
       token,
       JWT_REFRESH_SECRET_VERIFY,
-      {
-        algorithms: JWT_ALLOWED_ALGORITHMS
-      },
+      { algorithms: JWT_ALLOWED_ALGORITHMS },
       async (err, decoded) => {
-        try {
-          if (err) {
-            if (
-              err?.name == jwt.JsonWebTokenError.name &&
-              err?.name != jwt.TokenExpiredError.name
-            ) {
-              res.clearCookie('user_token', {
-                ...(req.session.cookie as CookieOptions),
-                domain: req.session.cookie.domain,
-                httpOnly: req.session.cookie.httpOnly,
-                sameSite: req.session.cookie.sameSite,
-                secure: true
-              });
-
-              res.clearCookie('refresh_token', {
-                ...(req.session.cookie as CookieOptions),
-                domain: req.session.cookie.domain,
-                httpOnly: req.session.cookie.httpOnly,
-                sameSite: req.session.cookie.sameSite,
-                secure: true
-              });
-            }
-
-            return reject(err);
+        if (err) {
+          if (err instanceof jwt.TokenExpiredError) {
+            return reject(
+              createHttpError.Unauthorized('Refresh token has expired')
+            );
+          } else if (err instanceof jwt.JsonWebTokenError) {
+            return reject(
+              createHttpError.Unauthorized('Refresh token is invalid')
+            );
+          } else {
+            return reject(
+              createHttpError.Unauthorized('Refresh token verification failed')
+            );
           }
+        }
 
-          if (!decoded) {
-            return reject(createHttpError.Unauthorized());
-          }
-
-          const decodedRefeshToken = decoded as User;
-
-          const listRefreshToken = await RedisCache.client.get(
-            `user_login__${decodedRefeshToken.id}`
+        if (!decoded)
+          return reject(
+            createHttpError.Unauthorized('Refresh token is missing')
           );
 
-          if (!listRefreshToken) {
-            res.clearCookie('user_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
+        const user = decoded as User;
+        const tokenCache = await RedisCache.client.get(
+          `refresh_token__${token}`
+        );
 
-            res.clearCookie('refresh_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
+        if (!tokenCache)
+          return reject(createHttpError.Unauthorized('Refresh token revoked'));
 
-            return reject(
-              createHttpError.Unauthorized('Token is no longer active')
-            );
-          }
+        const account = await Account.findOne({ id: user.id });
+        if (!account) return reject(createHttpError.NotFound('User not found'));
 
-          const listRefreshTokenParse: string[] = JSON.parse(listRefreshToken);
+        const accountData = {
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          full_name: account.full_name,
+          avatar: account.avatar,
+          role: account.role,
+          auth_type: account.auth_type,
+          created_at: account.created_at
+        };
 
-          if (!listRefreshTokenParse.includes(token)) {
-            res.clearCookie('user_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
+        const newAccessToken = jwt.sign(accountData, JWT_SIGNATURE_SECRET, {
+          algorithm: JWT_ALGORITHM,
+          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
+        });
 
-            res.clearCookie('refresh_token', {
-              ...(req.session.cookie as CookieOptions),
-              domain: req.session.cookie.domain,
-              httpOnly: req.session.cookie.httpOnly,
-              sameSite: req.session.cookie.sameSite,
-              secure: true
-            });
+        const newRefreshToken = jwt.sign(accountData, JWT_REFRESH_SECRET, {
+          algorithm: JWT_ALGORITHM,
+          expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
+        });
 
-            return reject(
-              createHttpError.Unauthorized('Token is no longer active')
-            );
-          }
+        await RedisCache.client.del(`refresh_token__${token}`);
 
-          return resolve(decodedRefeshToken);
-        } catch (err) {
-          reject(err);
-        }
+        await RedisCache.client.set(`refresh_token__${newRefreshToken}`, 1, {
+          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+        });
+
+        res.cookie('user_token', newAccessToken, {
+          ...(req.session.cookie as CookieOptions),
+          domain: req.session.cookie.domain,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
+        });
+
+        res.cookie('refresh_token', newRefreshToken, {
+          ...(req.session.cookie as CookieOptions),
+          domain: req.session.cookie.domain,
+          httpOnly: req.session.cookie.httpOnly,
+          sameSite: req.session.cookie.sameSite,
+          secure: true,
+          maxAge: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY * 1000
+        });
+
+        res.set('Access-Control-Expose-Headers', 'Authorization');
+        res.setHeader('Authorization', newAccessToken);
+
+        resolve(accountData as User);
       }
     );
   });

@@ -14,5 +14,5 @@ export default function middleware(app: Application, callback: () => void) {
 }
 
 export * from './proxy.handler';
-export * from './authentication_v2.handler';
+export * from './authentication.handler';
 export * from './error.handler';

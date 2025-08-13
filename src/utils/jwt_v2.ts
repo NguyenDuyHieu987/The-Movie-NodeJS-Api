@@ -92,15 +92,12 @@ export async function verifyAndRefreshToken(
           );
 
         const user = decoded as User;
-        const tokenList = await RedisCache.client.get(`user_login__${user.id}`);
-        if (!tokenList)
-          return reject(createHttpError.Unauthorized('Refresh token revoked'));
+        const tokenCache = await RedisCache.client.get(
+          `refresh_token__${token}`
+        );
 
-        const parsedList: string[] = JSON.parse(tokenList);
-        if (!parsedList.includes(token))
-          return reject(
-            createHttpError.Unauthorized('Refresh token not recognized')
-          );
+        if (!tokenCache)
+          return reject(createHttpError.Unauthorized('Refresh token revoked'));
 
         const account = await Account.findOne({ id: user.id });
         if (!account) return reject(createHttpError.NotFound('User not found'));
@@ -126,14 +123,11 @@ export async function verifyAndRefreshToken(
           expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
         });
 
-        await RedisCache.client.set(
-          `user_login__${account.id}`,
-          JSON.stringify([
-            ...parsedList.filter((t) => t !== token),
-            newRefreshToken
-          ]),
-          { EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY }
-        );
+        await RedisCache.client.del(`refresh_token__${token}`);
+
+        await RedisCache.client.set(`refresh_token__${newRefreshToken}`, 1, {
+          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+        });
 
         res.cookie('user_token', newAccessToken, {
           ...(req.session.cookie as CookieOptions),
