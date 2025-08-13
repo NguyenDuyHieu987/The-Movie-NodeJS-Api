@@ -792,14 +792,14 @@ export class ModListController extends RedisCache {
               );
           }
 
-          // const totalMovie: any[] = await ModList.aggregate([
-          //   ...optionsMovie,
-          //   {
-          //     $count: 'totalCount'
-          //   }
-          // ]);
+          const totalMovie: any[] = await ModList.aggregate([
+            ...optionsMovie,
+            {
+              $count: 'totalCount'
+            }
+          ]);
 
-          // result.total = totalMovie[0].totalCount;
+          result.total = totalMovie[0].totalCount;
           break;
         case 'tv':
           const optionsTV = [
