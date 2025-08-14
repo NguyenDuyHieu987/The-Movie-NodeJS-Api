@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import type { RoleUser, User } from '@/types';
 import { isStringEmpty } from '@/utils';
 import { verifyAccessToken, verifyAndRefreshToken } from '@/utils/jwt_v2';
+import { TOKEN } from '@/common/token';
 
 export async function authenticationHandler(
   req: Request,
@@ -81,7 +82,7 @@ export async function authenticationHandler(
 }
 
 function clearAuthCookies(req: Request, res: Response) {
-  res.clearCookie('user_token', {
+  res.clearCookie(TOKEN.NAME.USER_TOKEN, {
     ...(req.session.cookie as CookieOptions),
     domain: req.session.cookie.domain,
     httpOnly: req.session.cookie.httpOnly,
@@ -89,7 +90,7 @@ function clearAuthCookies(req: Request, res: Response) {
     secure: true
   });
 
-  res.clearCookie('refresh_token', {
+  res.clearCookie(TOKEN.NAME.REFRESH_TOKEN, {
     ...(req.session.cookie as CookieOptions),
     domain: req.session.cookie.domain,
     httpOnly: req.session.cookie.httpOnly,

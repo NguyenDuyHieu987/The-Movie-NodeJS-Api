@@ -28,6 +28,7 @@ import dayjs from 'dayjs';
 // import { GraphQLClient, gql } from 'graphql-request';
 import { google } from 'googleapis';
 import { oauth2Client } from '@/config/google';
+import { TOKEN } from '@/common/token';
 
 export class AccountController extends RedisCache {
   constructor() {
@@ -263,7 +264,7 @@ export class AccountController extends RedisCache {
 
       switch (req.params.type) {
         case 'email':
-          const vrfEmailToken = req.cookies?.vrf_email_token;
+          const vrfEmailToken = req.cookies[TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN];
 
           encoded = await signDefaultToken(
             {
@@ -279,7 +280,7 @@ export class AccountController extends RedisCache {
               signature: OTP,
               algorithm: JWT_ALGORITHM_DEFAULT,
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
-              prefix: 'vrf_email_token',
+              prefix: TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN,
               oldToken: vrfEmailToken
             }
           );
@@ -291,7 +292,7 @@ export class AccountController extends RedisCache {
             noteExp: +process.env.OTP_EXP_OFFSET!
           });
 
-          res.cookie('vrf_email_token', encoded, {
+          res.cookie(TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN, encoded, {
             ...(req.session.cookie as CookieOptions),
             domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
@@ -330,7 +331,8 @@ export class AccountController extends RedisCache {
             formUser.new_password
           );
 
-          const oldChgPwdToken = req.cookies?.chg_pwd_token;
+          const oldChgPwdToken =
+            req.cookies[TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN];
 
           encoded = await signDefaultToken(
             {
@@ -348,7 +350,7 @@ export class AccountController extends RedisCache {
               signature: OTP,
               algorithm: JWT_ALGORITHM_DEFAULT,
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
-              prefix: 'chg_pwd_token',
+              prefix: TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN,
               oldToken: oldChgPwdToken
             }
           );
@@ -360,7 +362,7 @@ export class AccountController extends RedisCache {
             noteExp: +process.env.OTP_EXP_OFFSET!
           });
 
-          res.cookie('chg_pwd_token', encoded, {
+          res.cookie(TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN, encoded, {
             ...(req.session.cookie as CookieOptions),
             domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
@@ -392,7 +394,8 @@ export class AccountController extends RedisCache {
             });
           }
 
-          const oldChgEmailToken = req.cookies?.chg_email_token;
+          const oldChgEmailToken =
+            req.cookies[TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN];
 
           encoded = await signDefaultToken(
             {
@@ -405,7 +408,10 @@ export class AccountController extends RedisCache {
                 Math.floor(Date.now() / 1000) +
                 +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
             },
-            { prefix: 'chg_email_token', oldToken: oldChgEmailToken }
+            {
+              prefix: TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN,
+              oldToken: oldChgEmailToken
+            }
           );
 
           const clientUrl =
@@ -427,7 +433,7 @@ export class AccountController extends RedisCache {
             noteExp: +process.env.CHANGE_EMAIL_EXP_OFFSET!
           });
 
-          res.cookie('chg_email_token', encoded, {
+          res.cookie(TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN, encoded, {
             ...(req.session.cookie as CookieOptions),
             domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
@@ -459,7 +465,7 @@ export class AccountController extends RedisCache {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      const verifyToken = req.cookies?.chg_pwd_token || req.body.token;
+      const verifyToken = req.cookies[TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN];
 
       if (!verifyToken) {
         return next(createHttpError.BadRequest('Token is required'));
@@ -467,7 +473,7 @@ export class AccountController extends RedisCache {
 
       const decodeChangePassword = (await verifyDefaultToken(verifyToken, {
         signature: req.body.otp,
-        prefix: 'chg_pwd_token'
+        prefix: TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN
       })) as JwtPayload;
 
       const result = await Account.updateOne(
@@ -490,13 +496,13 @@ export class AccountController extends RedisCache {
         });
       }
 
-      jwtRedis.setRevokePrefix('chg_pwd_token');
+      jwtRedis.setRevokePrefix(TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN);
 
       await jwtRedis.sign(verifyToken, {
         EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
       });
 
-      res.clearCookie('chg_pwd_token', {
+      res.clearCookie(TOKEN.NAME.COOKIE_CHG_PASSWORD_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -505,7 +511,7 @@ export class AccountController extends RedisCache {
       });
 
       if (decodeChangePassword.logout_all_device) {
-        // await RedisCache.client.del(`refresh_token__${req.cookies.refresh_token}`);
+        // await RedisCache.client.del(`${TOKEN.NAME.REFRESH_TOKEN}__${req.cookies.refresh_token}`);
 
         const accountInfo = {
           id: user.id,
@@ -524,7 +530,7 @@ export class AccountController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', newUserToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, newUserToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -533,7 +539,7 @@ export class AccountController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', newRefreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, newRefreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -617,7 +623,7 @@ export class AccountController extends RedisCache {
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', newUserToken, {
+      res.cookie(TOKEN.NAME.USER_TOKEN, newUserToken, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -685,7 +691,7 @@ export class AccountController extends RedisCache {
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', newUserToken, {
+      res.cookie(TOKEN.NAME.USER_TOKEN, newUserToken, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -710,7 +716,7 @@ export class AccountController extends RedisCache {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      const verifyToken = req.cookies?.vrf_email_token || req.body.token;
+      const verifyToken = req.cookies[TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN];
 
       if (!verifyToken) {
         return next(createHttpError.BadRequest('Token is required'));
@@ -718,10 +724,10 @@ export class AccountController extends RedisCache {
 
       const decoded = await verifyDefaultToken(verifyToken, {
         signature: req.body.otp,
-        prefix: 'vrf_email_token'
+        prefix: TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN
       });
 
-      res.clearCookie('vrf_email_token', {
+      res.clearCookie(TOKEN.NAME.COOKIE_VRF_EMAIL_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -755,14 +761,14 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.cookies.chg_email_token || req.query.token;
+      const token: string = req.cookies[TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN];
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
       const changeEmailInfo = (await verifyDefaultToken(token, {
-        prefix: 'chg_email_token'
+        prefix: TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN
       })) as JwtPayload;
 
       const account = await Account.findOne({
@@ -809,14 +815,14 @@ export class AccountController extends RedisCache {
     try {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
-      const token: string = req.cookies.chg_email_token || req.body.token;
+      const token: string = req.cookies[TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN];
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
       const changeEmailInfo = (await verifyDefaultToken(token, {
-        prefix: 'chg_email_token'
+        prefix: TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN
       })) as JwtPayload;
 
       const account = await Account.findOneAndUpdate(
@@ -840,7 +846,7 @@ export class AccountController extends RedisCache {
         });
       }
 
-      jwtRedis.setRevokePrefix('chg_email_token');
+      jwtRedis.setRevokePrefix(TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN);
 
       await jwtRedis.sign(token, {
         EX: +process.env.CHANGE_EMAIL_EXP_OFFSET! * ONE_MINUTE
@@ -859,7 +865,7 @@ export class AccountController extends RedisCache {
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', newUserToken, {
+      res.cookie(TOKEN.NAME.USER_TOKEN, newUserToken, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -868,7 +874,7 @@ export class AccountController extends RedisCache {
         maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
       });
 
-      res.clearCookie('chg_email_token', {
+      res.clearCookie(TOKEN.NAME.COOKIE_CHG_EMAIL_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -907,14 +913,14 @@ export class AccountController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const token: string = req.cookies.rst_pwd_token || req.query.token;
+      const token: string = req.cookies[TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN];
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
       const resetPasswordInfo = (await verifyDefaultToken(token, {
-        prefix: 'rst_pwd_token'
+        prefix: TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN
       })) as JwtPayload;
 
       const account = await Account.findOne({
@@ -961,14 +967,14 @@ export class AccountController extends RedisCache {
 
   async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const token: string = req.cookies.rst_pwd_token || req.body.token;
+      const token: string = req.cookies[TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN];
 
       if (!token) {
         return next(createHttpError.BadRequest('Token is required'));
       }
 
       const resetPasswordInfo = (await verifyDefaultToken(token, {
-        prefix: 'rst_pwd_token'
+        prefix: TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN
       })) as JwtPayload;
 
       const newPasswordEncrypted = await encryptPassword(req.body.new_password);
@@ -994,13 +1000,13 @@ export class AccountController extends RedisCache {
         });
       }
 
-      jwtRedis.setRevokePrefix('rst_pwd_token');
+      jwtRedis.setRevokePrefix(TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN);
 
       await jwtRedis.sign(token, {
         EX: +process.env.FORGOT_PASSWORD_EXP_OFFSET! * ONE_MINUTE
       });
 
-      res.clearCookie('rst_pwd_token', {
+      res.clearCookie(TOKEN.NAME.COOKIE_RST_PASSWORD_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -1011,7 +1017,7 @@ export class AccountController extends RedisCache {
       const isLogOutAllDevice = req.body.logout_all_device == 'true';
 
       if (isLogOutAllDevice) {
-        // await RedisCache.client.del(`refresh_token__${req.cookies.refresh_token}`);
+        // await RedisCache.client.del(`${TOKEN.NAME.REFRESH_TOKEN}__${req.cookies.refresh_token}`);
       }
 
       return res.json({

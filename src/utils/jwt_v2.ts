@@ -8,6 +8,7 @@ import { RedisCache } from '@/config/redis';
 import Account from '@/models/account';
 import { User } from '@/types';
 import jwtRedis from '@/utils/jwtRedis';
+import { TOKEN } from '@/common/token';
 
 export const JWT_SIGNATURE_SECRET: string =
   process.env.JWT_SIGNATURE_SECRET!.replace(/\\n/g, '\n');
@@ -45,7 +46,7 @@ export async function verifyAccessToken(
         if (!decoded) return reject(createHttpError.Unauthorized());
 
         // const isAlive = await jwtRedis
-        //   .setRevokePrefix('user_token')
+        //   .setRevokePrefix(TOKEN.NAME.USER_TOKEN)
         //   .verify(token);
 
         // if (!isAlive)
@@ -93,7 +94,7 @@ export async function verifyAndRefreshToken(
 
         const user = decoded as User;
         const tokenCache = await RedisCache.client.get(
-          `refresh_token__${token}`
+          `${TOKEN.NAME.REFRESH_TOKEN}__${token}`
         );
 
         if (!tokenCache)
@@ -123,13 +124,17 @@ export async function verifyAndRefreshToken(
           expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
         });
 
-        await RedisCache.client.del(`refresh_token__${token}`);
+        await RedisCache.client.del(`${TOKEN.NAME.REFRESH_TOKEN}__${token}`);
 
-        await RedisCache.client.set(`refresh_token__${newRefreshToken}`, 1, {
-          EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
-        });
+        await RedisCache.client.set(
+          `${TOKEN.NAME.REFRESH_TOKEN}__${newRefreshToken}`,
+          1,
+          {
+            EX: +process.env.JWT_REFRESH_EXP_OFFSET! * ONE_DAY
+          }
+        );
 
-        res.cookie('user_token', newAccessToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, newAccessToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -138,7 +143,7 @@ export async function verifyAndRefreshToken(
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', newRefreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, newRefreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,

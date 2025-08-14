@@ -26,6 +26,7 @@ import {
 } from '@/utils/jwt';
 import jwtRedis from '@/utils/jwtRedis';
 import sendinblueEmail from '@/utils/sendinblueEmail';
+import { TOKEN } from '@/common/token';
 
 type ResponseLogin = {
   isLogin?: boolean;
@@ -138,7 +139,7 @@ export class AuthController extends RedisCache {
 
       res.set('Access-Control-Expose-Headers', 'Authorization');
 
-      res.cookie('user_token', userToken, {
+      res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -155,7 +156,7 @@ export class AuthController extends RedisCache {
           oldRefreshToken
         );
 
-        res.cookie('refresh_token', refreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, refreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -251,7 +252,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -260,7 +261,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', refreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, refreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -320,7 +321,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -329,7 +330,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', refreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, refreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -479,7 +480,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -488,7 +489,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', refreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, refreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -531,7 +532,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -540,7 +541,7 @@ export class AuthController extends RedisCache {
           maxAge: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR * 1000
         });
 
-        res.cookie('refresh_token', refreshToken, {
+        res.cookie(TOKEN.NAME.REFRESH_TOKEN, refreshToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -624,7 +625,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -667,7 +668,7 @@ export class AuthController extends RedisCache {
 
         res.set('Access-Control-Expose-Headers', 'Authorization');
 
-        res.cookie('user_token', userToken, {
+        res.cookie(TOKEN.NAME.USER_TOKEN, userToken, {
           ...(req.session.cookie as CookieOptions),
           domain: req.session.cookie.domain,
           httpOnly: req.session.cookie.httpOnly,
@@ -738,7 +739,7 @@ export class AuthController extends RedisCache {
 
       const signupUser = (await verifyDefaultToken(signupToken, {
         signature: req.body.otp,
-        prefix: 'vrf_signup_token'
+        prefix: TOKEN.NAME.COOKIE_VRF_SIGNUP_TOKEN
       })) as SignupForm;
 
       const account = await Account.findOne({
@@ -768,13 +769,13 @@ export class AuthController extends RedisCache {
         updated_at: new Date().toISOString()
       });
 
-      jwtRedis.setRevokePrefix('vrf_signup_token');
+      jwtRedis.setRevokePrefix(TOKEN.NAME.COOKIE_VRF_SIGNUP_TOKEN);
 
       await jwtRedis.sign(signupToken, {
         EX: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE
       });
 
-      res.clearCookie('vrf_signup_token', {
+      res.clearCookie(TOKEN.NAME.COOKIE_VRF_SIGNUP_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -867,7 +868,7 @@ export class AuthController extends RedisCache {
               signature: OTP,
               algorithm: JWT_ALGORITHM_DEFAULT,
               // expiresIn: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE + 's',
-              prefix: 'vrf_signup_token',
+              prefix: TOKEN.NAME.COOKIE_VRF_SIGNUP_TOKEN,
               oldToken: oldVrfSignupToken
             }
           );
@@ -882,7 +883,7 @@ export class AuthController extends RedisCache {
           // res.set('Access-Control-Expose-Headers', 'Authorization');
           // res.header('Authorization', encoded);
 
-          res.cookie('vrf_signup_token', encoded, {
+          res.cookie(TOKEN.NAME.COOKIE_VRF_SIGNUP_TOKEN, encoded, {
             ...(req.session.cookie as CookieOptions),
             domain: req.session.cookie.domain,
             httpOnly: req.session.cookie.httpOnly,
@@ -1001,7 +1002,7 @@ export class AuthController extends RedisCache {
       const userToken = res.locals.userToken;
       const user = res.locals.user as User;
 
-      jwtRedis.setRevokePrefix('user_token');
+      jwtRedis.setRevokePrefix(TOKEN.NAME.USER_TOKEN);
 
       await jwtRedis.sign(userToken, {
         EX: +process.env.JWT_ACCESS_EXP_OFFSET! * ONE_HOUR
@@ -1013,9 +1014,11 @@ export class AuthController extends RedisCache {
 
       const refreshToken = req.cookies.refresh_token;
 
-      await RedisCache.client.del(`refresh_token__${refreshToken}`);
+      await RedisCache.client.del(
+        `${TOKEN.NAME.REFRESH_TOKEN}__${refreshToken}`
+      );
 
-      res.clearCookie('user_token', {
+      res.clearCookie(TOKEN.NAME.USER_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
@@ -1023,7 +1026,7 @@ export class AuthController extends RedisCache {
         secure: true
       });
 
-      res.clearCookie('refresh_token', {
+      res.clearCookie(TOKEN.NAME.REFRESH_TOKEN, {
         ...(req.session.cookie as CookieOptions),
         domain: req.session.cookie.domain,
         httpOnly: req.session.cookie.httpOnly,
