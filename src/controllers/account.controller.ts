@@ -260,7 +260,7 @@ export class AccountController extends RedisCache {
       let encoded: string = '';
       let emailResponse: any = null;
 
-      console.log(OTP);
+      // console.log(OTP);
 
       switch (req.params.type) {
         case 'email':
@@ -421,7 +421,7 @@ export class AccountController extends RedisCache {
 
           const changeEmailLink = `${clientUrl}/ChangeEmail?token=${encoded}`;
 
-          console.log(changeEmailLink);
+          // console.log(changeEmailLink);
 
           emailResponse = await sendinblueEmail.VerificationLink({
             to: formUser.new_email,
@@ -454,6 +454,18 @@ export class AccountController extends RedisCache {
               `Verify account with type ${req.params.type} not found`
             )
           );
+      }
+
+      if (!encoded) {
+        return next(
+          createHttpError.InternalServerError(`Verify account failed`)
+        );
+      } else {
+        return res.json({
+          isSended: true,
+          exp_offset: +process.env.OTP_EXP_OFFSET! * ONE_MINUTE,
+          result: 'Send otp email successfully'
+        });
       }
     } catch (error) {
       return next(error);
