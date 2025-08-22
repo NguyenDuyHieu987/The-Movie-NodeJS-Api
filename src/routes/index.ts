@@ -108,7 +108,7 @@ export default function route(app: Application) {
   app.use('/subscription', subscriptionRouter);
   app.use('/ranks', ranRouter);
   app.use('/notification', notificationRouter);
-  app.all('*', (req: Request, res: Response, next: NextFunction) => {
+  app.all('/*splat', (req: Request, res: Response, next: NextFunction) => {
     return next(
       createHttpError(
         404,
