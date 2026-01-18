@@ -19,7 +19,7 @@ export class CountryController extends RedisCache {
       //   return res.json(JSON.parse(dataCache));
       // }
 
-      const data = await Country.find();
+      const data = await Country.find().sort({ name: 1 });
 
       const response = { results: data };
 
