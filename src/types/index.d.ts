@@ -21,7 +21,7 @@ export declare interface ModForm {
 export declare interface ModListForm {
   _id: string;
   id: string;
-  listMovieId: string[] | number[];
+  listMovieId: string[];
   modId: string;
 }
 

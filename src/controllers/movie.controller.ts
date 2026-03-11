@@ -835,7 +835,7 @@ export class MovieController {
 
   async deleteMovieMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listMovieId: string[] | number[] = req.body.listMovieId;
+      const listMovieId: string[] = req.body.listMovieId;
 
       var results: DeleteResult[] = [];
       for (var movieId of listMovieId) {

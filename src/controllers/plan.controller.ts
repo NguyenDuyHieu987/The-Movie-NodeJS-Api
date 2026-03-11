@@ -143,19 +143,19 @@ export class PlanController extends RedisCache {
             const queryParams = new URLSearchParams({
               vnp_Version: '2.1.0',
               vnp_Command: 'pay',
-              vnp_TmnCode: process.env.VNP_TMNCODE!,
-              vnp_Locale: req.body.language || 'vn',
+              vnp_TmnCode: String(process.env.VNP_TMNCODE),
+              vnp_Locale: String(req.body?.language || 'vn'),
               vnp_CurrCode: 'VND',
-              vnp_TxnRef: orderId,
+              vnp_TxnRef: String(orderId),
               vnp_OrderInfo: `Register subscription ${plan.order}: ${plan.name}`,
-              vnp_OrderType: req.body.order_type || '190003',
-              vnp_Amount: (plan.price! * 100).toString(),
+              vnp_OrderType: String(req.body.order_type || '190003'),
+              vnp_Amount: String(plan.price! * 100),
               vnp_ReturnUrl:
-                process.env.NODE_ENV == 'production'
-                  ? process.env.CLIENT_URL!
-                  : req.headers.origin!,
-              vnp_IpAddr: ipAddr!,
-              vnp_CreateDate: createDate
+                process.env.NODE_ENV === 'production'
+                  ? String(process.env.CLIENT_URL)
+                  : String(req.headers.origin),
+              vnp_IpAddr: String(ipAddr),
+              vnp_CreateDate: String(createDate)
               // vnp_BankCode: req.body.bank_code || 'NCB',
             });
 
@@ -306,7 +306,7 @@ export class PlanController extends RedisCache {
               amount_total: session.amount_total,
               amount_discount: 0,
               amount_tax: 0,
-              currency: session.currency,
+              currency: session.currency!,
               status: 'pending',
               payment_status: 'unpaid',
               payment_method: 'stripe',
@@ -476,7 +476,7 @@ export class PlanController extends RedisCache {
               subscription_id: stripeSubscription.id,
               subscription: stripeSubscription,
               description: stripeSubscription.description,
-              customer_id: session.customer,
+              customer_id: session.customer as string,
               plan_id: stripeSubscription.metadata.plan_id,
               status: stripeSubscription.status,
               latest_invoice: invoice.id,

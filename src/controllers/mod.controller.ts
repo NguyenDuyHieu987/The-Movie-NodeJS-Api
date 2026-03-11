@@ -710,7 +710,7 @@ export class ModController extends RedisCache {
 
   async deleteModMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listModId: string[] | number[] = req.body.listModId;
+      const listModId: string[] = req.body.listModId;
       var results: DeleteResult[] = [];
       for (var modId of listModId) {
         const result = await Mod.deleteOne({

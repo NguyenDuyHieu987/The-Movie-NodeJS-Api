@@ -597,7 +597,7 @@ export class BroadcastController extends RedisCache {
     next: NextFunction
   ) {
     try {
-      const listBroadcastId: string[] | number[] = req.body.listBroadcastId;
+      const listBroadcastId: string[] = req.body.listBroadcastId;
       var results: DeleteResult[] = [];
       for (var broadcastId of listBroadcastId) {
         const result = await Broadcast.deleteOne({

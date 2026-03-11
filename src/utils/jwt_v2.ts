@@ -2,6 +2,7 @@ import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
 import type { Algorithm, JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
+import { StringValue } from 'ms';
 
 import { ONE_DAY, ONE_HOUR } from '@/common';
 import { RedisCache } from '@/config/redis';
@@ -116,12 +117,16 @@ export async function verifyAndRefreshToken(
 
         const newAccessToken = jwt.sign(accountData, JWT_SIGNATURE_SECRET, {
           algorithm: JWT_ALGORITHM,
-          expiresIn: +process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
+          expiresIn: String(
+            process.env.JWT_ACCESS_EXP_OFFSET! + 'h'
+          ) as StringValue
         });
 
         const newRefreshToken = jwt.sign(accountData, JWT_REFRESH_SECRET, {
           algorithm: JWT_ALGORITHM,
-          expiresIn: +process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
+          expiresIn: String(
+            process.env.JWT_REFRESH_EXP_OFFSET! + 'd'
+          ) as StringValue
         });
 
         await RedisCache.client.del(`${TOKEN.NAME.REFRESH_TOKEN}__${token}`);

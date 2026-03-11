@@ -1229,7 +1229,7 @@ export class AccountController extends RedisCache {
 
   async deleteAccountMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listAccountId: string[] | number[] = req.body.listAccountId;
+      const listAccountId: string[] = req.body.listAccountId;
       var results: UpdateWriteOpResult[] = [];
       for (var accountId of listAccountId) {
         const result = await Account.updateOne(

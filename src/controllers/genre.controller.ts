@@ -84,7 +84,7 @@ export class GenreController extends RedisCache {
 
       // const id: string = uuidv4();
 
-      const id: number = (await Genre.findOne().sort({ id: -1 }))!.id + 1;
+      const id: number = +(await Genre.findOne().sort({ id: -1 }))!.id + 1;
 
       const result = await Genre.create({
         id: id,
@@ -116,7 +116,7 @@ export class GenreController extends RedisCache {
         );
       }
 
-      const genreId: string = req.params.id;
+      const genreId: number = +req.params.id;
 
       const result = await Genre.updateOne(
         {
@@ -147,7 +147,7 @@ export class GenreController extends RedisCache {
 
   async deleteGenre(req: Request, res: Response, next: NextFunction) {
     try {
-      const genreId: string = req.params.id;
+      const genreId: number = +req.params.id;
 
       const result = await Genre.deleteOne({
         id: genreId
@@ -168,7 +168,7 @@ export class GenreController extends RedisCache {
 
   async deleteGenreMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listGenreId: string[] | number[] = req.body.listGenreId;
+      const listGenreId: number[] = req.body.listGenreId;
       var results: DeleteResult[] = [];
       for (var genreId of listGenreId) {
         const result = await Genre.deleteOne({

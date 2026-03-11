@@ -541,7 +541,7 @@ export class EpisodeController extends RedisCache {
 
   async deleteEpisodeMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listEpisodeId: string[] | number[] = req.body.listEpisodeId;
+      const listEpisodeId: string[] = req.body.listEpisodeId;
       var results: DeleteResult[] = [];
       for (var episodeId of listEpisodeId) {
         const result = await EpisodeTest.deleteOne({

@@ -205,7 +205,7 @@ export class CountryController extends RedisCache {
 
   async deleteCountryMultiple(req: Request, res: Response, next: NextFunction) {
     try {
-      const listCountryId: string[] | number[] = req.body.listCountryId;
+      const listCountryId: string[] = req.body.listCountryId;
       var results: DeleteResult[] = [];
       for (var genreId of listCountryId) {
         const result = await Country.deleteOne({
