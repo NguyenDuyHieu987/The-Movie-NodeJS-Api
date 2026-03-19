@@ -10,12 +10,14 @@
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput",
     "typecheck:once": "tsc --noEmit",
     "test": "jest",
+    "migrate:es": "tsx src/migrate/index.ts",
     "lint": "eslint --cache src/**/*.{ts,cts,js,cjs}",
     "format": "eslint --fix --cache src/**/*.{ts,cts,js,cjs}",
     "lint-staged": "lint-staged",
     "prepare": "husky install"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
     "@sendinblue/client": "3.3.1",
     "argon2": "0.44.0",
     "body-parser": "2.2.2",
